@@ -1,0 +1,72 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.TypeDetailPageMembersList"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+    <UserControl.Resources>
+        <CollectionViewSource x:Name="ListCVS" IsSourceGrouped="True" Source="{x:Bind TypeVM.GroupedMembers, Mode=Oneway}"/>
+    </UserControl.Resources>
+
+    <Grid>
+
+        <!-- bugbug: try taking the '#' off a background color -->
+        <ListView ItemsSource="{x:Bind ListCVS.View, Mode=OneWay}"
+                ItemClick="ListView_ItemClick"
+                x:Name="_listView"
+                IsItemClickEnabled="True"
+                SelectionMode="None"
+                Margin="-12,0,0,0"
+                ItemContainerStyle="{StaticResource MouseListViewItemStyle}"
+                  >
+
+            <ListView.Header>
+                <!-- bugbug: give this two children and look at the compiler error -->
+
+                <StackPanel Margin="12,20,0,10" Visibility="{x:Bind SummaryVisibility, Mode=OneWay}" x:Name="_foo">
+                    <!-- bugbug: Better way to set the left margin to line up with ListView? -->
+                    <TextBlock local:CsSyntaxGenerator.TypeDeclaration="{x:Bind TypeVM, Mode=OneWay}" TextWrapping="Wrap" />
+
+                    <HyperlinkButton Click="ShowMe_Click">
+                        <TextBlock Text="{x:Bind ShowMe, Mode=OneWay}" x:Name="_showMeText"/>
+                    </HyperlinkButton>
+                </StackPanel>
+
+            </ListView.Header>
+
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate x:DataType="local:MemberList">
+                            <TextBlock Text="{x:Bind Heading}" />
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:MemberViewModel">
+                    <Border BorderThickness="4,0,0,0" 
+                                    local:SearchHighlighter.BorderForMember="{x:Bind}"
+                                    Padding="3,0,0,0">
+                        <local:MemberItemView MemberVM="{x:Bind}"/>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <HyperlinkButton Click="CopyTypeDefinition" VerticalAlignment="Top" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" ToolTipService.ToolTip="Copy this type definition to the clipboard">
+                <SymbolIcon Symbol="Copy"/>
+                <TextBlock x:Name="_copyText" xml:space="preserve"> copy</TextBlock>
+            </StackPanel>
+        </HyperlinkButton>
+
+    </Grid>
+
+
+</local:MySerializableControl>

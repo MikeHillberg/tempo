@@ -1,0 +1,2 @@
+MainPackage=E:\repos\TempoOnline\UwpTempo2\bin\x64\Release\Upload\UwpTempo2_1.0.25.0_x64.appx
+SymbolPackage=E:\repos\TempoOnline\UwpTempo2\bin\x64\Release\Upload\UwpTempo2_1.0.25.0\UwpTempo2_1.0.25.0_x64.appxsym

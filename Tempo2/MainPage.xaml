@@ -1,0 +1,172 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="0,0,0,0" >
+
+        <!-- This accelerator isn't real, just a way to demo teaching tips -->
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="T" Modifiers="Control,Shift" Invoked="ShowDemoTeachingTip" />
+        </Grid.KeyboardAccelerators>
+
+        <Grid VerticalAlignment="Center" Padding="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+
+            <!-- Bugbug: turn off (control+E) when no physical keyboard -->
+            <!-- Have to guess at the margin to make it line up with the pivot content -->
+            <local:SearchBox x:Name="_searchBox" IsAllVisible="True"                 
+                         Grid.Row="1" Grid.ColumnSpan="3"
+                             MaxWidth="800"
+                         />
+
+            <Grid Grid.Row="3" Grid.ColumnSpan="3" Margin="0,20,0,0" x:Name="_root" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <ScrollViewer Grid.Row="1" >
+                    <Grid Margin="0,12,0,0" MaxWidth="1024" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                          ColumnDefinitions="3*,2*" >
+
+                        <StackPanel>
+                            <!-- bugbug:  nbsp is #160? -->
+                            <TextBlock HorizontalAlignment="Left" FontWeight="Bold" TextWrapping="Wrap" >Types, Events, Methods &amp; Properties (Oh&#160;my)</TextBlock>
+
+                            <TextBlock Margin="0,12,0,0" TextWrapping="Wrap">Use the search box above to search the Windows WinRT APIs</TextBlock>
+
+                            <TextBlock Margin="0,12,0,0">Example search strings:</TextBlock>
+                            <StackPanel Margin="15,5,0,0">
+                                <TextBlock>button</TextBlock>
+                                <TextBlock>button.*args</TextBlock>
+                                <TextBlock>^button</TextBlock>
+                                <TextBlock>button$</TextBlock>
+                                <TextBlock>but:cli</TextBlock>
+                                <TextBlock xml:space="preserve">check     box</TextBlock>
+                                <TextBlock>iasync&lt;storagefile</TextBlock>
+                            </StackPanel>
+
+                            <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search text can be simple text or a regular expression.  Spaces are compressed out, so for example "check box" (two words) is the same as "checkbox" (one word).</TextBlock>
+
+                            <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search string is checked against type/property/method/event/field names.  It's also checked against parameter names and their types, against ancestors of a class, and against implemented interfaces on a class.</TextBlock>
+
+                            <StackPanel Margin="0,15,0,0" x:Name="_commandPromptText">
+                                <TextBlock TextWrapping="Wrap" >You can launch the app from the command prompt too, optionally passing in filenames. For example:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">&gt; tempo</TextBlock>
+                                <TextBlock TextWrapping="Wrap">&gt; tempo MyComponent.dll</TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Margin="0,15,0,0">
+                                <TextBlock FontWeight="Bold">Illustrations</TextBlock>
+                                <HyperlinkButton Click="TextRamp_Click">Type ramp</HyperlinkButton>
+                                <HyperlinkButton Click="ColorSamples_Click" >Colors</HyperlinkButton>
+                                <HyperlinkButton Click="SymbolsSamples_Click">Symbols</HyperlinkButton>
+                            </StackPanel>
+
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="50,0,0,0">
+                            <TextBlock FontWeight="Bold">API Scope</TextBlock>
+
+                            <StackPanel>
+                                <!-- bugbug: this xBind should not be this hard -->
+                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" GroupName="Test">
+                                    <StackPanel>
+                                        <TextBlock>Windows</TextBlock>
+                                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" >
+                                        Search the Windows APIs installed on this machine
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                </RadioButton>
+
+                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" GroupName="Test">
+                                    <StackPanel>
+                                        <TextBlock >Windows App SDK</TextBlock>
+                                        <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                        Search the Windows App SDK, downloading it from nuget.org
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                </RadioButton>
+
+                                <!-- Custom API scope -->
+                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsCustomApiScope, Mode=TwoWay}" GroupName="Test">
+                                    <StackPanel>
+                                        <TextBlock x:Name="_customFileLabel">Custom file</TextBlock>
+                                        <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                        Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file over this window.
+                                        </TextBlock>
+
+                                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                            <Button Click="OpenCustomClick">Open</Button>
+                                            <Button Click="CloseCustomClick">Close</Button>
+                                        </StackPanel>
+                                        
+                                        <!-- Show loaded custom filenames -->
+                                        <StackPanel Margin="0,5,0,0"
+                                                    local:CollapseIfEmpty.IsEnabledFor="{x:Bind _customFilenamesText}">
+                                            <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                                            <TextBlock x:Name="_customFilenamesText"
+                                                       Text="{x:Bind FilenamesToText(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="5,0,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <!-- Baseline APIs -->
+                                <StackPanel>
+                                    <ListViewHeaderItem/>
+                                    <TextBlock FontWeight="Bold">Baseline</TextBlock>
+                                    <TextBlock Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline</TextBlock>
+                                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
+                                              Content="Show only new compared to baseline"
+                                              IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
+
+                                    <!-- Open/Close buttons -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                                        <Button Click="OpenBaseline">Open</Button>
+                                        <Button Click="CloseBaseline"
+                                                IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
+                                    </StackPanel>
+
+                                    <!-- Show loaded filenames -->
+                                    <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
+                                        <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="_baselineFilenamesText"
+                                            Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
+                                            TextWrapping="Wrap"
+                                            Margin="5,0,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                            </StackPanel>
+
+
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</local:MySerializableControl>

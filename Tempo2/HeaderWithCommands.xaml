@@ -1,0 +1,152 @@
+﻿<UserControl
+    x:Class="Tempo.HeaderWithCommands"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    >
+
+    <!--<Grid Background="{x:Bind ComputeBackgroundColor(IsDarkBackground), Mode=OneWay}">-->
+    <Grid x:Name="_root">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+
+            <AppBarButton Click="BackButton_Click" Label="Back"
+                Background="Transparent"
+                IsEnabled="{x:Bind CanGoBack, Mode=OneWay}"
+                Visibility="{x:Bind ShowBack, Mode=OneWay}" >
+                <SymbolIcon Symbol="Back"/>
+            </AppBarButton>
+
+            <AppBarButton Click="AppBarButton_Home" Label="Home"  
+                          Visibility="{x:Bind ShowHome, Mode=OneWay}"
+                          ToolTipService.ToolTip="Reset filters and go back to Home page (F3)">
+                <SymbolIcon Symbol="Home" />
+            </AppBarButton>
+
+            <AppBarButton Click="UpButton_Click"
+                Grid.Column="2"
+                Visibility="{x:Bind UpButtonVisibility, Mode=OneWay}"
+                Background="Transparent" >
+                <SymbolIcon Symbol="Up"/>
+            </AppBarButton>
+
+            <AppBarButton Visibility="{x:Bind FilterVisibility, Mode=Oneway}" 
+                    x:Name="_filterButton"
+                    ToolTipService.ToolTip="Filter results"
+                    Label="Filter"
+                    Background="{x:Bind local:MainPage.AdaptiveSettings.FilterBackground, Mode=OneWay}"
+                    >
+                <SymbolIcon Symbol="Filter" />
+                <Button.Flyout>
+                    <local:FilterAppBarButtonMenu/>
+                </Button.Flyout>
+            </AppBarButton>
+
+            <AppBarButton Label="Docs" Visibility="{x:Bind ShowHome, Mode=OneWay}">
+                <SymbolIcon Symbol="Document" />
+
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Go to doc page" Click="GoToMsdn"
+                                        ToolTipService.ToolTip="Go to this page on documents.microsoft.com">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="M" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem Text="Copy rich text link to clipboard" Click="CopyRichTextToClipboard"
+                                        ToolTipService.ToolTip="Copy to the clipboard a rich text link to this page on documents.microsoft.com">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control,Shift" Key="M" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+
+                        <MenuFlyoutItem Text="Copy markdown text link to clipboard" Click="CopyMarkdownToClipboard"
+                                        ToolTipService.ToolTip="Copy to the clipboard a markdown link to this page on documents.microsoft.com">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control,Shift" Key="D" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+
+            <!-- Export options (clipboard, Excel) -->
+            <AppBarButton Label="Copy"
+                          Visibility="{x:Bind IsExportVisible, Mode=OneWay}">
+                <SymbolIcon Symbol="Copy"/>
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Copy results to clipboard" Click="CopyToClipboard"/>
+                        <MenuFlyoutItem Text="Open in Excel" Click="OpenInExcel"/>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+
+            <!-- Button to choose the ApiScope -->
+            <AppBarButton Label="API Scope" Visibility="{x:Bind IsScopeVisible, Mode=OneWay}"
+                          x:Name="_apiScopeButton">
+                <SymbolIcon Symbol="Library"/>
+
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <ToggleMenuFlyoutItem Text="Windows" Click="SelectWindowsApis" 
+                                              IsChecked="{x:Bind local:App.Instance.IsWinPlatformScope, Mode=OneWay}">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="W" />
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+                        <ToggleMenuFlyoutItem Text="WinAppSDK" Click="SelectWinAppSdkApis"
+                                              IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="K" />
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+
+                        <ToggleMenuFlyoutItem Text="Custom" Click="SelectCustomApiScope"
+                                              IsChecked="{x:Bind local:App.Instance.IsCustomApiScope, Mode=OneWay}"/>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+
+        </StackPanel>
+
+        <Border Grid.Column="1" Margin="0,0,0,0" Padding="10" VerticalAlignment="Center">
+            <Border.Resources>
+                <Style x:Name="_subheaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource SubheaderTextBlockStyle}"/>
+                <Style x:Name="_subtitleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}"/>
+                <Style x:Name="_baseTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}"/>
+            </Border.Resources>
+
+            <StackPanel Orientation="Vertical">
+                <!--Orientation="{x:Bind Orientation, Mode=OneWay}"-->
+                <TextBlock x:Name="_heading" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,10,0" IsTextSelectionEnabled="True"
+                           Style="{x:Bind TitleStyle, Mode=OneWay}">
+                    <Run Text="{x:Bind Heading, Mode=OneWay}" />
+                    <Run Text="{x:Bind SubSubHeading, Mode=OneWay}" />
+                    <Run FontStyle="Italic" Text="{x:Bind PreviewString, Mode=Oneway}" />
+                </TextBlock>
+
+                <!-- bugbug:  Have to init visibility to collapsed -->
+                <TextBlock Text="{x:Bind SubHeading, Mode=OneWay}"
+                           local:CollapseIfEmpty.IsEnabled="True"
+                           x:Name="_textBlock"
+                           TextWrapping="Wrap"
+                           IsTextSelectionEnabled="True"
+                           Style="{x:Bind SubtitleStyle, Mode=Oneway}"
+                           >
+                    <!--Text="{x:Bind ConvertedSubHeading, Mode=OneWay}"-->
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+
+
+    </Grid>
+
+</UserControl>

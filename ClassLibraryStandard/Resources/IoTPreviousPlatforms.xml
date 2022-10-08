@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreviousPlatforms xmlns="http://microsoft.com/schemas/Windows/SDK/PreviousPlatforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://microsoft.com/schemas/Windows/SDK/PreviousPlatforms ./PreviousPlatformsXmlSchema.xsd">
+  <ApplicationPlatform name="IoTPlatform" friendlyName="Windows IoT Extension SDK" version="10.0.17134.0">
+    <DependentPlatform name="UAP" version="10.0.17134.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts xmlns="">
+      <ApiContract name="Windows.System.SystemManagementContract" version="5.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="IoTPlatform" friendlyName="Windows IoT Extension SDK" version="10.0.16299.0">
+    <DependentPlatform name="UAP" version="10.0.16299.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts xmlns="">
+      <ApiContract name="Windows.System.SystemManagementContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="IoTPlatform" friendlyName="Windows IoT Extension SDK" version="10.0.15063.0">
+    <DependentPlatform name="UAP" version="10.0.15063.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts xmlns="">
+      <ApiContract name="Windows.System.SystemManagementContract" version="3.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="IoTPlatform" friendlyName="Windows IoT Extension SDK" version="10.0.14393.0">
+    <DependentPlatform name="UAP" version="10.0.14393.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.System.SystemManagementContract" version="2.0.0.0"/> 
+    </ContainedApiContracts> 
+  </ApplicationPlatform>
+  <ApplicationPlatform name="IoTPlatform" friendlyName="Windows IoT Extension SDK" version="10.0.10586.0">
+    <DependentPlatform name="UAP" version="10.0.10586.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.Devices.DevicesLowLevelContract" version="2.0.0.0"/> 
+      <ApiContract name="Windows.System.SystemManagementContract" version="2.0.0.0"/> 
+    </ContainedApiContracts> 
+  </ApplicationPlatform>
+  <ApplicationPlatform name="IoTPlatform" friendlyName="Windows IoT Extension SDK" version="10.0.10240.0">
+    <DependentPlatform name="UAP" version="10.0.10240.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.Devices.DevicesLowLevelContract" version="1.0.0.0"/> 
+      <ApiContract name="Windows.System.SystemManagementContract" version="1.0.0.0"/> 
+    </ContainedApiContracts> 
+  </ApplicationPlatform>
+</PreviousPlatforms>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PreviousPlatforms xsi:schemaLocation="http://microsoft.com/schemas/Windows/SDK/PreviousPlatforms ./PreviousPlatformsXmlSchema.xsd" xmlns="http://microsoft.com/schemas/Windows/SDK/PreviousPlatforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.22000.0">
+    <DependentPlatform name="UAP" version="10.0.22000.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.20348.0">
+    <DependentPlatform name="UAP" version="10.0.20348.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.19041.0">
+    <DependentPlatform name="UAP" version="10.0.19041.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.18362.0">
+    <DependentPlatform name="UAP" version="10.0.18362.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.17763.0">
+    <DependentPlatform name="UAP" version="10.0.17763.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.17134.0">
+    <DependentPlatform name="UAP" version="10.0.17134.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.Background.CallsBackgroundContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.CallsPhoneContract" version="4.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.Sockets.ControlChannelTriggerContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.16299.0">
+    <DependentPlatform name="UAP" version="10.0.16299.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.Background.CallsBackgroundContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.CallsPhoneContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.Sockets.ControlChannelTriggerContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="5.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.15063.0">
+    <DependentPlatform name="UAP" version="10.0.15063.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardEmulatorContract" version="4.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.Sockets.ControlChannelTriggerContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneInternalContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="4.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.14393.0">
+    <DependentPlatform name="UAP" version="10.0.14393.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.Background.CallsBackgroundContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.CallsPhoneContract" version="4.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardEmulatorContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.Sockets.ControlChannelTriggerContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.10586.0">
+    <DependentPlatform name="UAP" version="10.0.10586.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.Background.CallsBackgroundContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.CallsPhoneContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.SocialInfo.SocialInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardEmulatorContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.Sockets.ControlChannelTriggerContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileHardwareTokenContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="MobilePlatform" friendlyName="Windows Mobile Extension SDK" version="10.0.10240.0">
+    <DependentPlatform name="UAP" version="10.0.10240.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.ApplicationModel.Activation.WebUISearchActivatedEventsContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.CallsPhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Calls.CallsVoipContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.SocialInfo.SocialInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.ApplicationModel.Wallet.WalletContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Devices.SmartCards.SmartCardEmulatorContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Embedded.DeviceLockdown.DeviceLockdownContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Gaming.Preview.GamesEnumerationContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.NetworkOperators.NetworkOperatorsFdnContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Networking.Sockets.ControlChannelTriggerContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.PhoneContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Phone.StartScreen.DualSimTileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.Security.EnterpriseData.EnterpriseDataContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileHardwareTokenContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.Profile.ProfileRetailInfoContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.System.UserProfile.UserProfileContract" version="1.0.0.0"/>
+      <ApiContract name="Windows.UI.WebUI.Core.WebUICommandBarContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+</PreviousPlatforms>

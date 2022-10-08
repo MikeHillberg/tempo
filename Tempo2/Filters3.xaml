@@ -1,0 +1,367 @@
+﻿<UserControl
+    x:Class="Tempo.Filters3"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <Panel.Resources>
+
+            <!-- Grouping CVS tor all of the settings that match the user's search filter -->
+            <CollectionViewSource x:Name="cvs" Source="{x:Bind FilteredSettings, Mode=OneWay}" IsSourceGrouped="True"/>
+
+
+            <!-- This is all of the boolean and checkbox settings *data*, and then later there's a couple of
+                 different views for them. It's organized to emulate a Ribbon, with a hierarchy of tabs,
+                 within that groups, and withing those the individual settings. -->
+            
+            <local:MyRibbonTabs x:Name="_tabbedSettings">
+
+                <local:MyRibbonTab Name="Main">
+                    <local:MyRibbonGroup2 Section="Search on">
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.FilterOnReturnType, Mode=TwoWay}" 
+                                    GroupName="Search on"
+                                    Label="Return type"  
+                                    Description="Look at return types"/>
+
+                        <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnBaseType, Mode=TwoWay}" 
+                                    Label="Ancestors" 
+                                    GroupName="Search on"                                         
+                                    Description="Look at ancestor types when checking types" />
+                        <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnParameters, Mode=TwoWay}" 
+                                   Label="Parameters"    
+                                   GroupName="Search on"                                     
+                                   Description="Look at parameter names and types when checking members"/>
+                        <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnFullName, Mode=TwoWay}" 
+                                   Label="Full name"   
+                                   GroupName="Search on"                                      
+                                   Description="Look at a type's full name with namespace" />
+                        <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnName, Mode=TwoWay}" 
+                                   Label="Name"   
+                                   GroupName="Search on"                                      
+                                   Description="Look at type, member, and parameter names" />
+                        <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnAttributes, Mode=TwoWay}" 
+                                   Label="Attributes"    
+                                   GroupName="Search on"                                     
+                                   Description="Look at attributes when checking types and members (this is a slower search)"/>
+
+                    </local:MyRibbonGroup2>
+                </local:MyRibbonTab>
+
+                <local:MyRibbonTab Name="Type restrictions">
+                    <local:MyRibbonGroup2 Section="Type Is">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsActivatable, Mode=TwoWay}" Label="Activatable" 
+                                        Description="Activatable classes (Control+Shift+A)"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsGeneric, Mode=TwoWay}" Label="Open generic" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsSealedType, Mode=TwoWay}" Label="Sealed" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsAbstractType, Mode=TwoWay}" Label="Abstract" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsStaticClass, Mode=TwoWay}" Label="Static"
+                                        Description="Static classes (aka abstract and sealed)"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsMutableType, Mode=TwoWay}" Label="Mutable"
+                                        Description="A type is mutable if it has an instance method, or a writeable instance property. In addition, some known types are mutable:  String, URI, and and Windows.Storage.IStorageFile"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsMultiVersion, Mode=TwoWay}" Label="Multi-version"
+                                        Description="Classes and enums that were introduced in one version and got a new member in a later version"/>
+
+                        <local:ChoiceSettingView 
+                            Label="Trust level"
+                            Description="Restrict to one trust level"
+                            SelectedValue="{x:Bind Settings.TrustLevel, Mode=TwoWay}" 
+                            SelectedValuePath="Value"
+                            ItemsSource="{x:Bind Settings.TrustLevelValues}"  
+                            DisplayMemberPath="Name"/>
+
+                    </local:MyRibbonGroup2>
+
+                    <local:MyRibbonGroup2 Section="Special types">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsDO, Mode=TwoWay}" Label="DependencyObject" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsDelegateType, Mode=TwoWay}" Label="Delegate" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsEventArgsType, Mode=TwoWay}" Label="Event args"
+                                        Description="Types whose name ends with 'EventArgs'"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsFlagsEnum, Mode=TwoWay}" 
+                                                  Label="Flags enum" 
+                                        Description="Enum types that set [flags]"/>
+                    </local:MyRibbonGroup2>
+
+                    <local:MyRibbonGroup2 Section="Type Has">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasInterfaces, Mode=TwoWay}" Label="Interfaces" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasDefaultConstructor, Mode=TwoWay}" Label="Default constructor" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasNonDefaultConstructor, Mode=TwoWay}" Label="Non-default constructor" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasProtectedConstructors, Mode=TwoWay}" Label="Protected constructor" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasPublicConstructors, Mode=TwoWay}" Label="Public constructor" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasStaticConstructor, Mode=TwoWay}" Label="Static constructor" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasBaseType, Mode=TwoWay}" Label="Base type" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.ImplementsInternalInterface, Mode=TwoWay}" Label="Internal interfaces" />
+                    </local:MyRibbonGroup2>
+                </local:MyRibbonTab>
+
+
+                <local:MyRibbonTab Name="Member restrictions">
+                    <local:MyRibbonGroup2 Section="Member is">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IndexedProperty, Mode=TwoWay}" Label="Indexed property" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsStatic, Mode=TwoWay}" Label="Static member"                               Description="(Not including enum fields)" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsProtected, Mode=TwoWay}" Label="Protected member" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsOverloaded, Mode=TwoWay}" Label="Overloaded" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.CanWrite, Mode=TwoWay}" Label="Writeable" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsDP, Mode=TwoWay}" Label="DependencyProperty" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsRoutedEvent, Mode=TwoWay}" Label="RoutedEvent" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsExplicit, Mode=TwoWay}" Label="Explicit"                               Description="Explicit interface implementation" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsAsync, Mode=TwoWay}" Label="async"                               Description="Is async" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsRemoteAsync, Mode=TwoWay}" Label="remote async"                               Description="Is [RemoteAsync]" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsAddedMember, Mode=TwoWay}" Label="Added member"                              Description="A member that was added to a type. Members that were introduced in a version to a class from a prior version"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasAddedSetter, Mode=TwoWay}" Label="Added property setter"                              Description="A property that has different getter and setter versions. A property and its getter can be introduced in one version, then a setter added in a later version"/>
+                    </local:MyRibbonGroup2>
+
+                    <local:MyRibbonGroup2 Section="Parameters">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasOutParameter, Mode=TwoWay}" Label="has out parm" Description="Has an out parameter" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasMultipleOutParameters, Mode=TwoWay}" Label="has >1 out parm" Description="Has multiple out parameters" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasInParameter, Mode=TwoWay}" Label="has in parm" Description="Has an in parameter" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasRefParameter, Mode=TwoWay}" 
+                                                   Label="has ref parm" Description="Has a ref parameter" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasAgileParameter, Mode=TwoWay}" Label="has agile parm" Description="Has a parameter that is MarshalingType.Agile" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasInterfaceParameter, Mode=TwoWay}" Label="has interface parm" Description="Has a parameter that is an interface type" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasDelegateParameter, Mode=TwoWay}" Label="has delegate parm" Description="Has a parameter that is a delegate type" />
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasMutableParameter, Mode=TwoWay}" 
+                                                  Label="Has mutable parm"
+                                        Description="A type is mutable if it has an instance method, or a writeable instance property. In addition, some known types are mutable:  String, URI, and and Windows.Storage.IStorageFile" />
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasReturnValue, Mode=TwoWay}" Label="has retval" 
+                                                  Description="Has a return value" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasPrimitiveReturnValue, Mode=TwoWay}" Label="primitive retval" 
+                                        Description="Has a return value that is primitive (int, float, bool, string, enum, etc.)" />
+                    </local:MyRibbonGroup2>
+
+                    <local:MyRibbonGroup2 Section="Virtual Restrictions">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsVirtual, Mode=TwoWay}" 
+                                                  Label="Virtual" />
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsFinal, Mode=TwoWay}" Label="Sealed"
+                                        Description="Virtual and Final"/>
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsOverride, Mode=TwoWay}" Label="Override"
+                                        Description="Virtual but not NewSlot"/>
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsAbstract, Mode=TwoWay}" 
+                                                  Label="Abstract"/>
+                    </local:MyRibbonGroup2>
+                </local:MyRibbonTab>
+
+                <local:MyRibbonTab Name="WinMD">
+                    <local:MyRibbonGroup2 Section="WinMD">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.Experimental}" 
+                                       Label="Experimental"
+                                       Description="Type or member is [experimental]"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.Deprecated}" 
+                                       Label="Deprecated"
+                                       Description="Type or member is [deprecated]"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.DualApi}" Label="Dual API" />
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsActivatable}" Label="Activatable" 
+                                       Description="Activatable classes"/>
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsUac}" Label="UAC" 
+                                       Description="UniversalApiContract"/>
+
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsRemoteAsync}" 
+                                       Label="RemoteAsync" Description="Is [RemoteAsync]" />
+
+                        <local:ChoiceSettingView
+                            Label="Version"
+                            ItemsSource="{x:Bind Settings.VersionFriendlyNameValues}"
+                            SelectedValue="{x:Bind Settings.SelectedVersionFriendlyName, Mode=TwoWay}"/>
+                        
+                        <local:ChoiceSettingView
+                            Label="Marshaling behavior"
+                            ItemsSource="{x:Bind Settings.MarshalingBehaviorValues}"
+                            SelectedValue="{x:Bind Settings.MarshalingBehavior}" />
+
+                        <local:ChoiceSettingView
+                            Label="Threading model"
+                            ItemsSource="{x:Bind Settings.ThreadingModelValues}"
+                            SelectedValue="{x:Bind Settings.ThreadingModel, Mode=TwoWay}" />
+
+                        <local:ChoiceSettingView 
+                            Label="Trust level"
+                            Description="Restrict to one trust level"
+                            SelectedValue="{x:Bind Settings.TrustLevel, Mode=TwoWay}" 
+                            SelectedValuePath="Value"
+                            ItemsSource="{x:Bind Settings.TrustLevelValues}"  
+                            DisplayMemberPath="Name"/>
+
+                    </local:MyRibbonGroup2>
+                </local:MyRibbonTab>
+
+                <local:MyRibbonTab  Name="More">
+                    <local:MyRibbonGroup2 Section="Threading">
+                        <local:ChoiceSettingView Label="Marshaling behavior"
+                                ItemsSource="{x:Bind Settings.MarshalingBehaviorValues}"
+                                SelectedValue="{x:Bind Settings.MarshalingBehavior, Mode=TwoWay}">
+                        </local:ChoiceSettingView>
+
+                        <local:ChoiceSettingView
+                            Label="Threading model"
+                            ItemsSource="{x:Bind Settings.ThreadingModelValues}"
+                            SelectedValue="{x:Bind Settings.ThreadingModel, Mode=TwoWay}"/>
+
+                        <!--<rib:RibbonComboBox IsReadOnly="True"  >
+                                <rib:RibbonGallery SelectedValue="{Binding Settings.ThreadingModel}" >
+                                    <rib:RibbonGalleryCategory ItemsSource="{Binding Settings.ThreadingModelValues}" />
+                                </rib:RibbonGallery>
+                            </rib:RibbonComboBox>-->
+
+                    </local:MyRibbonGroup2>
+
+                    <local:MyRibbonGroup2 Section="Random">
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.PropertyNameMatchesTypeName, Mode=TwoWay}" 
+                                        Label="Redundant property name"
+                                        Description="Property's name and property's type name are the same"/>
+                        <local:BooleanSettingView IsThreeState="False" Setting="{x:Bind Settings.DuplicateTypeName, Mode=TwoWay}" 
+                                        Label="Duplicate type name"
+                                        Description="Duplicate type name across namespaces"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.CustomInParameters, Mode=TwoWay}" 
+                                        Label="Complex [in]"
+                                        Description="[in] parameters with custom state. Defined as !Inspectable/Object, !enum, !structs, !Windows.* types and !System.*"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.MarkerInterfaces, Mode=TwoWay}" 
+                                        Label="Marker interfaces"
+                                        Description="Marker interfaces, interfaces with no members"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.UntypedArgs, Mode=TwoWay}" 
+                                        Label="Untyped args"
+                                        Description="Untyped event args. Events where the args are untyped (Object/Inspectable) or there is no args parameter"/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.HasInterfaceParameter, Mode=TwoWay}" 
+                                        Label="Interface parameter"
+                                        Description="Has an interface parameter. Members that have an interface-typed in/out/retval parameter, not including basic interfaces such as IAsync, IVector, etc."/>
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.ReturnsHostType, Mode=TwoWay}" 
+                                        Label="Returns declaring type"
+                                        Description="Member returns declaring type. Members of a type that returns an instance of that type" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{Binding Settings.HasMatchingPropertyAndSetMethod, Mode=TwoWay}" 
+                                        Label="Property and setter"
+                                        Description="Same-named method and property. Properties and methods that have the same name (plus the 'Set' on the method name).  E.g. a Foo property and a SetFoo() method." />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.DuplicateEnumValues, Mode=TwoWay}" 
+                                        Label="Duplicate enum values"
+                                        Description="Duplicate enum values. Enum values that are duplicated within a single enum" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.ConflictingOverrides, Mode=TwoWay}" 
+                                        Label="Base/derived conflicts. Members in a derived class that conflict with a base class" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.NameAndNamespaceConflict, Mode=TwoWay}" 
+                                        Label="Name/namespace conflicts. The last node of a namespace name matches a class name someplace else." />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.OneWordName, Mode=TwoWay}" 
+                                        Label='One word API names, like "Button"' />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsFirstWordAVerb, Mode=TwoWay}" 
+                                        Label="First word a verb"
+                                        Description='First word in name is a verb. For example "EnableStateChanges"' />
+
+                    </local:MyRibbonGroup2>
+
+                </local:MyRibbonTab>
+
+
+
+            </local:MyRibbonTabs>
+
+            <!-- DataTemplateSelector that looks at the item and decides whether to 
+                 use a Boolean template (for BooleanSettingView or a combo box
+                 (for ChoiceSettingView) -->
+            
+            <local:SettingVewTemplateSelector x:Key="_settingViewTemplateSelector">
+                <local:SettingVewTemplateSelector.BooleanTemplate>
+                    <DataTemplate x:Name="_booleanSettingViewTemplate" x:DataType="local:BooleanSettingView">
+                        <CheckBox IsChecked="{x:Bind Setting, Mode=TwoWay}" 
+                          Content="{x:Bind Label}"  
+                          IsThreeState="{x:Bind IsThreeState}"
+                          ToolTipService.ToolTip="{x:Bind Description}"/>
+                    </DataTemplate>
+                </local:SettingVewTemplateSelector.BooleanTemplate>
+
+                <local:SettingVewTemplateSelector.ChoiceTemplate>
+                    <!-- bugbug (cbsvp): can't use SelectedValue[Path], use events for code behind -->
+                    <DataTemplate x:Name="_choiceSettingViewTemplate" x:DataType="local:ChoiceSettingView">
+                        <ComboBox 
+                            DisplayMemberPath="{x:Bind DisplayMemberPath}"
+                            ItemsSource="{x:Bind ItemsSource}"
+                            Header="{x:Bind Label}"
+                            Tag="{x:Bind}"
+                            Loaded="ComboBox_Loaded"
+                            SelectionChanged="ComboBox_SelectionChanged"
+                          />
+                    </DataTemplate>
+                </local:SettingVewTemplateSelector.ChoiceTemplate>
+            </local:SettingVewTemplateSelector>
+
+        </Panel.Resources>
+
+        <!-- Heading -->
+        <TextBlock Style="{StaticResource TitleTextBlockStyle}">Search filters</TextBlock>
+        <TextBlock Style="{StaticResource BodyTextBlockStyle}" Margin="0,10,0,10">
+        Use the settings below to filter out what parts of the APIs are searched
+        </TextBlock>
+
+        <!-- Text box that raises Invoked when the user presses enter or after they stop typing for a bit -->
+        <local:TimedTextBox x:Name="_search"
+                            Margin="0,0,0,10"
+                            PlaceholderText="Find filters"
+                            Invoked="TimedTextBox_Invoked" />
+
+        <!-- This only shows if there's text in the search box
+            It shows all the settings that match the search -->
+        
+        <ListView x:Name="_searchResults"
+                  local:CollapseIfEmpty.IsEnabledFor="{x:Bind _search.Text, Mode=OneWay}"
+                  ItemsSource="{x:Bind cvs.View, Mode=OneWay}"
+                  ItemTemplateSelector="{StaticResource _settingViewTemplateSelector}"
+                  >
+            <ListView.GroupStyle>
+                <GroupStyle >
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate >
+                            <TextBlock Text="{Binding Key}"/>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+        </ListView>
+
+
+        <!-- This only shows if there's _no_ text in the search box.
+             It shows all the settings, grouped into groups and then tabs (like a Ribbon) -->
+        
+        <Grid ColumnDefinitions="Auto,Auto,*"  
+              x:Name="_listsGrid"
+              Visibility="{x:Bind local:Utils.NotVisibility(_searchResults.Visibility), Mode=OneWay}">
+
+            <!-- First list shows the tabs -->
+            <ListView ItemsSource="{x:Bind _tabbedSettings}" x:Name="_tabsListView" SelectionMode="Single"
+                  SelectedIndex="0">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:MyRibbonTab">
+                        <TextBlock Text="{x:Bind Name}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+
+            <!-- Second list shows the groups in a tab -->
+            <ListView x:Name="_groupListView"
+                  ItemsSource="{x:Bind ((local:MyRibbonTab)_tabsListView.SelectedItem), Mode=OneWay}"
+                  Grid.Column="1"
+                  SelectedIndex="0"
+                  SelectionChanged="_groupListView_SelectionChanged">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:MyRibbonGroup2">
+                        <TextBlock Text="{x:Bind Section}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+
+            <!-- Third list shows the settings in a group -->
+            <ListView ItemsSource="{x:Bind ((local:MyRibbonGroup2)_groupListView.SelectedItem), Mode=OneWay}"
+                  Grid.Column="2"
+                      ItemTemplateSelector="{StaticResource _settingViewTemplateSelector}">
+            </ListView>
+
+        </Grid>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,222 @@
+﻿<Page
+    x:Class="Tempo.Filters"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400" >
+
+    <StackPanel Background="Transparent">
+        <StackPanel.Resources>
+            <Thickness x:Key="GapMargin">0,15,0,0</Thickness>
+
+            <!--<local:List x:Name="listT">
+                <local:GroupT League="American">
+                    <local:Team Name="Detroit"/>
+                    <local:Team Name="Seattle"/>
+                </local:GroupT>
+
+                <local:GroupT League="National">
+                    <local:Team Name="New York"/>
+                    <local:Team Name="Chicago"/>
+                </local:GroupT>
+            </local:List>-->
+
+            <local:List x:Name="optionsList">
+                <local:MyRibbonGroup Section="Common">
+                    <CheckBox IsChecked="{x:Bind Settings.CaseSensitive, Mode=TwoWay}">
+                        <TextBlock>Case sensitive <Run Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}">(control+S)</Run></TextBlock>
+                    </CheckBox>
+
+                    <ComboBox 
+                        x:Name="_typeKindComboBox"
+                        Margin="{StaticResource GapMargin}"
+                        ItemsSource="{x:Bind Settings.TypeKindValues, Mode=Oneway}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Value"
+                        SelectedValue="{x:Bind SelectedTypeKind, Mode=TwoWay}"
+                        Header="Limit the search to specific kinds of types"
+                        >
+                    </ComboBox>
+
+                    <ComboBox 
+                        x:Name="_memberKindComboBox"
+                        Margin="{StaticResource GapMargin}"
+                        ItemsSource="{x:Bind Settings.MemberKindValues, Mode=Oneway}"
+                        DisplayMemberPath="Name"
+                        SelectedValuePath="Value"
+                        SelectedValue="{x:Bind SelectedMemberKind, Mode=TwoWay}"
+                        SelectionChanged="_memberKindComboBox_SelectionChanged"
+                        Header="Limit the search specific kinds of members"
+                        >
+                    </ComboBox>
+                </local:MyRibbonGroup>
+
+                <local:MyRibbonGroup Section="Search on">
+                    <CheckBox IsChecked="{x:Bind Settings.FilterOnReturnType, Mode=TwoWay}" Content="Return type"  
+                                        ToolTipService.ToolTip="Look at return types"/>
+                    <CheckBox IsChecked="{x:Bind Settings.FilterOnBaseType, Mode=TwoWay}" Content="Ancestors" 
+                                        ToolTipService.ToolTip="Look at ancestor types when checking types" />
+                    <CheckBox IsChecked="{x:Bind Settings.FilterOnParameters, Mode=TwoWay}" Content="Parameters" 
+                                        ToolTipService.ToolTip="Look at parameter names and types when checking members"/>
+                    <CheckBox IsChecked="{x:Bind Settings.FilterOnFullName, Mode=TwoWay}" Content="Full name" 
+                                        ToolTipService.ToolTip="Look at a type's full name with namespace" />
+                    <CheckBox IsChecked="{x:Bind Settings.FilterOnName, Mode=TwoWay}" Content="Name" 
+                                        ToolTipService.ToolTip="Look at type, member, and parameter names" />
+                    <CheckBox IsChecked="{x:Bind Settings.FilterOnAttributes, Mode=TwoWay}" Content="Attributes" 
+                                        ToolTipService.ToolTip="Look at attributes when checking types and members (this is a slower search)"/>
+                </local:MyRibbonGroup>
+
+                <local:MyRibbonGroup Section="Type has">
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasInterfaces, Mode=TwoWay}" Content="Interfaces" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasDefaultConstructor, Mode=TwoWay}" Content="Default constructor" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasNonDefaultConstructor, Mode=TwoWay}" Content="Non-default constructor" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasProtectedConstructors, Mode=TwoWay}" Content="Protected constructor" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasPublicConstructors, Mode=TwoWay}" Content="Public constructor" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasStaticConstructor, Mode=TwoWay}" Content="Static constructor" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasBaseType, Mode=TwoWay}" Content="Base type" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.ImplementsInternalInterface, Mode=TwoWay}" Content="Internal interfaces" />
+
+                </local:MyRibbonGroup>
+                
+                <local:MyRibbonGroup Section="Type is">
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsActivatable, Mode=TwoWay}" Content="Activatable" 
+                                        />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsGeneric, Mode=TwoWay}" Content="Open generic" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsSealedType, Mode=TwoWay}" Content="Sealed" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsAbstractType, Mode=TwoWay}" Content="Abstract" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsStaticClass, Mode=TwoWay}" Content="Static"
+                                        />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsMutableType, Mode=TwoWay}" Content="Mutable"
+                                        />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsMultiVersion, Mode=TwoWay}" Content="Multi-version"
+                                        />
+                </local:MyRibbonGroup>
+
+                <local:MyRibbonGroup Section="Parameters">
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasOutParameter, Mode=TwoWay}" Content="has out parm" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasMultipleOutParameters, Mode=TwoWay}" Content="has >1 out parm" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasInParameter, Mode=TwoWay}" Content="has in parm" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasRefParameter, Mode=TwoWay}" 
+                                                   Content="has ref parm" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasAgileParameter, Mode=TwoWay}" Content="has agile parm"  />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasInterfaceParameter, Mode=TwoWay}" Content="has interface parm" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasDelegateParameter, Mode=TwoWay}" Content="has delegate parm" />
+
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasMutableParameter, Mode=TwoWay}" 
+                                                  Content="Has mutable parm"
+                                        />
+
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasReturnValue, Mode=TwoWay}" Content="has retval" 
+                                                  />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasPrimitiveReturnValue, Mode=TwoWay}" Content="primitive retval" 
+                                        />
+
+                </local:MyRibbonGroup>
+
+                <local:MyRibbonGroup Section="Member is">
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IndexedProperty, Mode=TwoWay}" Content="Indexed property" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsStatic, Mode=TwoWay}" Content="Static member" 
+                              ToolTipService.ToolTip="(Not including enum fields)" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsProtected, Mode=TwoWay}" Content="Protected member" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsOverloaded, Mode=TwoWay}" Content="Overloaded" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.CanWrite, Mode=TwoWay}" Content="Writeable" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsDP, Mode=TwoWay}" Content="DependencyProperty" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsRoutedEvent, Mode=TwoWay}" Content="RoutedEvent" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsExplicit, Mode=TwoWay}" Content="Explicit" 
+                              ToolTipService.ToolTip="Explicit interface implementation" />
+
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsAsync, Mode=TwoWay}" Content="async" 
+                              ToolTipService.ToolTip="Is async" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsRemoteAsync, Mode=TwoWay}" Content="remote async" 
+                              ToolTipService.ToolTip="Is [RemoteAsync]" />
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.IsAddedMember, Mode=TwoWay}" Content="Added member"
+                              ToolTipService.ToolTip="A member that was added to a type. Members that were introduced in a version to a class from a prior version"/>
+                    <CheckBox IsThreeState="True" IsChecked="{x:Bind Settings.HasAddedSetter, Mode=TwoWay}" Content="Added property setter"
+                              ToolTipService.ToolTip="A property that has different getter and setter versions. A property and its getter can be introduced in one version, then a setter added in a later version"/>
+                </local:MyRibbonGroup>
+
+
+            </local:List>
+
+            <CollectionViewSource x:Name="cvs" Source="{x:Bind optionsList}" IsSourceGrouped="True"/>
+            <!--<CollectionViewSource x:Name="cvsT" Source="{x:Bind listT}" IsSourceGrouped="True"/>-->
+
+        </StackPanel.Resources>
+
+        <local:HeaderWithCommands Heading="Search filters" Visibility="{x:Bind local:Utils.VisibilityNot(IsFlyoutMode), Mode=OneWay }" />
+
+
+        <StackPanel Margin="{StaticResource ContentMargin}" >
+
+            <TextBlock Style="{StaticResource BodyTextBlockStyle}">
+                Reduce the number of search results by applying restrictions below
+            </TextBlock>
+
+            <Button Click="Reset2" Content="{x:Bind ResetButtonText, Mode=OneWay}" Margin="{StaticResource GapMargin}" />
+
+
+            <!-- Bugbug: have to constrain the width & height or things disappear in one or the other modes-->
+            <SemanticZoom VerticalAlignment="Top" MaxHeight="800" MaxWidth="600">
+                <SemanticZoom.ZoomedOutView>
+                    <ListView ItemsSource="{x:Bind cvs.View.CollectionGroups}" >
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock HorizontalAlignment="Left" 
+                                           Style="{StaticResource SubheaderTextBlockStyle}"
+                                           Text="{Binding Group.Section,TargetNullValue='(null)'}" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </SemanticZoom.ZoomedOutView>
+
+                <SemanticZoom.ZoomedInView>
+                    <ListView ItemsSource="{x:Bind cvs.View}" >
+                        <ListView.GroupStyle>
+                            <GroupStyle >
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate >
+                                        <TextBlock Text="{Binding Section}"/>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="UIElement">
+                                <StackPanel>
+                                    <ContentPresenter Content="{x:Bind}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </SemanticZoom.ZoomedInView>
+            </SemanticZoom>
+
+
+            <!--<TextBlock Style="{StaticResource SubheaderWithGap}">Namespace</TextBlock>
+            <ComboBox ItemsSource="{x:Bind Namespaces}"
+                        Margin="{StaticResource GapMargin}"
+                        x:Name="_namespaceComboBox"
+                        SelectedItem="{x:Bind SelectedNamespace, Mode=TwoWay}">
+                <ComboBox.Header>
+                    <StackPanel>
+                        -->
+            <!--<TextBlock Style="{StaticResource HeaderLabel}">Namespace</TextBlock>-->
+            <!--
+                        <TextBlock Style="{StaticResource HeaderBody}">
+                            Limit the search to a namespace tree.
+                        </TextBlock>
+                    </StackPanel>
+                </ComboBox.Header>
+            </ComboBox>-->
+
+
+
+        </StackPanel>
+    </StackPanel>
+
+</Page>

@@ -1,0 +1,27 @@
+﻿<!-- ToolTip that shows the members of a type -->
+    
+<ToolTip
+    x:Class="Tempo.ToolTipTypeView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <!-- Use x:Load to defer loading until the tooltip actually opens -->
+    <StackPanel x:Name="_root" x:Load="{x:Bind HasOpened, Mode=OneWay}">
+        <TextBlock Text="{x:Bind TypeViewModel.PrettyName}" FontWeight="ExtraBlack"/>
+        <TextBlock Text="{x:Bind TypeViewModel.Namespace}" Margin="0,0,0,10"  />
+
+        <!-- Only the non-empty lists show -->
+        <l:HeaderedDisappearingList2 Header="Properties" ItemsSource="{x:Bind TypeViewModel.Properties}" />
+        <l:HeaderedDisappearingList2 Header="Methods" ItemsSource="{x:Bind TypeViewModel.Methods}" />
+        <l:HeaderedDisappearingList2 Header="Events" ItemsSource="{x:Bind TypeViewModel.Events}" />
+        <l:HeaderedDisappearingList2 Header="Fields" ItemsSource="{x:Bind TypeViewModel.FieldsAsync}" />
+        <l:HeaderedDisappearingList2 Header="Constructors" ItemsSource="{x:Bind TypeViewModel.Constructors}" />
+        <l:HeaderedDisappearingList2 Header="Interfaces" ItemsSource="{x:Bind TypeViewModel.Interfaces}" />
+    </StackPanel>
+</ToolTip>

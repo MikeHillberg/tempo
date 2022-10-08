@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Tempo (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": false
+    },
+    "Tempo (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

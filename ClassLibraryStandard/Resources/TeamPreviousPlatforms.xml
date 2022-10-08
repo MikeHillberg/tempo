@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PreviousPlatforms xsi:schemaLocation="http://microsoft.com/schemas/Windows/SDK/PreviousPlatforms ./PreviousPlatformsXmlSchema.xsd" xmlns="http://microsoft.com/schemas/Windows/SDK/PreviousPlatforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.22000.0">
+    <DependentPlatform name="UAP" version="10.0.22000.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.UI.Core.Preview.Communications.PreviewCommunicationsContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.20348.0">
+    <DependentPlatform name="UAP" version="10.0.20348.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.19041.0">
+    <DependentPlatform name="UAP" version="10.0.19041.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.18362.0">
+    <DependentPlatform name="UAP" version="10.0.18362.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.17763.0">
+    <DependentPlatform name="UAP" version="10.0.17763.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.17134.0">
+    <DependentPlatform name="UAP" version="10.0.17134.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.16299.0">
+    <DependentPlatform name="UAP" version="10.0.16299.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="3.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="4.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.15063.0">
+    <DependentPlatform name="UAP" version="10.0.15063.0"/>
+    <VersionedContent>true</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="3.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.14393.0">
+    <DependentPlatform name="UAP" version="10.0.14393.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.Services.Maps.GuidanceContract" version="2.0.0.0"/>
+      <ApiContract name="Windows.Services.Maps.LocalSearchContract" version="3.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.10586.0">
+    <DependentPlatform name="UAP" version="10.0.10586.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.System.Profile.ProfileSharedModeContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+  <ApplicationPlatform name="PPIPlatform" friendlyName="Windows Team Extension SDK" version="10.0.10240.0">
+    <DependentPlatform name="UAP" version="10.0.10240.0"/>
+    <VersionedContent>false</VersionedContent>
+    <ContainedApiContracts>
+      <ApiContract name="Windows.System.Profile.ProfileSharedModeContract" version="1.0.0.0"/>
+    </ContainedApiContracts>
+  </ApplicationPlatform>
+</PreviousPlatforms>

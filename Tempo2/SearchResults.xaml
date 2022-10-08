@@ -1,0 +1,135 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.SearchResults"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    NavigationCacheMode="Required"
+    >
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="_root" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <Grid  x:Name="_wideMode" Visibility="{x:Bind IsWide, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{x:Bind SecondColumnWidth, Mode=OneWay}" />
+            </Grid.ColumnDefinitions>
+
+            <Grid x:Name="Pane0"   >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid.Tag>
+                    <!-- Flyout to show the Filters page -->
+                    <Flyout x:Name="_filtersFlyout" LightDismissOverlayMode="On" >
+                        
+                        <!-- The default width is a little too narrow -->
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style TargetType="FlyoutPresenter">
+                                <Setter Property="MaxWidth" Value="500"/>
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+                        
+                        <local:Filters IsFlyoutMode="True" />
+                    </Flyout>
+                </Grid.Tag>
+
+                <local:HeaderWithCommands 
+                    FilterVisibility="Visible"
+                    IsDarkBackground="{x:Bind IsWide, Mode=OneWay}"
+                    MsdnVisibility="Visible"
+                    IsExportVisible="True"
+                    IsScopeVisible="True"
+                    Results="{x:Bind Results, Mode=OneWay}"/>
+
+                <local:SearchBox 
+                    Margin="10,15,10,20"
+                    x:Name="_searchBox"
+                    Grid.Row="1"/>
+
+                <ListView x:Name="_listView"
+                          ItemsSource="{x:Bind Results, Mode=OneWay}"
+                          Grid.Row="2"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ItemClick="ListView_ItemClick" IsItemClickEnabled="True"
+                          SelectedItem="{x:Bind CurrentItem, Mode=TwoWay}"
+                          SelectionMode="{x:Bind CurrentSelectionMode, Mode=OneWay}"
+                          Background="{x:Bind PickColor(IsWide), Mode=OneWay}"
+                          ItemContainerStyle="{StaticResource MouseListViewItemStyle}"
+                          >
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:BaseViewModel">
+                            <local:SearchResult Result="{x:Bind}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <local:CommonAppBar IsFilterEnabled="True" 
+                                    Visibility="{x:Bind local:Utils.CollapsedIfTrue(IsWide), Mode=OneWay}"
+                                    Grid.Row="3"
+                                    />
+
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Grid.Row="2"
+                           Visibility="{x:Bind NothingFound, Mode=OneWay}">
+                    This space intentionally left blank; nothing found
+                </TextBlock>
+            </Grid>
+
+            <!-- bugbug: This gives an error due to the Utils.Not, probably the combination with Visibility magic
+                 "The name 'obj' does not exist in the current context"
+                 Visibility="{x:Bind local:Utils.Not(NothingFound), Mode=OneWay}"  -->
+            <Grid x:Name="Pane1" Grid.Column="1">
+                <Grid  
+                  Visibility="{x:Bind SomethingFound, Mode=OneWay}">
+                    <local:TypeOrMemberDetailView 
+                    x:Name="_detailsView" 
+                    IsTopLevel="{x:Bind local:Utils.Not(IsWide), Mode=OneWay}" />
+                </Grid>
+            </Grid>
+
+        </Grid>
+
+        <ContentControl x:Name="_skinnyMode"
+                        Visibility="{x:Bind local:Utils.CollapsedIfTrue(IsWide), Mode=OneWay}"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch" 
+                        VerticalContentAlignment="Stretch">
+            <ContentControl.ContentTransitions>
+                <TransitionCollection>
+                    <ContentThemeTransition />
+                </TransitionCollection>
+            </ContentControl.ContentTransitions>
+        </ContentControl>
+
+        <!-- Status bar -->
+        <StackPanel Background="{StaticResource ApplicationPageBackgroundThemeBrush}" Grid.Row="2">
+            <Rectangle Height="1" Fill="DarkGray" />
+            <StackPanel Orientation="Horizontal" >
+                <TextBlock Name="_statusTextBlock" Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
+                       ><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTotal, Mode=OneWay}" FontWeight="Bold"
+                       /><Run Text=" matches: " xml:space="preserve" FontWeight="Bold" 
+                       /><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTypes, Mode=OneWay}" 
+                       /> <Underline>t</Underline>ypes, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingProperties, Mode=OneWay}" 
+                       /> <Underline>p</Underline>roperties, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingMethods, Mode=OneWay}" 
+                       /> met<Underline>h</Underline>ods, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingEvents, Mode=OneWay}" 
+                       /> eve<Underline>n</Underline>ts, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingFields, Mode=OneWay}" 
+                       /> fields, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingConstructors, Mode=OneWay}" 
+                       /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" /> doc pages)</TextBlock>
+
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</local:MySerializableControl>

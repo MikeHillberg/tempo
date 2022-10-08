@@ -1,0 +1,293 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.UI.Popups;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+
+// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
+
+namespace Tempo
+{
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class TypeDetailPage : MySerializableControl
+    {
+        public TypeDetailPage()
+        {
+            this.InitializeComponent();
+            UpdateArrangementAndView();
+
+            SizeChanged += (s, e) =>
+            {
+                IsWide = (App.Window.Content as FrameworkElement).ActualWidth >= App.MinWidthForThreeColumns;
+            };
+        }
+
+        public bool IsWide
+        {
+            get { return (bool)GetValue(IsWideProperty); }
+            set { SetValue(IsWideProperty, value); }
+        }
+        public static readonly DependencyProperty IsWideProperty =
+            DependencyProperty.Register("IsWide", typeof(bool), typeof(TypeDetailPage), 
+                new PropertyMetadata(true, (s,e) => (s as TypeDetailPage).UpdateArrangementAndView()));
+
+        void UpdateArrangementAndView()
+        {
+            if (IsWide)
+            {
+                HeadingOrientation = Orientation.Horizontal;
+
+                // Content goes into the two-column Grid
+                _skinnyModeCol0.Content = null;
+                _skinnyModeCol1.Content = null;
+                _skinnyMode.Visibility = Visibility.Collapsed;
+
+                // bugbug: without this check the visual disappears
+                if (_wideModeCol0.Child != _membersList)
+                {
+                    _wideModeCol0.Child = _membersList;
+                }
+
+                // If a member is selected (like the property of a class), put it in the right column
+                if (_selectedMember != null)
+                {
+                    var view = App.GetViewFor(_selectedMember);
+                    view.DoActivate(_selectedMember);
+
+                    _wideModeCol1.Child = view;
+                }
+
+                // Other wise put the type info in the right column
+                else
+                {
+                    _wideModeCol1.Child = _typeInfo;
+                }
+
+                _wideMode.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                HeadingOrientation = Orientation.Vertical;
+
+                // Content goes into the two-item Pivot
+                _wideModeCol0.Child = null;
+                _wideModeCol1.Child = null;
+                _wideMode.Visibility = Visibility.Collapsed;
+
+                _skinnyModeCol0.Content = _membersList;
+                _skinnyModeCol1.Content = _typeInfo;
+                _skinnyMode.Visibility = Visibility.Visible;
+            }
+
+            // Global that tracks the current item to know what docs page to use
+            if (_selectedMember != null)
+            {
+                App.CurrentItem = _selectedMember;
+            }
+            else
+            {
+                App.CurrentItem = TypeVM;
+            }
+        }
+
+        public string DependentsTitle
+        {
+            get { return (string)GetValue(DependentsTitleProperty); }
+            set { SetValue(DependentsTitleProperty, value); }
+        }
+        public static readonly DependencyProperty DependentsTitleProperty =
+            DependencyProperty.Register("DependentsTitle", typeof(string), 
+                typeof(TypeDetailPage), new PropertyMetadata(""));
+
+        public IList<TypeViewModel> ReferencedBy
+        {
+            get { return (IList<TypeViewModel>)GetValue(ReferencedByProperty); }
+            set { SetValue(ReferencedByProperty, value); }
+        }
+        public static readonly DependencyProperty ReferencedByProperty =
+            DependencyProperty.Register("ReferencedBy", typeof(IList<TypeViewModel>), typeof(TypeDetailPage), new PropertyMetadata(null));
+
+
+
+        public TypeViewModel TypeVM
+        {
+            get { return (TypeViewModel)GetValue(TypeVMProperty); }
+            set { SetValue(TypeVMProperty, value); }
+        }
+        public static readonly DependencyProperty TypeVMProperty =
+            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailPage),
+                new PropertyMetadata(null, (s,e) => (s as TypeDetailPage).ResetSelectedMember()));
+
+        private void ResetSelectedMember()
+        {
+            _selectedMember = null;
+            UpdateArrangementAndView();
+        }
+
+        public GroupedTypeMembers GroupedTypeMembers
+        {
+            get { return (GroupedTypeMembers)GetValue(GroupedTypeMembersProperty); }
+            set { SetValue(GroupedTypeMembersProperty, value); }
+        }
+        public static readonly DependencyProperty GroupedTypeMembersProperty =
+            DependencyProperty.Register("GroupedTypeMembers", typeof(GroupedTypeMembers), typeof(TypeDetailPage),
+                new PropertyMetadata(null));
+
+
+        public IList<object> InfoDetails
+        {
+            get { return (IList<object>)GetValue(InfoDetailsProperty); }
+            set { SetValue(InfoDetailsProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for InfoDetails.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty InfoDetailsProperty =
+            DependencyProperty.Register("InfoDetails", typeof(IList<object>), typeof(TypeDetailPage), new PropertyMetadata(null));
+
+
+        protected override void OnActivated(object parameter)
+        {
+            TypeVM = parameter as TypeViewModel;
+        }
+
+
+
+        public Orientation HeadingOrientation
+        {
+            get { return (Orientation)GetValue(HeadingOrientationProperty); }
+            set { SetValue(HeadingOrientationProperty, value); }
+        }
+        public static readonly DependencyProperty HeadingOrientationProperty =
+            DependencyProperty.Register("HeadingOrientation", typeof(Orientation), typeof(TypeDetailPage), new PropertyMetadata(Orientation.Vertical));
+
+
+
+        protected override void OnReactivated(object parameter, object state)
+        {
+            TypeVM = parameter as TypeViewModel;
+
+            try
+            {
+                if (state == null)
+                {
+                    _scrollState = null;
+                    Debug.Assert(false);
+                }
+                else
+                {
+
+                    //TypeVM = UwpTypeViewModel.LookupByName(e.Parameter as string);
+
+                    var stateParts = (state as string).Split(',');
+                    Debug.Assert(stateParts.Length == 2);
+
+                    SelectedPivot = int.Parse(stateParts[1]);
+                    _scrollState = stateParts[0];
+
+                    // Bugbug: Loading hasn't happened yet
+                    Bindings.Initialize();
+
+                    _membersList.LoadScrollState(_scrollState);
+
+                    _scrollState = null;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                var d = new MessageDialog(ex.Message + "\n" + ex.StackTrace.ToString());
+                var t = d.ShowAsync();
+#endif
+            }
+
+
+        }
+
+        string _scrollState = null;
+
+        protected override object OnSuspending()
+        {
+            string relativeScrollPosition = null;
+
+            // bugbug: open a bug on this.  If the ListView hasn't been in layout yet, it throws on the
+            // GetRelativeScrollPosition call.
+            if (_scrollState != null)
+                relativeScrollPosition = _scrollState;
+            else
+            {
+                // bugbug:  Even with above check, still sometimes getting "ItemsPanelRoot is null"
+                try
+                {
+                    relativeScrollPosition = _membersList.SaveScrollState();
+                    Debug.Assert(relativeScrollPosition == null || !relativeScrollPosition.Contains(','));
+                }
+                catch (ArgumentException)
+                {
+                    relativeScrollPosition = "";
+                }
+            }
+
+            return relativeScrollPosition + "," + SelectedPivot.ToString();
+        }
+
+
+
+        public int SelectedPivot
+        {
+            get { return (int)GetValue(SelectedPivotProperty); }
+            set { SetValue(SelectedPivotProperty, value); }
+        }
+        public static readonly DependencyProperty SelectedPivotProperty =
+            DependencyProperty.Register("SelectedPivot", typeof(int), typeof(TypeDetailPage), new PropertyMetadata(0));
+
+        // bugbug
+        internal App Appp { get { return Application.Current as App; } }
+
+        public static void GoToItem(object item)
+        {
+            App.Navigate(item as MemberViewModel);
+        }
+
+        MemberViewModel _selectedMember = null;
+        private void _membersList_Navigated(TypeDetailPageMembersList sender, TypeNavigatedEventArgs args)
+        {
+            // In wide mode just update the second pane
+            if (IsWide)
+            {
+                _selectedMember = args.MemberViewModel;
+                UpdateArrangementAndView();
+            }
+
+            // In skinny mode do a navigate
+            else
+            {
+                App.Navigate(args.MemberViewModel);
+            }
+        }
+
+        Stack<int> _navigationStack = new Stack<int>();
+
+        private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            ResetSelectedMember();
+        }
+
+    }
+
+}

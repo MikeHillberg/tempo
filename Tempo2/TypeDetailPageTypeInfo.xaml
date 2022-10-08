@@ -1,0 +1,150 @@
+﻿<UserControl
+    x:Class="Tempo.TypeDetailPageTypeInfo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    >
+
+    <!-- bugbug:  UserControl.Background doesn't work -->
+
+    <ScrollViewer Padding="0,0,20,0"   Background="#f0f0f0">
+        <StackPanel >
+
+            <TextBlock Margin="0,20,0,0" Text="{x:Bind TypeVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" 
+                       IsTextSelectionEnabled="True" />
+
+            <local:StackListHeaderItem/>
+
+            <TextBlock local:CsSyntaxGenerator.TypeDeclaration="{x:Bind TypeVM, Mode=OneWay}"
+                           TextWrapping="Wrap"
+                       IsTextSelectionEnabled="True"
+                           />
+
+
+            <StackPanel Margin="0,10,0,0">
+
+                <local:StackListHeaderItem>Namespace</local:StackListHeaderItem>
+                <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">
+                    <Hyperlink Click="NamespaceClick"  >
+                        <Run Text="{x:Bind TypeVM.Namespace, Mode=OneWay}" />
+                    </Hyperlink>
+                </TextBlock>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _publicInterfacesList, Mode=OneWay}">
+                    <local:StackListHeaderItem >Interfaces</local:StackListHeaderItem>
+                    <ItemsControl x:Name="_publicInterfacesList" ItemsSource="{x:Bind TypeVM.PublicInterfaces, Mode=OneWay}" >
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:TypeViewModel">
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 
+                                           TextWrapping="Wrap"
+                                           IsTextSelectionEnabled="True" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _ancestorsList, Mode=OneWay}">
+                    <local:StackListHeaderItem>Ancestors</local:StackListHeaderItem>
+                    <ItemsControl ItemsSource="{x:Bind TypeVM.Ancestors, Mode=OneWay}" x:Name="_ancestorsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:TypeViewModel">
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _descendentsList, Mode=OneWay}" >
+                    <local:StackListHeaderItem >Descendants</local:StackListHeaderItem>
+                    <ItemsControl ItemsSource="{x:Bind TypeVM.Descendents, Mode=Oneway}" x:Name="_descendentsList" >
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:TypeViewModel">
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _referencedByItemsControl, Mode=OneWay}" >
+                    <local:StackListHeaderItem >Dependents</local:StackListHeaderItem>
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" IsTextSelectionEnabled="True"  >
+                                    <Run>Types that reference</Run> <Run Text="{x:Bind TypeVM.PrettyName, Mode=OneWay}" />
+                    </TextBlock>
+
+                    <ItemsControl ItemsSource="{x:Bind TypeVM.ReferencedByAsync, Mode=OneWay}" x:Name="_referencedByItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:TypeViewModel">
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _returnedByItemsControl, Mode=OneWay}" >
+                    <local:StackListHeaderItem >Returned by</local:StackListHeaderItem>
+                    <ItemsControl ItemsSource="{x:Bind TypeVM.ReturnedByAsync, Mode=OneWay}" x:Name="_returnedByItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:MemberViewModel">
+                                <TextBlock local:CsSyntaxGenerator.MemberName="{x:Bind Mode=OneWay}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel>
+                    <local:StackListHeaderItem>Version</local:StackListHeaderItem>
+                    <local:BuildNumberText MemberVM="{x:Bind TypeVM, Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind TypeVM.Contract, Mode=OneWay}" />
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _dllPath, Mode=OneWay}">
+                    <local:StackListHeaderItem>Activation info</local:StackListHeaderItem>
+
+                    <Grid ColumnDefinitions="Auto,*">
+                        <StackPanel>
+                            <TextBlock >DLL path:</TextBlock>
+                            <TextBlock>TrustLevel:</TextBlock>
+                            <TextBlock>CLSID:</TextBlock>
+                            <TextBlock>Activation:</TextBlock>
+                            <TextBlock>Threading:</TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                            <TextBlock Text="{x:Bind TypeVM.DllPath, Mode=OneWay}" x:Name="_dllPath" local:SearchHighlighter.IsEnabled="True" IsTextSelectionEnabled="True"/>
+                            <TextBlock Text="{x:Bind TypeVM.TrustLevel, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                            <TextBlock Text="{x:Bind TypeVM.ActivationType, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                            <TextBlock Text="{x:Bind TypeVM.Threading, Mode=OneWay}" IsTextSelectionEnabled="True"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}">
+                    <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                    <local:AttributesView2 
+                        x:Name="_attributesView"
+                        AttributeVMs="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(TypeVM.CustomAttributes), Mode=OneWay}"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                    <StackPanel>
+                        <TextBlock Text="{x:Bind ToFile(TypeVM.AssemblyLocation), Mode=OneWay}"  IsTextSelectionEnabled="True"/>
+                        <TextBlock Text="{x:Bind ToDirectory(TypeVM.AssemblyLocation), Mode=OneWay}"  IsTextSelectionEnabled="True"/>
+
+                        <TextBlock Margin="0,10,0,0"><Run Text="{x:Bind TypeVM.TotalMembers, Mode=OneWay}" IsTextScaleFactorEnabled="True" /> total members</TextBlock>
+
+                    </StackPanel>
+                </StackPanel>
+
+
+            </StackPanel>
+        </StackPanel>
+
+    </ScrollViewer>
+</UserControl>

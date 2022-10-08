@@ -1,0 +1,72 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.TypeDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="White" PointerPressed="Grid_PointerPressed">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="2" >
+            <local:HeaderWithCommands x:Name="_detailViewHeading"
+                        Heading="{x:Bind TypeVM.PrettyName, Mode=OneWay}"
+                        SubHeading="{x:Bind TypeVM.Namespace, Mode=OneWay}"
+                        SubSubHeading="{x:Bind TypeVM.TypeKindString, Mode=OneWay}"
+                        IsPreview="{x:Bind TypeVM.IsPreview, Mode=OneWay}"
+                        ShowBack="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
+                        MsdnVisibility="Visible"
+                        MemberVM="{x:Bind TypeVM, Mode=OneWay}"
+                        Orientation="{x:Bind HeadingOrientation, Mode=OneWay}"/>
+        </Border>
+        
+        <Grid Grid.Row="1" x:Name="_wideMode" 
+              Margin="{StaticResource ContentMarginMinusHeight}" 
+              Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"   />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="_wideModeCol0" Padding="0">
+                <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol0 -->
+                <local:TypeDetailPageMembersList 
+                    Navigated="_membersList_Navigated"
+                    x:Name="_membersList" 
+                    TypeVM="{x:Bind TypeVM, Mode=OneWay}" 
+                    IsSummaryDisabled="{x:Bind IsWide, Mode=OneWay}" />
+            </Border>
+
+            <Border x:Name="_wideModeCol1" Padding="40,0,0,0" Grid.Column="1" Background="#f0f0f0">
+                <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
+                <local:TypeDetailPageTypeInfo x:Name="_typeInfo"  TypeVM="{x:Bind TypeVM, Mode=OneWay}"  />
+            </Border>
+        </Grid>
+
+        <Pivot Grid.Row="1" x:Name="_skinnyMode" 
+               SelectedIndex="{x:Bind SelectedPivot, Mode=TwoWay}"  >
+            <PivotItem x:Name="_skinnyModeCol0"  Header="Members" >
+                
+            </PivotItem>
+
+            <PivotItem x:Name="_skinnyModeCol1" Header="Info" >
+
+            </PivotItem>
+        </Pivot>
+
+        <!--<local:CommonAppBar 
+            Grid.Row="2"
+            MemberVM="{x:Bind TypeVM, Mode=OneWay}" 
+            MsdnVisibility="Visible" HomeVisibility="Visible"  />-->
+
+
+    </Grid>
+
+</local:MySerializableControl>

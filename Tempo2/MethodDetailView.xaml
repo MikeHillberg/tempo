@@ -1,0 +1,58 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.MethodDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer >
+            <StackPanel  >
+
+                <local:HeaderWithCommands Heading="{x:Bind MethodVM.Name, Mode=OneWay}"
+                                     SubHeading="{x:Bind MethodVM.DeclaringType.Name, Mode=OneWay}"
+                                     SubSubHeading="method"
+                                     ShowBack="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
+                                     Orientation="{x:Bind local:Utils.HorizontalIf(local:MainPage.AdaptiveSettings.IsWide), Mode=OneWay}"/>
+
+                <TextBlock Margin="{StaticResource ContentMargin}"
+                           Text="{x:Bind MethodVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" />
+
+                <!-- Horizontal line -->
+                <ListViewHeaderItem/>
+
+                <!-- Bugbug: had to put it all in code -->
+                <RichTextBlock Style="{StaticResource SampleCodeStyleRTB}"
+                           Margin="{StaticResource ContentMarginMinusHeight}"
+                           local:CsSyntaxGenerator.Member="{x:Bind MethodVM, Mode=OneWay}"
+                           TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+
+
+                <StackPanel Margin="{StaticResource ContentMargin}">
+                    <local:StackListHeaderItem>Version</local:StackListHeaderItem>
+                    <local:BuildNumberText MemberVM="{x:Bind MethodVM, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind MethodVM.Contract, Mode=OneWay}" />
+                </StackPanel>
+
+                <StackPanel Margin="{StaticResource ContentMargin}">
+                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                    <local:MemberMore MemberVM="{x:Bind MethodVM, Mode=Oneway}"/>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--<local:CommonAppBar MemberVM="{x:Bind MethodVM, Mode=OneWay}" Grid.Row="1"
+                            MsdnVisibility="Visible"  />-->
+
+    </Grid>
+</local:MySerializableControl>

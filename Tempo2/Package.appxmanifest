@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" 
+		 xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" 
+		 xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+		 xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+		 IgnorableNamespaces="uap mp">
+	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.26.0" />
+	<mp:PhoneIdentity PhoneProductId="47026e9e-b984-4376-8a4a-ca1268b745b9" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+	<Properties>
+		<DisplayName>Tempo of UWP</DisplayName>
+		<PublisherDisplayName>CoffeeZeit</PublisherDisplayName>
+		<Logo>Assets\StoreLogo.png</Logo>
+	</Properties>
+	<Dependencies>
+		<TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.0.0" MaxVersionTested="10.0.19041.0" />
+	</Dependencies>
+	<Resources>
+		<Resource Language="x-generate" />
+	</Resources>
+	<Applications>
+		<Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
+			<uap:VisualElements DisplayName="Tempo of UWP" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="This app lets you search and display the APIs for the Universal Windows Platform (UWP)." BackgroundColor="transparent">
+				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Tempo of the UWP (Preview)" Square71x71Logo="Assets\Square71x71Logo.png">
+				</uap:DefaultTile>
+				<uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#8894C6" />
+			</uap:VisualElements>
+
+			<!-- To debug the AppExecutionAlias launch, pass "/waitForDebugger" on the command line, then attach with a debugger-->
+			<!-- Note that when you rebuild you need to deploy for it to show up using this extension -->
+			<Extensions>
+				<uap3:Extension Category="windows.appExecutionAlias" Executable="TempoUWP.exe" EntryPoint="Windows.FullTrustApplication">
+					<uap3:AppExecutionAlias>
+						<desktop:ExecutionAlias Alias="tempo.exe" />
+					</uap3:AppExecutionAlias>
+				</uap3:Extension>
+			</Extensions>
+		</Application>
+	</Applications>
+	<Capabilities>
+		<Capability Name="internetClient" />
+	</Capabilities>
+</Package>

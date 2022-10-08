@@ -1,0 +1,43 @@
+﻿<Page
+    x:Class="Tempo.TypeRampIllustration"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.BottomAppBar>
+        <local:CommonAppBar />
+    </Page.BottomAppBar>
+
+    <Page.Resources>
+        <Thickness x:Key="tbMargin">0,10,0,0</Thickness>
+
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <local:HeaderWithCommands Heading="Type ramp illustrations"/>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="1"
+                      Margin="{StaticResource ContentMargin}">
+            <StackPanel Spacing="10">
+                <TextBlock >Text block styles defined as Xaml resources</TextBlock>
+
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource HeaderTextBlockStyle}" IsTextSelectionEnabled="True">HeaderTextBlockStyle</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource SubheaderTextBlockStyle}" IsTextSelectionEnabled="True">SubheaderTextBlockStyle</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource TitleTextBlockStyle}" IsTextSelectionEnabled="True">TitleTextBlockStyle</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource SubtitleTextBlockStyle}" IsTextSelectionEnabled="True">SubtitleTextBlockStyle</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource BaseTextBlockStyle}" IsTextSelectionEnabled="True">BaseTextBlockStyle</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource BodyTextBlockStyle}" IsTextSelectionEnabled="True">BodyTextBlockStyle</TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource CaptionTextBlockStyle}" IsTextSelectionEnabled="True">CaptionTextBlockStyle</TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</Page>

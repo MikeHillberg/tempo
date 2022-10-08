@@ -1,0 +1,2 @@
+MainPackage=E:\repos\TempoOnline\UwpTempo2\bin\ARM\Release\UwpTempo2_1.0.25.0_ARM.appx
+SymbolPackage=E:\repos\TempoOnline\UwpTempo2\obj\ARM\Release\Symbols\UwpTempo2_1.0.25.0_ARM.appxsym
