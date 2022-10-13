@@ -649,6 +649,7 @@ namespace Tempo
             new CheckForOutParameters(),
             new CheckForAddedSetters(),
             //new CheckForCondition(),
+            new CheckForNotInBaseline()
         };
 
         static public IEnumerable<MemberViewModel> GetMembersHelper(SearchExpression searchExpression, int iteration)
@@ -941,6 +942,11 @@ namespace Tempo
                 matchesCheckers &= matchesT;
                 meaningfulMatch |= meaningfulMatchT;
                 abortType |= abortTypeT;
+
+                if(abortType)
+                {
+                    return;
+                }
 
                 // bugbug
                 if (checker.GetType().Name == "CheckForFilterOnType")

@@ -11,13 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\MiddleweightReflection\MiddleweightReflection\MiddleweightReflection.csproj" />
+    <ProjectReference Include="..\..\..\MiddleweightReflection\MiddleweightReflection\MiddleweightReflection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MiddleweightReflection">
-      <HintPath>..\..\MiddleweightReflection\MiddleweightReflection\obj\Debug\netstandard2.0\MiddleweightReflection.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\WindowsBase.dll</HintPath>
     </Reference>
