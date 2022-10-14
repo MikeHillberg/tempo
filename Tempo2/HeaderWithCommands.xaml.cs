@@ -445,9 +445,25 @@ namespace Tempo
         public static readonly DependencyProperty ApiLabelProperty =
             DependencyProperty.Register("ApiLabel", typeof(string), typeof(HeaderWithCommands), new PropertyMetadata("Windows"));
 
-        private void CopyToClipboard(object sender, RoutedEventArgs e)
+        private void CopyToClipboardAsNameNamespace(object sender, RoutedEventArgs e)
         {
-            var content = CopyExport.GetResultsForClipboard(Results, csv: false, flat: false); // this.Settings.Flat);
+            var content = CopyExport.ConvertItemsToABigString(Results, asCsv: false, flat: false); // this.Settings.Flat);
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(content);
+            Clipboard.SetContent(dataPackage);
+        }
+
+        private void CopyToClipboardAsFlat(object sender, RoutedEventArgs e)
+        {
+            var content = CopyExport.ConvertItemsToABigString(Results, asCsv: false, flat: true);
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(content);
+            Clipboard.SetContent(dataPackage);
+        }
+
+        private void CopyToClipboardGroupedByNamespace(object sender, RoutedEventArgs e)
+        {
+            var content = CopyExport.ConvertItemsToABigString(Results, asCsv: false, flat: false, groupByNamespace: true);
             var dataPackage = new DataPackage();
             dataPackage.SetText(content);
             Clipboard.SetContent(dataPackage);

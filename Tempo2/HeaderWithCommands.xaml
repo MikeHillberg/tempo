@@ -82,7 +82,13 @@
                 <SymbolIcon Symbol="Copy"/>
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem Text="Copy results to clipboard" Click="CopyToClipboard"/>
+                        <MenuFlyoutItem Text="Copy results to clipboard" Click="CopyToClipboardAsNameNamespace"/>
+                        <MenuFlyoutSubItem Text="Copy results to clipboard, with options" >
+                            <MenuFlyoutItem Text='Group by type, format as "Name (Namespace)"' Click="CopyToClipboardAsNameNamespace"/>
+                            <MenuFlyoutItem Text='Group by type, format as "Full Name"' Click="CopyToClipboardAsFlat"/>
+                            <MenuFlyoutItem Text='Group by namespace then type' Click="CopyToClipboardGroupedByNamespace"/>
+                        </MenuFlyoutSubItem>
+                        <MenuFlyoutSeparator/>
                         <MenuFlyoutItem Text="Open in Excel" Click="OpenInExcel"/>
                     </MenuFlyout>
                 </AppBarButton.Flyout>

@@ -11,7 +11,7 @@ using System.Windows;
 namespace Tempo
 {
 
-    public  class ExportHelper
+    public class ExportHelper
     {
         List<string> _keys = new List<string>();
         List<Dictionary<string, string>> _rows = new List<Dictionary<string, string>>();
@@ -32,7 +32,7 @@ namespace Tempo
         {
             var sb = new StringBuilder();
 
-            foreach(var key in _keys)
+            foreach (var key in _keys)
             {
                 sb.Append(key);
                 sb.Append(",");
@@ -41,7 +41,7 @@ namespace Tempo
 
             foreach (var row in _rows)
             {
-                foreach(var key in _keys)
+                foreach (var key in _keys)
                 {
                     if (row.TryGetValue(key, out var value))
                     {
@@ -54,7 +54,7 @@ namespace Tempo
             }
 
             return sb.ToString();
-         }
+        }
 
         public void AddRow()
         {
@@ -149,23 +149,23 @@ namespace Tempo
                         helper.AppendCell(nameKey, $"{prettyName}");
                         helper.AppendCell(declaringTypeKey, memberBaseVM.DeclaringType.PrettyName);
 
-                        if(methodVM != null)
+                        if (methodVM != null)
                         {
                             helper.AppendCell(returnTypeKey, methodVM.ReturnType.PrettyName);
                         }
-                        
+
                     }
-                    else if(propertyVM != null)
+                    else if (propertyVM != null)
                     {
                         helper.AppendCell(nameKey, propertyVM.PrettyName);
                         helper.AppendCell(returnTypeKey, propertyVM.PropertyType.PrettyName);
                     }
-                    else if(eventVM != null)
+                    else if (eventVM != null)
                     {
                         helper.AppendCell(nameKey, eventVM.PrettyName);
                         helper.AppendCell(returnTypeKey, eventVM.EventHandlerType.PrettyName);
                     }
-                    else if(fieldVM != null)
+                    else if (fieldVM != null)
                     {
                         helper.AppendCell(nameKey, fieldVM.PrettyName);
                         helper.AppendCell(returnTypeKey, fieldVM.FieldType.PrettyName);
@@ -198,10 +198,14 @@ namespace Tempo
             return helper.ToString();
         }
 
-        public static string GetResultsForClipboard(
+        /// <summary>
+        /// Take a list of items (from the search results) and produce a string for the clipboard or Excel
+        /// </summary>
+        public static string ConvertItemsToABigString(
             IEnumerable itemsIn,
-           bool csv, 
-            bool flat)
+            bool asCsv,
+            bool flat,
+            bool groupByNamespace = false)
         {
             const string separator = ",";
 
@@ -209,158 +213,166 @@ namespace Tempo
             StringBuilder typeTableText;
             typeTableText = memberTableText;
 
-            var lastWasType = false;
+            IEnumerable<BaseViewModel> itemsTemp, items;
+            itemsTemp = from object i in itemsIn select i as BaseViewModel;
 
-            IEnumerable<BaseViewModel> itemsT, items;
-            itemsT = from object i in itemsIn // listBox.Items
-                         select i as BaseViewModel;
-
-            if (csv)
+            // Set 'items' to 'itemsIn', possibly doing some sorting first
+            if (asCsv || groupByNamespace)
             {
-                items = from i in itemsT
+                items = from i in itemsTemp
                         orderby (i as BaseViewModel).DeclaringType.Namespace,
                                 (i as BaseViewModel).DeclaringType.Name
                         select i;
 
-                memberTableText.AppendLine("Kind,Version,Namespace,Type,Member,Return,Parameters");
             }
             else
             {
-                items = itemsT;
+                items = itemsTemp;
             }
 
-            bool showedMembers = false;
+            // If outputting CSV, create a header row
+            if (asCsv)
+            {
+                memberTableText.AppendLine("Kind,Version,Namespace,Type,Member,Return,Parameters");
+            }
 
+            // Stringize each item
+
+            string lastNamespace = null;
+            bool showedMembers = false;
             foreach (var item in items)
             {
-                if (item is TypeViewModel && !lastWasType)
-                {
-                    lastWasType = true;
-                }
-                else
-                    lastWasType = false;
+                var itemAsType = item as TypeViewModel;
 
-                if (!csv)
+                // If grouping by namespace, write it out when we see a new one
+                var isNewNamespace = false;
+                if (lastNamespace != item.DeclaringType.Namespace && groupByNamespace)
                 {
-                    if (!(item is TypeViewModel))
-                        memberTableText.Append("    ");
-                }
+                    isNewNamespace = true;
 
-                {
-                    if (item is TypeViewModel)
+                    // Write a blank line, except before the very first namespace
+                    if (lastNamespace != null)
                     {
-                        if (showedMembers && true) // copyToClipboard)
-                        {
-                            typeTableText.AppendLine();
-                        }
-                        showedMembers = false;
+                        memberTableText.AppendLine();
+                    }
 
-                        AppendType(
-                            csv,
-                            typeTableText,
-                            memberTableText,
-                            item as TypeViewModel,
-                            flat);
+                    memberTableText.AppendLine(item.DeclaringType.Namespace);
+
+                }
+                lastNamespace = item.DeclaringType.Namespace;
+
+                // Indentation (if not CSV)
+                if (!asCsv)
+                {
+                    // Indent members relative to their declaring type.
+                    // If grouping by namespace, indent types some, members more
+                    if (itemAsType == null)
+                    {
+                        memberTableText.Append(groupByNamespace ? "        " : "    ");
+                    }
+                }
+
+                // Output types
+                if (item is TypeViewModel)
+                {
+                    // Add a blank line of whitespace before this type if the previous type listed members,
+                    // of if we just wrote out a namespace name
+                    if (showedMembers || isNewNamespace)
+                    {
+                        typeTableText.AppendLine();
+                    }
+                    showedMembers = false;
+
+                    // Write out the type
+                    AppendType(
+                        asCsv,
+                        typeTableText,
+                        memberTableText,
+                        item as TypeViewModel,
+                        flat,
+                        groupByNamespace);
+
+                }
+
+                // Output members
+                else
+                {
+                    showedMembers = true;
+                    var vm = item as MemberViewModel;
+
+                    if (asCsv)
+                    {
+                        // For CSV output, write out several columns
+
+                        memberTableText.Append(item.MemberKind.ToString());
+                        memberTableText.Append(separator);
+
+                        memberTableText.AppendQuoted(item.VersionFriendlyName);
+                        memberTableText.Append(separator);
+
+                        memberTableText.Append(vm.DeclaringType.Namespace);
+                        memberTableText.Append(separator);
+
+                        memberTableText.AppendQuoted(vm.DeclaringType.Name);
+                        memberTableText.Append(separator);
+
+                        memberTableText.Append(vm.PrettyName);
+                        memberTableText.Append(separator);
+
+                        memberTableText.AppendQuoted(vm.ReturnType.PrettyName);
+                        memberTableText.Append(separator);
+
+                        IList<ParameterViewModel> parameters = null;
+                        if (vm is MethodViewModel)
+                            parameters = (vm as MethodViewModel).Parameters;
+                        else if (vm is ConstructorViewModel)
+                            parameters = (vm as ConstructorViewModel).Parameters;
+
+                        if (parameters != null)
+                        {
+                            memberTableText.Append(GetParametersAsCsvSafeString(parameters, includeParameterNames: true));
+                        }
+
+                        else if (vm is PropertyViewModel)
+                        {
+                            if ((vm as PropertyViewModel).CanWrite)
+                                memberTableText.Append("{get|set}");
+                            else
+                                memberTableText.Append("{get}");
+                        }
+
+
+                        memberTableText.AppendLine("");
 
                     }
+
                     else
                     {
-                        showedMembers = true;
-                        var vm = item as MemberViewModel;
+                        // Were not writing out CSV
 
-                        if (csv)
+                        // In flat mode write out Namespace.TypeName.MemberName
+                        if (flat)
                         {
-                            {
-                                memberTableText.Append(item.MemberKind.ToString());
-                                memberTableText.Append(separator);
-
-                                memberTableText.AppendQuoted(item.VersionFriendlyName);
-                                memberTableText.Append(separator);
-
-                                memberTableText.Append(vm.DeclaringType.Namespace);
-                                memberTableText.Append(separator);
-
-                                memberTableText.AppendQuoted(vm.DeclaringType.Name);
-                                memberTableText.Append(separator);
-
-                                memberTableText.Append(vm.PrettyName);
-                                memberTableText.Append(separator);
-
-                                memberTableText.AppendQuoted(vm.ReturnType.PrettyName);
-                                memberTableText.Append(separator);
-
-                                IList<ParameterViewModel> parameters = null;
-                                if (vm is MethodViewModel)
-                                    parameters = (vm as MethodViewModel).Parameters;
-                                else if (vm is ConstructorViewModel)
-                                    parameters = (vm as ConstructorViewModel).Parameters;
-
-                                if (parameters != null)
-                                {
-                                    memberTableText.Append(GetParametersAsCsvSafeString(parameters, includeParameterNames : true));
-                                    /*
-                                    bool first = true;
-                                    memberTableText.Append("(");
-
-                                    foreach (var parameter in parameters)
-                                    {
-                                        if (first)
-                                            first = false;
-                                        else
-                                            memberTableText.Append("|");
-
-                                        memberTableText.AppendQuoted(
-                                            parameter.ParameterType.PrettyName + " "
-                                            + parameter.Name);
-                                    }
-
-                                    memberTableText.Append(")");
-                                    */
-                                }
-
-                                else if (vm is PropertyViewModel)
-                                {
-                                    if ((vm as PropertyViewModel).CanWrite)
-                                        memberTableText.Append("{get|set}");
-                                    else
-                                        memberTableText.Append("{get}");
-                                }
-                            }
-
-                            memberTableText.AppendLine("");
-
+                            memberTableText.AppendLine(
+                                (item as BaseViewModel).DeclaringType.PrettyFullName
+                                + "."
+                                + (item as BaseViewModel).PrettyName);
                         }
+                        
+                        // When not flat mode, just write out the type name
                         else
                         {
-                            if (flat)//(this.Settings.Flat)
-                            {
-                                memberTableText.AppendLine(
-                                    (item as BaseViewModel).DeclaringType.PrettyFullName
-                                    + "."
-                                    + (item as BaseViewModel).PrettyName);
-                            }
-                            else
-                            {
-                                memberTableText.AppendLine((item as BaseViewModel).PrettyName);  //   (selectedItem.ToString());
-                            }
+                            memberTableText.AppendLine((item as BaseViewModel).PrettyName);
                         }
                     }
                 }
             }
 
-            string results = null;
-            results = memberTableText.ToString();
-
-            //if (copyToClipboard)
-            //{
-            //    Clipboard.SetText(results);
-            //}
-
-            return results;
+            return memberTableText.ToString();
         }
 
 
-        static string GetParametersAsCsvSafeString(IList<ParameterViewModel> parameters, bool includeParameterNames )
+        static string GetParametersAsCsvSafeString(IList<ParameterViewModel> parameters, bool includeParameterNames)
         {
             var sb = new StringBuilder();
             bool first = true;
@@ -385,19 +397,20 @@ namespace Tempo
         }
 
         static private void AppendType(
-            bool csv,
+            bool asCsv,
             StringBuilder typeTableText,
             StringBuilder memberTableText,
             TypeViewModel type,
-            bool flat)
+            bool flat,
+            bool groupByNamespace)
         {
             const string separator = ",";
             typeTableText = memberTableText;
 
-            if (csv)
-            {
-                // Type:8.0 (6.2):Windows.Storage.Search:StorageFileQueryResult:3
 
+            // For CSV, write out several columns
+            if (asCsv)
+            {
                 typeTableText.Append(type.MemberKind.ToString());
                 typeTableText.Append(separator);
 
@@ -421,10 +434,20 @@ namespace Tempo
 
                 typeTableText.AppendLine("");
             }
-            else if (flat) //(this.Settings.Flat)
+
+            // For flat, write out: Namespace.Name
+            else if (flat)
             {
                 typeTableText.AppendLine((type as TypeViewModel).PrettyFullName);
             }
+
+            // When grouping by namespace, just write out Name
+            else if (groupByNamespace)
+            {
+                typeTableText.AppendLine($"    {(type as TypeViewModel).PrettyName}");
+            }
+
+            // Otherwise, write out: Name (Namespace)
             else
             {
                 typeTableText.Append((type as TypeViewModel).PrettyName);
