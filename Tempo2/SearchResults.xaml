@@ -9,7 +9,8 @@
     NavigationCacheMode="Required"
     >
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="_root" >
+    <!-- This has a transparent background so that the Window Mica backdrop can shine through -->
+    <Grid  x:Name="_root" >
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -57,6 +58,7 @@
                     x:Name="_searchBox"
                     Grid.Row="1"/>
 
+                <!-- No Background here so that Mica can be seen -->
                 <ListView x:Name="_listView"
                           ItemsSource="{x:Bind Results, Mode=OneWay}"
                           Grid.Row="2"
@@ -64,10 +66,8 @@
                           ItemClick="ListView_ItemClick" IsItemClickEnabled="True"
                           SelectedItem="{x:Bind CurrentItem, Mode=TwoWay}"
                           SelectionMode="{x:Bind CurrentSelectionMode, Mode=OneWay}"
-                          Background="{x:Bind PickColor(IsWide), Mode=OneWay}"
                           ItemContainerStyle="{StaticResource MouseListViewItemStyle}"
                           >
-
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:BaseViewModel">
                             <local:SearchResult Result="{x:Bind}" />

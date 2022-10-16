@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.System;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -61,6 +62,9 @@ namespace Tempo
         }
 
 
+        /// <summary>
+        /// Show teaching tips for this page, if appropriate
+        /// </summary>
         void ShowTeachingTips()
         {
             var shouldContinue = TeachingTips.TryShow(
@@ -85,23 +89,6 @@ namespace Tempo
             if (!shouldContinue)
                 return;
 
-        }
-
-        /// <summary>
-        ///  TeachingTip demo
-        /// </summary>
-        private void ShowDemoTeachingTip(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
-        {
-            var tip = new TeachingTip()
-            {
-                Title = "Pick your own files",
-                Subtitle = "View the APIs in nupkg/DLLs/WinMDs that you pick. For example download a nupkg from nuget.org and view its APIs",
-                Target = _customFileLabel
-            };
-
-            _root.Children.Add(tip);
-            tip.Closed += (_, __) => _root.Children.Remove(tip);
-            tip.IsOpen = true;
         }
 
         // mikehill_ua:
@@ -194,6 +181,8 @@ namespace Tempo
             // Wait until now to process the command line, because until now we didn't have a XamlRoot,
             // and without that we can't show an error dialog
             App.Instance.ProcessCommandLine();
+
+            MainWindow.Instance.SetMicaBackdrop();
         }
 
         static public event EventHandler MainPageLoaded;
@@ -382,6 +371,30 @@ namespace Tempo
             //}
             App.Instance.BaselineFilenames = new string[0]; //null;
 
+        }
+
+        /// <summary>
+        /// Useless teaching tip just to show a demo of what a teaching tip looks like
+        /// </summary>
+        
+        private void TeachingTipDemo_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // The normal teaching tip behavior is to only show once. This is here just to be able to 
+            // demo at any time by doing a Control+Shift+MouseClick
+
+            if(e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control|VirtualKeyModifiers.Shift))
+            {
+                var tip = new TeachingTip()
+                {
+                    Title = "Pick your own files",
+                    Subtitle = "View the APIs in nupkg/DLLs/WinMDs that you pick. For example download a nupkg from nuget.org and view its APIs",
+                    Target = _customFileLabel
+                };
+
+                _root.Children.Add(tip);
+                tip.Closed += (_, __) => _root.Children.Remove(tip);
+                tip.IsOpen = true;
+            }
         }
     }
 }

@@ -175,7 +175,8 @@ namespace Tempo
                     App.GoBack();
             };
 
-            // Why are these accelerators doing key input rather than KeyboardAccelerator?
+            // Butbug: why are these accelerators doing key input rather than KeyboardAccelerator?
+            // Is it because accelerators cause too many tooltips?
             RootFrame.KeyDown += (s, e2) =>
             {
                 if (e2.Handled)
