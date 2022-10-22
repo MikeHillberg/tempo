@@ -33,6 +33,9 @@
 						<desktop:ExecutionAlias Alias="tempo.exe" />
 					</uap3:AppExecutionAlias>
 				</uap3:Extension>
+				<uap:Extension Category="windows.protocol">
+					<uap:Protocol Name="tempo"/>
+				</uap:Extension>
 			</Extensions>
 		</Application>
 	</Applications>

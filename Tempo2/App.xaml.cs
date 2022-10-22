@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Text;
+using Windows.ApplicationModel.Activation;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -72,23 +73,59 @@ namespace Tempo
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
         {
+            AppActivationArguments activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+
+            // Is this the first app instance or a secondary?
+            // If it's a secondary we'll forward to the existing and then exit
+            var keyInstance = AppInstance.FindOrRegisterForKey("main");
+            if (!keyInstance.IsCurrent)
+            {
+                // This isn't the existing app instance, so redirect and go away
+
+                // Call RedirectActivationToAsync to forward this activation to the existing instance.
+                // We need to ensure that that completes before we exit this process.
+                // We can't wait for the async call to complete on this thread, because we don't have 
+                // a dispatcher running (for the async to raise Completed on).
+                // So run it on a separate thread, and use a semaphore to block waiting on it to complete.
+
+                var sem = new Semaphore(0, 1);
+                _ = Task.Run(() =>
+                {
+                    keyInstance.RedirectActivationToAsync(activationArgs).AsTask().Wait();
+                    sem.Release();
+                });
+
+                // Wait on the main thread for the Redirect thread to complete
+                sem.WaitOne();
+
+                Process.GetCurrentProcess().Kill();
+            }
+
+            // If we get to this point, this process is the first instance of this app
+
+            // The Activated event will raise if another process calls RedirectActivationToAsync to redirect
+            // activation to here
+            keyInstance.Activated += OnRedirected;
+
+
+
             // TODO This code defaults the app to a single instance app. If you need multi instance app, remove this part.
             // Read: https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/guides/applifecycle#single-instancing-in-applicationonlaunched
             // If this is the first instance launched, then register it as the "main" instance.
             // If this isn't the first instance launched, then "main" will already be registered,
             // so retrieve it.
-            var mainInstance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("main");
+            //var mainInstance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("main");
             var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
 
-            // If the instance that's executing the OnLaunched handler right now
-            // isn't the "main" instance.
-            if (!mainInstance.IsCurrent)
-            {
-                // Redirect the activation (and args) to the "main" instance, and exit.
-                await mainInstance.RedirectActivationToAsync(activatedEventArgs);
-                System.Diagnostics.Process.GetCurrentProcess().Kill();
-                return;
-            }
+            //// If the instance that's executing the OnLaunched handler right now
+            //// isn't the "main" instance.
+            //if (!mainInstance.IsCurrent)
+            //{
+            //    // Redirect the activation (and args) to the "main" instance, and exit.
+            //    await mainInstance.RedirectActivationToAsync(activatedEventArgs);
+            //    System.Diagnostics.Process.GetCurrentProcess().Kill();
+            //    return;
+            //}
 
             // TODO This code handles app activation types. Add any other activation kinds you want to handle.
             // Read: https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/guides/applifecycle#file-type-association
@@ -96,7 +133,6 @@ namespace Tempo
             //{
             //    OnFileActivated(activatedEventArgs);
             //}
-
 
             // Initialize MainWindow here
             Window = new MainWindow();
@@ -127,7 +163,19 @@ namespace Tempo
             WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Window);
 
             FinishLaunch();
+
         }
+
+
+        /// <summary>
+        /// This is called when a launch has been redirected to this process
+        /// </summary>
+        void OnRedirected(object sender, AppActivationArguments args)
+        {
+            App.Instance.ProcessActivationArgs(args);
+        }
+
+
 
         protected void FinishLaunch()
         {
@@ -318,10 +366,61 @@ namespace Tempo
 
             // Ensure the current window is active
             App.Window.Activate();
+
+            //while (!Debugger.IsAttached)
+            //{
+            //    Thread.Sleep(TimeSpan.FromSeconds(1));
+            //}
         }
 
         /// <summary>
-        /// Check for filenames that should be loaded
+        /// Process the activation arguments (different than command line).
+        /// This must be called on the tread of the args.
+        /// Returns true if something was processed.
+        /// </summary>
+        internal bool ProcessActivationArgs(AppActivationArguments activationArgs = null)
+        {
+            // On a redirected activation, we can't use AppInstance.GetActivatedEventArgs()
+            if (activationArgs == null)
+            {
+                activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+            }
+
+            // If launched with "tempo:Button", search for "Button"
+            if (activationArgs.Kind == ExtendedActivationKind.Protocol)
+            {
+                var searchTerm = (activationArgs.Data as IProtocolActivatedEventArgs).Uri.AbsolutePath;
+
+                // We've pulled everything out of the args, now if necessary we can switch threads
+
+                var search = () =>
+                {
+                    App.Instance.GotoSearch(searchTerm);
+
+                    // Bugbug: this isn't activating the window
+                    App.Window.Activate();
+                };
+
+                var dq = App.MainPage.DispatcherQueue;
+                if (dq.HasThreadAccess)
+                {
+                    search();
+                }
+                else
+                {
+                    App.MainPage.DispatcherQueue.TryEnqueue(() => search());
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check for filenames that should be loaded. This is called by MainPage by which point we have things loaded.
         /// </summary>
         internal void ProcessCommandLine()
         {
@@ -330,7 +429,7 @@ namespace Tempo
             // The solution here is to pass "/waitfordebugger" as a parameter, which will make it
             // sit until you attach a debugger to the process.
 
-            List<string> commandLineFilenames = null;
+
             var args = Environment.GetCommandLineArgs();
 
             // The first arg is the name of the exe
@@ -338,6 +437,8 @@ namespace Tempo
             {
                 return;
             }
+
+            List<string> commandLineFilenames = null;
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -373,15 +474,20 @@ namespace Tempo
 
             }
 
-            DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
+            if (commandLineFilenames != null)
+            {
+                DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
 
-            App.StartLoadCustomScope(
-                DesktopManager2.CustomApiScopeFileNames.Value,
-                navigateToSearchResults: true);
+                App.StartLoadCustomScope(
+                    DesktopManager2.CustomApiScopeFileNames.Value,
+                    navigateToSearchResults: true);
 
-            // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
-            _isCustomApiScope = true;
-            RaisePropertyChange(nameof(IsCustomApiScope));
+                // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
+                _isCustomApiScope = true;
+                RaisePropertyChange(nameof(IsCustomApiScope));
+            }
+
+
         }
 
         public static MainWindow Window { get; private set; }
@@ -716,7 +822,7 @@ namespace Tempo
                         Manager.CurrentTypeSet = Manager.CustomMRTypeSet;
                         App.Instance.IsCustomApiScopeLoaded = true;
 
-                        if(navigateToSearchResults)
+                        if (navigateToSearchResults)
                         {
                             App.Instance.GotoSearch();
                         }

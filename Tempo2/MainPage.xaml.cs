@@ -7,6 +7,8 @@ using System.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.System;
+using System.Diagnostics;
+using System.Threading;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -178,16 +180,19 @@ namespace Tempo
 
             //_customFilesTip.IsOpen = true;
 
+
             // Wait until now to process the command line, because until now we didn't have a XamlRoot,
             // and without that we can't show an error dialog
-            App.Instance.ProcessCommandLine();
+            // Check the AppActivationArguments first, and if it doesn't do anything then the command line
+            if (!App.Instance.ProcessActivationArgs())
+            {
+                App.Instance.ProcessCommandLine();
+            }
 
             MainWindow.Instance.SetMicaBackdrop();
         }
 
         static public event EventHandler MainPageLoaded;
-
-
 
 
         public IList<object> Namespaces
