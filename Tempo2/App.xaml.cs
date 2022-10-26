@@ -71,9 +71,16 @@ namespace Tempo
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
         {
-            AppActivationArguments activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+            //for(int i = 0; i < 20; i++)
+            //{
+            //    if(Debugger.IsAttached)
+            //    {
+            //        break;
+            //    }
+            //    Thread.Sleep(500);
+            //}
 
             // Is this the first app instance or a secondary?
             // If it's a secondary we'll forward to the existing and then exit
@@ -88,6 +95,7 @@ namespace Tempo
                 // a dispatcher running (for the async to raise Completed on).
                 // So run it on a separate thread, and use a semaphore to block waiting on it to complete.
 
+                AppActivationArguments activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
                 var sem = new Semaphore(0, 1);
                 _ = Task.Run(() =>
                 {
@@ -98,11 +106,11 @@ namespace Tempo
                 // Wait on the main thread for the Redirect thread to complete
                 sem.WaitOne();
 
+                // Bugbug: is there a better way than Kill()?
                 Process.GetCurrentProcess().Kill();
             }
 
             // If we get to this point, this process is the first instance of this app
-
             // The Activated event will raise if another process calls RedirectActivationToAsync to redirect
             // activation to here
             keyInstance.Activated += OnRedirected;
@@ -115,7 +123,7 @@ namespace Tempo
             // If this isn't the first instance launched, then "main" will already be registered,
             // so retrieve it.
             //var mainInstance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("main");
-            var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+            //var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
 
             //// If the instance that's executing the OnLaunched handler right now
             //// isn't the "main" instance.
@@ -173,6 +181,9 @@ namespace Tempo
         void OnRedirected(object sender, AppActivationArguments args)
         {
             App.Instance.ProcessActivationArgs(args);
+
+            // Bugbug: this isn't actually activating (bringing to the foreground and giving focus)
+            RunOnUIThread(() => App.Window.Activate());
         }
 
 
@@ -375,7 +386,7 @@ namespace Tempo
 
         /// <summary>
         /// Process the activation arguments (different than command line).
-        /// This must be called on the tread of the args.
+        /// This must be called on the tHread of the args.
         /// Returns true if something was processed.
         /// </summary>
         internal bool ProcessActivationArgs(AppActivationArguments activationArgs = null)
@@ -393,23 +404,8 @@ namespace Tempo
 
                 // We've pulled everything out of the args, now if necessary we can switch threads
 
-                var search = () =>
-                {
-                    App.Instance.GotoSearch(searchTerm);
+                RunOnUIThread(() => App.Instance.GotoSearch(searchTerm));
 
-                    // Bugbug: this isn't activating the window
-                    App.Window.Activate();
-                };
-
-                var dq = App.MainPage.DispatcherQueue;
-                if (dq.HasThreadAccess)
-                {
-                    search();
-                }
-                else
-                {
-                    App.MainPage.DispatcherQueue.TryEnqueue(() => search());
-                }
             }
             else
             {
@@ -417,6 +413,22 @@ namespace Tempo
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Run an Action on the UI thread
+        /// </summary>
+        static void RunOnUIThread(Action action)
+        {
+            var dq = App.MainPage.DispatcherQueue;
+            if (dq.HasThreadAccess)
+            {
+                action();
+            }
+            else
+            {
+                App.MainPage.DispatcherQueue.TryEnqueue(() => action());
+            }
         }
 
         /// <summary>

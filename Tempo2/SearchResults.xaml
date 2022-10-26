@@ -126,7 +126,9 @@
                        /> met<Underline>h</Underline>ods, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingEvents, Mode=OneWay}" 
                        /> eve<Underline>n</Underline>ts, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingFields, Mode=OneWay}" 
                        /> fields, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingConstructors, Mode=OneWay}" 
-                       /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" /> doc pages)</TextBlock>
+                       /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" 
+                       /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
+                       />ms</TextBlock>
 
             </StackPanel>
         </StackPanel>

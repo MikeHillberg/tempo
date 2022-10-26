@@ -312,6 +312,7 @@ namespace Tempo
             Heading = "\"" + SearchString + "\" (" + Manager.MatchingStats.MatchingTotal + " matches)";
 
             IList<MemberViewModel> newResults = null;
+            DateTime _startTime = DateTime.Now;
             var searchTask = Task.Run(() =>
             {
                 var iteration = ++Manager.RecalculateIteration;
@@ -348,9 +349,23 @@ namespace Tempo
                 dialog.Hide();
             }
 
+
+            SearchDelay = (DateTime.Now - _startTime).Milliseconds;
             Results = newResults;
             NothingFound = (Results.Count == 0);
         }
+
+
+
+        public int SearchDelay
+        {
+            get { return (int)GetValue(SearchDelayProperty); }
+            set { SetValue(SearchDelayProperty, value); }
+        }
+        public static readonly DependencyProperty SearchDelayProperty =
+            DependencyProperty.Register("SearchDelay", typeof(int), typeof(SearchResults), new PropertyMetadata(0));
+
+
 
         private static string NormalizeSearchString(string normalized)
         {

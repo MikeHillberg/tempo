@@ -656,7 +656,7 @@ namespace Tempo
             set { _isAddedMember = value; NotifyChange(); }
         }
 
-        bool _filterOnFullName = false;
+        bool _filterOnFullName = true;
         public bool FilterOnFullName
         {
             get { return _filterOnFullName || _flat; }
