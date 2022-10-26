@@ -74,6 +74,8 @@ namespace Tempo
             }
         }
 
+        public MemberKind MemberKind => _baseViewModel.MemberKind;
+
         public int WordCount
         {
             get

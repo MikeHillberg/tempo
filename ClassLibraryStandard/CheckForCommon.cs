@@ -1,4 +1,8 @@
-﻿namespace Tempo
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+
+namespace Tempo
 {
     public class CheckForNamespace : CheckForMatch
     {
@@ -106,7 +110,6 @@
             else
             {
                 matches = false;
-                abortType = true;
             }
         }
 
@@ -136,24 +139,64 @@
             bool inBaseline = false;
             matches = false;
 
+            if(t.Name == "AccessKeyInvokedEventArgs")
+            {
+                int j = 2036;
+            }
+
             var tMatch = Manager.GetMatchingType(Manager.BaselineTypeSet.Types, t); // bugbug (re-use the type from type check)
             if (tMatch != null)
             {
                 foreach (var aMember in tMatch.Members)
                 {
-                    if (propertyInfo != null && propertyInfo.Name == aMember.Name
+
+                    if (propertyInfo != null && propertyInfo.Name == aMember.Name && aMember.MemberKind == MemberKind.Property
                         ||
-                        eventInfo != null && eventInfo.Name == aMember.Name
+                        eventInfo != null && eventInfo.Name == aMember.Name && aMember.MemberKind == MemberKind.Event
                         ||
-                        fieldInfo != null && fieldInfo.Name == aMember.Name
-                        ||
-                        constructorInfo != null && constructorInfo.Name == aMember.Name
-                        ||
-                        methodInfo != null && methodInfo.Name == aMember.Name)
+                        fieldInfo != null && fieldInfo.Name == aMember.Name && aMember.MemberKind == MemberKind.Field)
                     {
                         inBaseline = true;
-                        break;
                     }
+
+                    else if (constructorInfo != null && constructorInfo.Name == aMember.Name && aMember.MemberKind == MemberKind.Constructor
+                            ||
+                            methodInfo != null && methodInfo.Name == aMember.Name && aMember.MemberKind == MemberKind.Method)
+                    {
+                        IList<ParameterViewModel> aParameters = null;
+                        IList<ParameterViewModel> parameters = null;
+
+                        if(constructorInfo != null)
+                        {
+                            parameters = constructorInfo.Parameters;
+                            aParameters = (aMember as ConstructorViewModel).Parameters;
+                        }
+                        else
+                        {
+                            parameters = methodInfo.Parameters;
+                            aParameters = (aMember as MethodViewModel).Parameters;
+                        }
+
+                        if(parameters.Count != aParameters.Count)
+                        {
+                            continue;
+                        }
+
+                        int i;
+                        for(i = 0; i < parameters.Count; i++)
+                        {
+                            if (parameters[i].ParameterType != aParameters[i].ParameterType)
+                            {
+                                break;
+                            }
+                        }
+                        if(i == parameters.Count)
+                        {
+                            inBaseline = true;
+                        }
+
+                    }
+
                 }
             }
 
