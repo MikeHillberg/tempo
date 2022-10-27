@@ -139,11 +139,6 @@ namespace Tempo
             bool inBaseline = false;
             matches = false;
 
-            if(t.Name == "AccessKeyInvokedEventArgs")
-            {
-                int j = 2036;
-            }
-
             var tMatch = Manager.GetMatchingType(Manager.BaselineTypeSet.Types, t); // bugbug (re-use the type from type check)
             if (tMatch != null)
             {

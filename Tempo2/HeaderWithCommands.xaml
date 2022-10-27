@@ -87,6 +87,7 @@
                             <MenuFlyoutItem Text='Group by type, format as "Name (Namespace)"' Click="CopyToClipboardAsNameNamespace"/>
                             <MenuFlyoutItem Text='Group by type, format as "Full Name"' Click="CopyToClipboardAsFlat"/>
                             <MenuFlyoutItem Text='Group by namespace then type' Click="CopyToClipboardGroupedByNamespace"/>
+                            <MenuFlyoutItem Text='Group by namespace then type (compact)' Click="CopyToClipboardCompact"/>
                         </MenuFlyoutSubItem>
                         <MenuFlyoutSeparator/>
                         <MenuFlyoutItem Text="Open in Excel" Click="OpenInExcel"/>

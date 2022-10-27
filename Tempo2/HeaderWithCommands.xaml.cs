@@ -469,6 +469,14 @@ namespace Tempo
             Clipboard.SetContent(dataPackage);
         }
 
+        private void CopyToClipboardCompact(object sender, RoutedEventArgs e)
+        {
+            var content = CopyExport.ConvertItemsToABigString(Results, asCsv: false, flat: false, groupByNamespace: true, compressTypes: true);
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(content);
+            Clipboard.SetContent(dataPackage);
+        }
+
 
         public IList<MemberViewModel> Results
         {

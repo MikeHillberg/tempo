@@ -205,7 +205,8 @@ namespace Tempo
             IEnumerable itemsIn,
             bool asCsv,
             bool flat,
-            bool groupByNamespace = false)
+            bool groupByNamespace = false,
+            bool compressTypes = false)
         {
             const string separator = ",";
 
@@ -213,21 +214,23 @@ namespace Tempo
             StringBuilder typeTableText;
             typeTableText = memberTableText;
 
-            IEnumerable<BaseViewModel> itemsTemp, items;
+            IEnumerable<BaseViewModel> itemsTemp;
+            IList<BaseViewModel> items;
+
             itemsTemp = from object i in itemsIn select i as BaseViewModel;
 
             // Set 'items' to 'itemsIn', possibly doing some sorting first
             if (asCsv || groupByNamespace)
             {
-                items = from i in itemsTemp
-                        orderby (i as BaseViewModel).DeclaringType.Namespace,
-                                (i as BaseViewModel).DeclaringType.Name
-                        select i;
+                items = (from i in itemsTemp
+                         orderby (i as BaseViewModel).DeclaringType.Namespace,
+                                 (i as BaseViewModel).DeclaringType.Name
+                         select i).ToList();
 
             }
             else
             {
-                items = itemsTemp;
+                items = itemsTemp.ToList();
             }
 
             // If outputting CSV, create a header row
@@ -238,10 +241,12 @@ namespace Tempo
 
             // Stringize each item
 
+            bool skipToNextType = false;
             string lastNamespace = null;
             bool showedMembers = false;
-            foreach (var item in items)
+            for (int i = 0; i < items.Count; i++)
             {
+                var item = items[i];
                 var itemAsType = item as TypeViewModel;
 
                 // If grouping by namespace, write it out when we see a new one
@@ -261,20 +266,12 @@ namespace Tempo
                 }
                 lastNamespace = item.DeclaringType.Namespace;
 
-                // Indentation (if not CSV)
-                if (!asCsv)
-                {
-                    // Indent members relative to their declaring type.
-                    // If grouping by namespace, indent types some, members more
-                    if (itemAsType == null)
-                    {
-                        memberTableText.Append(groupByNamespace ? "        " : "    ");
-                    }
-                }
-
                 // Output types
                 if (item is TypeViewModel)
                 {
+                    var typeItem = item as TypeViewModel;
+                    skipToNextType = false;
+
                     // Add a blank line of whitespace before this type if the previous type listed members,
                     // of if we just wrote out a namespace name
                     if (showedMembers || isNewNamespace)
@@ -288,15 +285,47 @@ namespace Tempo
                         asCsv,
                         typeTableText,
                         memberTableText,
-                        item as TypeViewModel,
+                        typeItem,
                         flat,
                         groupByNamespace);
+
+                    if (compressTypes)
+                    {
+                        var memberCount = 0;
+                        for (int j = i + 1; j < items.Count; j++)
+                        {
+                            if (items[j] is TypeViewModel)
+                            {
+                                break;
+                            }
+
+                            memberCount++;
+                        }
+
+                        if (memberCount == typeItem.Members.Count)
+                        {
+                            skipToNextType = true;
+                        }
+                    }
 
                 }
 
                 // Output members
                 else
                 {
+                    if (skipToNextType)
+                    {
+                        continue;
+                    }
+
+                    // Indentation (if not CSV)
+                    if (!asCsv)
+                    {
+                        // Indent members relative to their declaring type.
+                        // If grouping by namespace, indent types some, members more
+                        memberTableText.Append(groupByNamespace ? "        " : "    ");
+                    }
+
                     showedMembers = true;
                     var vm = item as MemberViewModel;
 
@@ -358,7 +387,7 @@ namespace Tempo
                                 + "."
                                 + (item as BaseViewModel).PrettyName);
                         }
-                        
+
                         // When not flat mode, just write out the type name
                         else
                         {
