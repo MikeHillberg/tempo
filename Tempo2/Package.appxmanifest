@@ -4,8 +4,8 @@
 		 xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
 		 xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
 		 IgnorableNamespaces="uap mp">
-	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.26.0" />
-	<mp:PhoneIdentity PhoneProductId="47026e9e-b984-4376-8a4a-ca1268b745b9" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.33.0" />
+	<mp:PhoneIdentity PhoneProductId="3d53f57d-55be-4138-8dc5-e16a5a09388b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
 	<Properties>
 		<DisplayName>Tempo of UWP</DisplayName>
 		<PublisherDisplayName>CoffeeZeit</PublisherDisplayName>
