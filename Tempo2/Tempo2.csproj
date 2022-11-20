@@ -7,10 +7,10 @@
     <AssemblyName>TempoUwp</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <PackageCertificateKeyFile>UwpTempo2_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>Tempo2_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
@@ -22,8 +22,8 @@
     <Platforms>x86;x64;arm64</Platforms>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <AppxPackageDir>C:\Users\Mike\source\repos\TempoOnline\AppPackages\</AppxPackageDir>
-    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <AppxPackageDir>C:\Users\Mike\source\repos\tempo\AppPackages\</AppxPackageDir>
+    <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>bin\x86\Debug\</OutputPath>
@@ -103,7 +103,7 @@
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\MiddleweightReflection\MiddleweightReflection\MiddleweightReflection.csproj" />
+    <ProjectReference Include="..\..\MiddleweightReflection\MiddleweightReflection\MiddleweightReflection.csproj" />
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
   </ItemGroup>
   <ItemGroup>
