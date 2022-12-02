@@ -182,3 +182,4 @@ testlog.*
 
 
 /bundle
+*.pfx

@@ -52,7 +52,7 @@ namespace Tempo
                         Placement = FlyoutPlacementMode.RightEdgeAlignedTop
                     };
 
-                    var flyout = new FiltersFlyout();
+                    var flyout = new FiltersFlyout3();
                     flyout.ShowAt(Pane0, options);
                 }
             };

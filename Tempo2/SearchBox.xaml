@@ -36,7 +36,7 @@
                     <KeyboardAccelerator Modifiers="Control" Key="F"/>
                     
                     <!-- Keeping the old one around to see how it looks -->
-                    <KeyboardAccelerator Modifiers="Control,Shift" Key="F" Invoked="ShowOldFilters"/>
+                    <KeyboardAccelerator Modifiers="Control,Shift" Key="F"/>
                 </Button.KeyboardAccelerators>
             </Button>
         </StackPanel>
