@@ -8,10 +8,10 @@
 		 xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
 		 xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
 		 IgnorableNamespaces="uap mp uap6 iot uap4 uap2">
-	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.39.0" />
+	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.40.0" />
 	<mp:PhoneIdentity PhoneProductId="3d53f57d-55be-4138-8dc5-e16a5a09388b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
 	<Properties>
-		<DisplayName>Tempo of UWP</DisplayName>
+		<DisplayName>Tempo API Viewer</DisplayName>
 		<PublisherDisplayName>CoffeeZeit</PublisherDisplayName>
 		<Logo>Assets\StoreLogo.png</Logo>
 	</Properties>
@@ -23,7 +23,7 @@
 	</Resources>
 	<Applications>
 		<Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
-			<uap:VisualElements DisplayName="Tempo of UWP" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="This app lets you search and display the APIs for the Universal Windows Platform (UWP)." BackgroundColor="transparent">
+			<uap:VisualElements DisplayName="Tempo API Viewer" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="This app lets you search and display the APIs for the Universal Windows Platform (UWP)." BackgroundColor="transparent">
 				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Tempo of the UWP (Preview)" Square71x71Logo="Assets\Square71x71Logo.png">
 				</uap:DefaultTile>
 				<uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#8894C6" />
