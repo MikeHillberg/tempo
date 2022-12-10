@@ -10,23 +10,36 @@
     <Grid Background="White" PointerPressed="Grid_PointerPressed">
 
         <Grid.RowDefinitions>
+            <!-- Command bar and heading -->
             <RowDefinition Height="Auto" />
+            
+            <!-- Content -->
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="2" >
-            <local:HeaderWithCommands x:Name="_detailViewHeading"
+        <!-- Command bar and heading -->
+        <Border BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="0" >
+            <StackPanel>
+                
+                <!-- Show the command bar if we're the content of the Frame, or if "top level" meaning the primary content -->
+                <local:CommonCommandBar 
+                        IsBackEnabled="{x:Bind local:Utils.Or(IsRoot,IsTopLevel), Mode=OneWay}"
+                        Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
+                        MsdnVisibility="Visible"
+                        MemberVM="{x:Bind TypeVM, Mode=OneWay}" />
+                
+                <local:HeadingBar x:Name="_detailViewHeading"
                         Heading="{x:Bind TypeVM.PrettyName, Mode=OneWay}"
                         SubHeading="{x:Bind TypeVM.Namespace, Mode=OneWay}"
                         SubSubHeading="{x:Bind TypeVM.TypeKindString, Mode=OneWay}"
                         IsPreview="{x:Bind TypeVM.IsPreview, Mode=OneWay}"
-                        ShowBack="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
-                        MsdnVisibility="Visible"
-                        MemberVM="{x:Bind TypeVM, Mode=OneWay}"
-                        Orientation="{x:Bind HeadingOrientation, Mode=OneWay}"/>
+                        IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}"
+                        />
+            </StackPanel>
         </Border>
         
+        <!-- Either wide or skinny mode displays at a time -->
+        <!-- Wide mode shows two panes -->
         <Grid Grid.Row="1" x:Name="_wideMode" 
               Margin="{StaticResource ContentMarginMinusHeight}" 
               Visibility="Collapsed">
@@ -50,6 +63,8 @@
             </Border>
         </Grid>
 
+        <!-- Either wide or skinny mode displays at a time -->
+        <!-- Skinny mode shows two tabs in a pivot -->
         <Pivot Grid.Row="1" x:Name="_skinnyMode" 
                SelectedIndex="{x:Bind SelectedPivot, Mode=TwoWay}"  >
             <PivotItem x:Name="_skinnyModeCol0"  Header="Members" >
@@ -60,12 +75,6 @@
 
             </PivotItem>
         </Pivot>
-
-        <!--<local:CommonAppBar 
-            Grid.Row="2"
-            MemberVM="{x:Bind TypeVM, Mode=OneWay}" 
-            MsdnVisibility="Visible" HomeVisibility="Visible"  />-->
-
 
     </Grid>
 

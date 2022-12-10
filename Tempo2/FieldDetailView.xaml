@@ -18,25 +18,30 @@
         <ScrollViewer >
             <StackPanel  >
 
-                <local:HeaderWithCommands Heading="{x:Bind FieldVM.Name, Mode=OneWay}"
+                <local:CommonCommandBar 
+                    Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
+                    IsBackEnabled="True"
+                    />
+                <local:HeadingBar Heading="{x:Bind FieldVM.Name, Mode=OneWay}"
                                      SubHeading="{x:Bind FieldVM.DeclaringType.Name, Mode=OneWay}"
                                      SubSubHeading="field"
-                        ShowBack="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
-                                         Orientation="{x:Bind local:Utils.HorizontalIf(local:MainPage.AdaptiveSettings.IsWide), Mode=OneWay}"/>
+                                     IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
+                                     Margin="{StaticResource VerticalMargin}"
+                                     />
 
-                <TextBlock Margin="{StaticResource ContentMargin}"
+                <TextBlock Margin="{StaticResource VerticalMargin}"
                            Text="{x:Bind FieldVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap"  IsTextSelectionEnabled="True"/>
 
                 <!-- Horizontal line -->
-                <ListViewHeaderItem/>
+                <local:StackListHeaderItem/>
 
                 <!-- Bugbug: had to put it all in code -->
                 <RichTextBlock Style="{StaticResource SampleCodeStyleRTB}" 
-                           Margin="{StaticResource ContentMarginMinusHeight}"
+                           Margin="{StaticResource VerticalMargin}"
                        local:CsSyntaxGenerator.Member="{x:Bind FieldVM, Mode=OneWay}"
                        TextWrapping="Wrap"/>
 
-                <StackPanel Margin="{StaticResource ContentMargin}">
+                <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind FieldVM, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind FieldVM.Contract, Mode=OneWay}" />

@@ -22,7 +22,7 @@ using Microsoft.UI.Xaml.Navigation;
 namespace Tempo
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Show type's members and other info
     /// </summary>
     public sealed partial class TypeDetailPage : MySerializableControl
     {
@@ -67,6 +67,7 @@ namespace Tempo
                 if (_selectedMember != null)
                 {
                     var view = App.GetViewFor(_selectedMember);
+                    view.IsNested = true;
                     view.DoActivate(_selectedMember);
 
                     _wideModeCol1.Child = view;
@@ -283,6 +284,9 @@ namespace Tempo
 
         Stack<int> _navigationStack = new Stack<int>();
 
+        /// <summary>
+        /// When anything but the member detail is tapped on, clear the member details
+        /// </summary>
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ResetSelectedMember();

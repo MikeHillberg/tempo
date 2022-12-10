@@ -6,28 +6,33 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Page.BottomAppBar>
-        <local:CommonAppBar />
-    </Page.BottomAppBar>
 
     <Page.Resources>
         <Thickness x:Key="tbMargin">0,10,0,0</Thickness>
 
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          Padding="{StaticResource ContentMargin}">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:HeaderWithCommands Heading="Type ramp illustrations"/>
-
+        <StackPanel>
+            <local:CommonCommandBar IsBackEnabled="True"/>
+            <local:HeadingBar Heading="Type ramp illustrations"/>
+        </StackPanel>
+        
         <ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="1"
                       Margin="{StaticResource ContentMargin}">
             <StackPanel Spacing="10">
-                <TextBlock >Text block styles defined as Xaml resources</TextBlock>
+                <TextBlock Text="{x:Bind local:TypeRampIllustration.Description}"/>
+
+                <!-- Horizontal line -->
+                <ListViewHeaderItem/>
+
 
                 <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource HeaderTextBlockStyle}" IsTextSelectionEnabled="True">HeaderTextBlockStyle</TextBlock>
                 <TextBlock TextWrapping="Wrap" Margin="{StaticResource tbMargin}" Style="{StaticResource SubheaderTextBlockStyle}" IsTextSelectionEnabled="True">SubheaderTextBlockStyle</TextBlock>

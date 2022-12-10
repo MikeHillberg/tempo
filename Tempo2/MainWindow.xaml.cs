@@ -24,7 +24,7 @@ namespace Tempo
         }
 
         // Helpers for SetMicaBackrop
-        WindowsSystemDispatcherQueueHelper m_wsdqHelper; // See separate sample below for implementation
+        WindowsSystemDispatcherQueueHelper m_wsdqHelper;
         Microsoft.UI.Composition.SystemBackdrops.MicaController m_micaController;
         Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration m_configurationSource;
 

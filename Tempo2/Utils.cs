@@ -20,6 +20,11 @@ namespace Tempo
             return b ? Orientation.Horizontal : Orientation.Vertical;
         }
 
+        static public bool Or(bool b1, bool b2)
+        {
+            return b1 || b2;
+        }
+
         static public Visibility VisibleIfEither(bool b1, bool b2)
         {
             return (b1 || b2) ? Visibility.Visible : Visibility.Collapsed;

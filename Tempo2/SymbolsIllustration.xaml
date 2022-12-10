@@ -7,24 +7,28 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Page.BottomAppBar>
-        <local:CommonAppBar />
-    </Page.BottomAppBar>
-    
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          Margin="{StaticResource ContentMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:HeaderWithCommands Heading="Symbol illustrations"/>
+        <StackPanel>
+            <local:CommonCommandBar IsBackEnabled="True"/>
+            <local:HeadingBar Heading="Symbol illustrations"/>
 
+            <TextBlock Margin="{StaticResource VerticalMargin}" TextWrapping="Wrap">
+                    Symbols from the <Hyperlink Click="Hyperlink_Click">Windows.UI.Xaml.Controls.Symbol</Hyperlink> enum</TextBlock>
+
+            <!-- Horizontal line -->
+            <ListViewHeaderItem/>
+        </StackPanel>
+        
         <ListView Grid.Row="1" ItemsSource="{x:Bind SymbolSamples, Mode=OneWay}"
                   Margin="{StaticResource ContentMargin}"
                   SelectionMode="None">
             <ListView.Header>
-                <TextBlock Margin="12,0,0,10" TextWrapping="Wrap">
-                    Symbols from the <Hyperlink Click="Hyperlink_Click">Windows.UI.Xaml.Controls.Symbol</Hyperlink> enum</TextBlock>
             </ListView.Header>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:SymbolSample">

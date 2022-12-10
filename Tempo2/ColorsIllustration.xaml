@@ -6,27 +6,36 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Page.BottomAppBar>
-        <local:CommonAppBar />
-    </Page.BottomAppBar>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          Padding="{StaticResource ContentMargin}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:HeaderWithCommands Heading="Color illustrations"/>
+        <StackPanel>
+            <local:CommonCommandBar IsBackEnabled="True"/>
+            <local:HeadingBar Heading="Color illustrations"/>
+        </StackPanel>
 
+        <StackPanel Grid.Row="1">
+            <TextBlock Grid.Row="1"
+                   Margin="{StaticResource VerticalMargin}" 
+                   TextWrapping="Wrap">
+                   Colors from the <Hyperlink Click="Hyperlink_Click">Windows.UI.Colors class</Hyperlink></TextBlock>
+
+            <!-- Horizontal line -->
+            <ListViewHeaderItem/>
+        </StackPanel>
 
         <!-- bugbug: Combine the illustrations into one user control -->
-        <ListView Grid.Row="1" ItemsSource="{x:Bind ColorSamples}"
-                  Margin="{StaticResource ContentMargin}"
+        <ListView Grid.Row="2" ItemsSource="{x:Bind ColorSamples}"
+                  Margin="{StaticResource VerticalMargin}"
                   IsItemClickEnabled="False"
                   SelectionMode="None">
             <ListView.Header>
-                <TextBlock Margin="12,0,0,10" TextWrapping="Wrap">
-                    Colors from the <Hyperlink Click="Hyperlink_Click">Windows.UI.Colors class</Hyperlink></TextBlock>
             </ListView.Header>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:ColorSample">

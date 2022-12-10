@@ -15,31 +15,38 @@
         <ScrollViewer >
             <StackPanel  >
 
-                <local:HeaderWithCommands Heading="{x:Bind ConstructorVM.FlexibleName, Mode=OneWay}"
+                <local:CommonCommandBar 
+                    Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
+                    IsBackEnabled="True"
+                    Margin="{StaticResource VerticalMargin}"
+                    />
+
+                <local:HeadingBar Heading="{x:Bind ConstructorVM.FlexibleName, Mode=OneWay}"
                         SubSubHeading="constructor"
-                        ShowBack="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
-                        Orientation="{x:Bind local:Utils.HorizontalIf(local:MainPage.AdaptiveSettings.IsWide), Mode=OneWay}"/>
+                                          Margin="{StaticResource VerticalMargin}"
+                        IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
+                        />
 
                 <TextBlock Margin="{StaticResource ContentMargin}"
                            Text="{x:Bind ConstructorVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
 
                 <!-- Horizontal line -->
-                <ListViewHeaderItem/>
+                <local:StackListHeaderItem/>
 
                 <!-- Bugbug: had to put it all in code -->
                 <RichTextBlock  
-                        Margin="{StaticResource ContentMarginMinusHeight}"
+                        Margin="{StaticResource VerticalMargin}"
                        Style="{StaticResource SampleCodeStyleRTB}" 
                        local:CsSyntaxGenerator.Member="{x:Bind ConstructorVM, Mode=OneWay}"
                        TextWrapping="Wrap"/>
 
-                <StackPanel Margin="{StaticResource ContentMargin}">
+                <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind ConstructorVM, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind ConstructorVM.Contract, Mode=OneWay}" />
                 </StackPanel>
 
-                <StackPanel Margin="{StaticResource ContentMargin}">
+                <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem >More</local:StackListHeaderItem>
                     <local:MemberMore MemberVM="{x:Bind ConstructorVM, Mode=Oneway}"/>
                 </StackPanel>

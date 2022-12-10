@@ -7,9 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Page.BottomAppBar>
-        <local:CommonAppBar />
-    </Page.BottomAppBar>
 
     <Page.Resources>
         <CollectionViewSource x:Name="_cvs" Source="{x:Bind NamespacesAndTypes, Mode=Oneway}" IsSourceGrouped="True" />
@@ -21,9 +18,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <local:HeaderWithCommands Heading="{x:Bind SelectedNamespace, Mode=OneWay}" SubSubHeading="namespace"
-                                  UpButtonVisibility="{x:Bind UpButtonVisibility, Mode=OneWay}" 
-                                  UpButtonClick="DetailViewHeading_UpButtonClick"/>
+        <StackPanel>
+            <local:CommonCommandBar
+                UpButtonVisibility="{x:Bind UpButtonVisibility, Mode=OneWay}" 
+                UpButtonClick="DetailViewHeading_UpButtonClick"/>
+            
+            <local:HeadingBar Heading="{x:Bind SelectedNamespace, Mode=OneWay}" SubSubHeading="namespace" />
+        </StackPanel>
 
         <Grid Grid.Row="1">
 

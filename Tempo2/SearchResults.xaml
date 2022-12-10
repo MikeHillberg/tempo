@@ -12,17 +12,36 @@
     <!-- This has a transparent background so that the Window Mica backdrop can shine through -->
     <Grid  x:Name="_root" >
         <Grid.RowDefinitions>
+            <!-- CommandBar-->
+            <RowDefinition Height="Auto"/>
+        
+            <!-- Content area -->
             <RowDefinition Height="*"/>
+            
+            <!-- Status bar -->
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
-        <Grid  x:Name="_wideMode" Visibility="{x:Bind IsWide, Mode=OneWay}">
+
+        <local:CommonCommandBar 
+                    Grid.ColumnSpan="2" HorizontalAlignment="Left"
+                    FilterVisibility="Visible"
+                    MsdnVisibility="Visible"
+                    IsExportVisible="True"
+                    IsScopeVisible="True"
+                    Results="{x:Bind Results, Mode=OneWay}"/>
+
+        <!-- Wide mode view
+             Code behind moves the content between here and skinny mode -->
+        <Grid  x:Name="_wideMode" Visibility="{x:Bind IsWide, Mode=OneWay}"  Grid.Row="1">
+            
+            <!-- A left pane with a list, a right pane with detail -->
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="{x:Bind SecondColumnWidth, Mode=OneWay}" />
             </Grid.ColumnDefinitions>
 
-            <Grid x:Name="Pane0"   >
+            <!-- SearchBox and ListView (first of two columns) -->
+            <Grid x:Name="Pane0"  Grid.Row="1" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -33,25 +52,18 @@
                 <Grid.Tag>
                     <!-- Flyout to show the Filters page -->
                     <Flyout x:Name="_filtersFlyout" LightDismissOverlayMode="On" >
-                        
+
                         <!-- The default width is a little too narrow -->
                         <Flyout.FlyoutPresenterStyle>
                             <Style TargetType="FlyoutPresenter">
                                 <Setter Property="MaxWidth" Value="500"/>
                             </Style>
                         </Flyout.FlyoutPresenterStyle>
-                        
+
                         <local:Filters IsFlyoutMode="True" />
                     </Flyout>
                 </Grid.Tag>
 
-                <local:HeaderWithCommands 
-                    FilterVisibility="Visible"
-                    IsDarkBackground="{x:Bind IsWide, Mode=OneWay}"
-                    MsdnVisibility="Visible"
-                    IsExportVisible="True"
-                    IsScopeVisible="True"
-                    Results="{x:Bind Results, Mode=OneWay}"/>
 
                 <local:SearchBox 
                     Margin="10,15,10,20"
@@ -75,11 +87,6 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
-                <local:CommonAppBar IsFilterEnabled="True" 
-                                    Visibility="{x:Bind local:Utils.CollapsedIfTrue(IsWide), Mode=OneWay}"
-                                    Grid.Row="3"
-                                    />
-
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                            Grid.Row="2"
                            Visibility="{x:Bind NothingFound, Mode=OneWay}">
@@ -87,21 +94,23 @@
                 </TextBlock>
             </Grid>
 
-            <!-- bugbug: This gives an error due to the Utils.Not, probably the combination with Visibility magic
+            <!-- Detail area (could be a type view or a member view, second of two columns) -->
+            <Grid x:Name="Pane1" Grid.Column="1" Grid.Row="1">
+                <!-- bugbug: This gives an error due to the Utils.Not, probably the combination with Visibility magic
                  "The name 'obj' does not exist in the current context"
                  Visibility="{x:Bind local:Utils.Not(NothingFound), Mode=OneWay}"  -->
-            <Grid x:Name="Pane1" Grid.Column="1">
-                <Grid  
-                  Visibility="{x:Bind SomethingFound, Mode=OneWay}">
-                    <local:TypeOrMemberDetailView 
-                    x:Name="_detailsView" 
-                    IsTopLevel="{x:Bind local:Utils.Not(IsWide), Mode=OneWay}" />
+
+                <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}">
+                        <local:TypeOrMemberDetailView  x:Name="_detailsView" />
                 </Grid>
             </Grid>
 
         </Grid>
 
+        <!-- Skinny mode view
+             Code behind moves the content between here and skinny mode -->
         <ContentControl x:Name="_skinnyMode"
+                        Grid.Row="1"
                         Visibility="{x:Bind local:Utils.CollapsedIfTrue(IsWide), Mode=OneWay}"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         HorizontalContentAlignment="Stretch" 

@@ -138,7 +138,8 @@ namespace Tempo
                 if (Pane0.Parent != _wideMode)
                 {
                     // Put both panes into the two Grid columns
-                    _wideMode.Children.Clear();
+                    _wideMode.Children.Remove(Pane0);
+                    _wideMode.Children.Remove(Pane1);
                     _skinnyMode.Content = null;
 
                     _wideMode.Children.Add(Pane0);
@@ -149,7 +150,8 @@ namespace Tempo
             {
                 // Put the active pane into the ContentControl, leave the 
                 // other pane out of the tree
-                _wideMode.Children.Clear();
+                _wideMode.Children.Remove(Pane0);
+                _wideMode.Children.Remove(Pane1);
                 _skinnyMode.Content = null;
 
                 if (ActivePane == ActivePane.Left && _skinnyMode.Content != (object)Pane0)
@@ -200,13 +202,16 @@ namespace Tempo
         public static readonly DependencyProperty SearchStringProperty =
             DependencyProperty.Register("SearchString", typeof(string), typeof(SearchResults), new PropertyMetadata(null));
 
+        /// <summary>
+        /// Indicates the search results are empty
+        /// </summary>
         public bool NothingFound
         {
             get { return (bool)GetValue(NothingFoundProperty); }
             set { SetValue(NothingFoundProperty, value); }
         }
         public static readonly DependencyProperty NothingFoundProperty =
-            DependencyProperty.Register("NothingFoundVisibility", typeof(bool), typeof(SearchResults),
+            DependencyProperty.Register("NothingFound", typeof(bool), typeof(SearchResults),
                 new PropertyMetadata(true, (d, dp) => (d as SearchResults).NothingFoundChanged()));
 
         void NothingFoundChanged()
@@ -218,6 +223,9 @@ namespace Tempo
         }
 
 
+        /// <summary>
+        /// Indicates the search results are non-empty
+        /// </summary>
         public bool SomethingFound
         {
             get { return (bool)GetValue(SomethingFoundProperty); }
@@ -335,7 +343,18 @@ namespace Tempo
                         new ProgressBar() { IsIndeterminate = true, Margin = new Thickness(0, 10, 0, 0) }
                     }
                 };
-                var dialogTask = dialog.ShowAsync().AsTask();
+
+                // Bugbug: sometimes the ShowAsync returns:
+                // "An async operation was not properly started. (0x80000019)"
+                // (KeyShowAsync)
+                try
+                {
+                    var dialogTask = dialog.ShowAsync().AsTask();
+                }
+                catch(Exception e)
+                {
+                    UnhandledExceptionManager.ProcessException(e);
+                }
 
                 // Get rid of the stale data while the search continues
                 Results = null;
@@ -709,10 +728,6 @@ namespace Tempo
             }
         }
 
-        private void CommonAppBar_FilterRequested(object sender, EventArgs e)
-        {
-            App.GoHome(SearchString);
-        }
 
         //private void GotoFilters(object sender, RoutedEventArgs e)
         //{

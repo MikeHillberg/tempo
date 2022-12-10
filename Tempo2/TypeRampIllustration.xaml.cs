@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System.ComponentModel;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -26,5 +27,8 @@ namespace Tempo
         {
             this.InitializeComponent();
         }
+
+        public static string Description => "Text block styles defined as Xaml resources";
+
     }
 }

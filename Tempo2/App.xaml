@@ -49,6 +49,9 @@
                     <Thickness x:Key="ContentMargin">15,20,15,0</Thickness>
                     <Thickness x:Key="ContentMarginMinusHeight">15,0,15,0</Thickness>
 
+                    <!-- Vertical spacing in a stack -->
+                    <Thickness x:Key="VerticalMargin">0,5,0,0</Thickness>
+
                     <!-- bugbug -->
                     <Thickness x:Key="HeaderedContentMargin">15,4,0,0</Thickness>
 

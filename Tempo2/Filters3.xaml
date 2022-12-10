@@ -152,21 +152,21 @@
 
                 <local:MyRibbonTab Name="WinMD">
                     <local:MyRibbonGroup2 Section="WinMD">
-                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.Experimental}" 
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.Experimental, Mode=TwoWay}" 
                                        Label="Experimental"
                                        Description="Type or member is [experimental]"/>
-                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.Deprecated}" 
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.Deprecated, Mode=TwoWay}" 
                                        Label="Deprecated"
                                        Description="Type or member is [deprecated]"/>
-                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.DualApi}" Label="Dual API" />
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.DualApi, Mode=TwoWay}" Label="Dual API" />
 
-                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsActivatable}" Label="Activatable" 
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsActivatable, Mode=TwoWay}" Label="Activatable" 
                                        Description="Activatable classes"/>
 
-                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsUac}" Label="UAC" 
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsUac, Mode=TwoWay}" Label="UAC" 
                                        Description="UniversalApiContract"/>
 
-                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsRemoteAsync}" 
+                        <local:BooleanSettingView IsThreeState="True" Setting="{x:Bind Settings.IsRemoteAsync, Mode=TwoWay}" 
                                        Label="RemoteAsync" Description="Is [RemoteAsync]" />
 
                         <local:ChoiceSettingView
@@ -177,7 +177,7 @@
                         <local:ChoiceSettingView
                             Label="Marshaling behavior"
                             ItemsSource="{x:Bind Settings.MarshalingBehaviorValues}"
-                            SelectedValue="{x:Bind Settings.MarshalingBehavior}" />
+                            SelectedValue="{x:Bind Settings.MarshalingBehavior, Mode=TwoWay}" />
 
                         <local:ChoiceSettingView
                             Label="Threading model"

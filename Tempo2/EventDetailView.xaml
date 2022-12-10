@@ -18,26 +18,31 @@
         <ScrollViewer >
             <StackPanel  >
 
-                <local:HeaderWithCommands Heading="{x:Bind EventVM.Name, Mode=OneWay}"
+                <local:CommonCommandBar 
+                    Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
+                    IsBackEnabled="True"
+                    />
+                <local:HeadingBar Heading="{x:Bind EventVM.Name, Mode=OneWay}"
                                      SubHeading="{x:Bind EventVM.DeclaringType.Name, Mode=OneWay}"
                                      SubSubHeading="event"
-                        ShowBack="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
-                                         Orientation="{x:Bind local:Utils.HorizontalIf(local:MainPage.AdaptiveSettings.IsWide), Mode=OneWay}"/>
+                                     IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
+                                     Margin="{StaticResource VerticalMargin}"
+                                     />
 
-                <TextBlock Margin="{StaticResource ContentMargin}"
+                <TextBlock Margin="{StaticResource VerticalMargin}"
                            Text="{x:Bind EventVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap"  IsTextSelectionEnabled="True"/>
 
                 <!-- Horizontal line -->
-                <ListViewHeaderItem/>
+                <local:StackListHeaderItem/>
 
                 <!-- Bugbug: had to put it all in code -->
                 <RichTextBlock Style="{StaticResource SampleCodeStyleRTB}" 
-                           Margin="{StaticResource ContentMarginMinusHeight}"
+                           Margin="{StaticResource VerticalMargin}"
                        local:CsSyntaxGenerator.Member="{x:Bind EventVM, Mode=OneWay}"
                        TextWrapping="Wrap"/>
 
 
-                <StackPanel Margin="{StaticResource ContentMargin}">
+                <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem>Sender</local:StackListHeaderItem>
                     <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.SenderType, Mode=OneWay}" />
 
@@ -49,7 +54,7 @@
                     <TextBlock Text="{x:Bind EventVM.Contract, Mode=OneWay}" />
                 </StackPanel>
 
-                <StackPanel Margin="{StaticResource ContentMargin}">
+                <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem >More</local:StackListHeaderItem>
                     <local:MemberMore MemberVM="{x:Bind EventVM, Mode=Oneway}"/>
                 </StackPanel>

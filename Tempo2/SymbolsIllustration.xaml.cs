@@ -59,6 +59,8 @@ namespace Tempo
         {
             App.Navigate(TypeViewModel.LookupByName("Microsoft.UI.Xaml.Controls.Symbol"));
         }
+
+        public static string Description => "Symbols from the Windows.UI.Xaml.Controls.Symbol enum";
     }
 
     public class SymbolSample

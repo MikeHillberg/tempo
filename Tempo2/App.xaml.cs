@@ -537,6 +537,32 @@ namespace Tempo
                 }
 
                 RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+
+        /// <summary>
+        /// Name of the API scope ("Windows", "WinAppSDK", "Custom")
+        /// </summary>
+        public string ApiScopeName
+        {
+            get
+            {
+                if(IsWinPlatformScope)
+                {
+                    return "Windows";
+                }
+                else if(IsWinAppScope)
+                {
+                    return "WASDK";
+                }
+                else if(IsCustomApiScope)
+                {
+                    return "Custom";
+                }
+
+                // Shouldn't ever get here, but it happens during bootstrapping
+                return "API Scope";
             }
         }
 
@@ -567,6 +593,7 @@ namespace Tempo
                 }
 
                 RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
             }
         }
 
@@ -588,6 +615,7 @@ namespace Tempo
                 }
 
                 RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
             }
         }
 

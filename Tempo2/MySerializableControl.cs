@@ -15,7 +15,6 @@ namespace Tempo
         public MySerializableControl()
         {
             Loaded += OnLoaded;
-            IsTopLevelChanged();
         }
         bool _activated = false;
 
@@ -95,7 +94,9 @@ namespace Tempo
         }
 
 
-
+        /// <summary>
+        /// Indicates that this control is the content of the root Frame
+        /// </summary>
         public bool IsRoot
         {
             get { return (bool)GetValue(IsRootProperty); }
@@ -115,10 +116,12 @@ namespace Tempo
         }
         public static readonly DependencyProperty IsTopLevelProperty =
             DependencyProperty.Register("IsTopLevel", typeof(bool), typeof(MySerializableControl), 
-                new PropertyMetadata(false, (s,e) => (s as MySerializableControl).IsTopLevelChanged()));
-        protected virtual void IsTopLevelChanged()
-        {
-        }
+                new PropertyMetadata(false));
+
+        /// <summary>
+        /// Indicates a sub-level (a sub-heading)
+        /// </summary>
+        public bool IsNested { get; internal set; } = false;
 
     }
 

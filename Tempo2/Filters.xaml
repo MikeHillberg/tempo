@@ -147,7 +147,7 @@
 
         </StackPanel.Resources>
 
-        <local:HeaderWithCommands Heading="Search filters" Visibility="{x:Bind local:Utils.VisibilityNot(IsFlyoutMode), Mode=OneWay }" />
+        <local:HeadingBar Heading="Search filters" Visibility="{x:Bind local:Utils.VisibilityNot(IsFlyoutMode), Mode=OneWay }" />
 
 
         <StackPanel Margin="{StaticResource ContentMargin}" >

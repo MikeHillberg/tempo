@@ -213,16 +213,28 @@ namespace Tempo
     public class BooleanSettingView : SettingViewBase
     {
         // bugbug
-        // Error WMC1118 TwoWay binding target 'Setting' must be a dependency property Tempo2  C:\Users\Mike\source\repos\TempoOnline\UwpTempo2\Filters2.xaml	15	
-
+        // Error WMC1118 TwoWay binding target 'Setting' must be a dependency property 
         public bool? Setting
         {
             get { return (bool?)GetValue(SettingProperty); }
-            set { SetValue(SettingProperty, value); }
+            set
+            {
+                // Bugbug
+                // This goes into an infinite recursion of change notifications
+                // Tried putting a workaround here of comparing current value to 'value', but
+                // current value is unchanged from lower on the stack. It's like
+                // in the SetValue call it's sending the change notification before updating the value
+                if (_currentSettingHack != value)
+                {
+                    _currentSettingHack = value;
+                    SetValue(SettingProperty, value);
+                }
+            }
         }
         public static readonly DependencyProperty SettingProperty =
             DependencyProperty.Register("Setting", typeof(bool?), typeof(SettingViewBase), new PropertyMetadata(null));
 
+        bool? _currentSettingHack = null;
 
         public bool IsThreeState { get; set; }
     }

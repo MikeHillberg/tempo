@@ -15,21 +15,41 @@
     >
 
     <Grid >
+        
+        
+        
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        
-        <TextBox x:Name="_searchBox" KeyDown="_searchBox_KeyDown"
-                     InputScope="Search" IsSpellCheckEnabled="False"
-                     Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
-                     PlaceholderText="{x:Bind local:MainPage.PlaceholderText}"/>
 
-        <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Margin="0,5,10,0"
+            HorizontalAlignment="Right"
+            Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Search:</TextBlock>
+        
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Margin="0,17,20,0"
+                   HorizontalAlignment="Right"
+                   Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Or:</TextBlock>
+        
+        <TextBox x:Name="_searchBox" Grid.Column="1"
+                 KeyDown="_searchBox_KeyDown"
+                 InputScope="Search" IsSpellCheckEnabled="False"
+                 Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
+                 PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"/>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal">
             <Button Click="Search_Click" >
                 <SymbolIcon Symbol="Find"  />
             </Button>
-            <Button Click="ShowAll" Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Show everything</Button>
+            
             <Button Click="ShowFilters">
                 Filters
                 <Button.KeyboardAccelerators>
@@ -40,6 +60,10 @@
                 </Button.KeyboardAccelerators>
             </Button>
         </StackPanel>
+        
+        <Button Grid.Column="1" Grid.Row="1"
+                Margin="0,10,0,0"
+            Click="ShowAll" Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Show everything</Button>
     </Grid>
     
 </UserControl>

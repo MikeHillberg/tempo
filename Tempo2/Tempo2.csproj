@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="AttributesView2.xaml" />
+    <None Remove="CommonCommandBar.xaml" />
     <None Remove="Filters3.xaml" />
     <None Remove="FiltersFlyout.xaml" />
     <None Remove="FiltersFlyout3.xaml" />
@@ -134,6 +135,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="CommonCommandBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="TimedTextBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -7,15 +7,16 @@ using System;
 
 namespace Tempo
 {
+    /// <summary>
+    /// Search UI used on both the home page and the search results page
+    /// </summary>
     public sealed partial class SearchBox : UserControl
     {
         public SearchBox()
         {
             this.InitializeComponent();
+            IsAllVisibleChanged();
         }
-
-
-
 
         private void Search_Click(object sender, RoutedEventArgs e)
         {
@@ -59,12 +60,39 @@ namespace Tempo
             set { SetValue(IsAllVisibleProperty, value); }
         }
         public static readonly DependencyProperty IsAllVisibleProperty =
-                    DependencyProperty.Register("IsAllVisible", typeof(bool), typeof(SearchBox), new PropertyMetadata(false));
+                    DependencyProperty.Register("IsAllVisible", typeof(bool), typeof(SearchBox), 
+                        new PropertyMetadata(false, (d,dp) => (d as SearchBox).IsAllVisibleChanged()));
+
+        void IsAllVisibleChanged()
+        {
+            if(IsAllVisible)
+            {
+                PlaceholderText = "Name of anything, simple or regex (Control+E)";
+            }
+            else
+            {
+                PlaceholderText = "Search for name (Control+E)";
+            }
+        }
 
         private void ShowFilters(object sender, RoutedEventArgs e)
         {
             App.GotoFilters(showOld:false);
         }
+
+
+
+        public string PlaceholderText
+        {
+            get { return (string)GetValue(PlaceholderTextProperty); }
+            set { SetValue(PlaceholderTextProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for PlaceholderText.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PlaceholderTextProperty =
+            DependencyProperty.Register("PlaceholderText", typeof(string), typeof(SearchBox), new PropertyMetadata(0));
+
+
 
     }
 }

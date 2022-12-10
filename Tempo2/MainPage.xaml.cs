@@ -148,20 +148,6 @@ namespace Tempo
 
 
 
-        static public string PlaceholderText
-        {
-            get
-            {
-                var present = new KeyboardCapabilities().KeyboardPresent;
-
-                // bugbug: raise notification if a keyboard is attached/detached
-                if (present == 0)
-                    return "Search string";
-                else
-                    return "Search string (Control+E)";
-            }
-        }
-
         static bool _initialLoad = true;
         private void DoLoaded(object sender, RoutedEventArgs e)
         {

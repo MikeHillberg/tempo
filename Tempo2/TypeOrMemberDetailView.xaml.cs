@@ -19,17 +19,18 @@ using Microsoft.UI.Xaml.Navigation;
 namespace Tempo
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Displays an API as appropriate (could be a type or a member)
     /// </summary>
     public sealed partial class TypeOrMemberDetailView : Page
     {
         public TypeOrMemberDetailView()
         {
             this.InitializeComponent();
-
-            IsTopLevelChanged();
         }
 
+        /// <summary>
+        /// "Top Level", meaning, show the command bar?
+        /// </summary>
         public bool IsTopLevel
         {
             get { return (bool)GetValue(IsTopLevelProperty); }
@@ -37,11 +38,7 @@ namespace Tempo
         }
         public static readonly DependencyProperty IsTopLevelProperty =
             DependencyProperty.Register("IsTopLevel", typeof(bool), typeof(TypeOrMemberDetailView), 
-                new PropertyMetadata(false, (s,e) => (s as TypeOrMemberDetailView).IsTopLevelChanged()));
-
-        void IsTopLevelChanged()
-        {
-        }
+                new PropertyMetadata(false));
 
         public void NavigateToItem(object item)
         {
@@ -50,41 +47,52 @@ namespace Tempo
 
             // Based on the member, update the detail views
 
+            foreach(var view in _detailsGrid.Children)
+            {
+                view.Visibility = Visibility.Collapsed;
+            }
+
             if (item is TypeViewModel)
             {
                 _typeDetail.DoActivate(item as TypeViewModel);
-                _detailsGrid.Children.Remove(_typeDetail);
-                _detailsGrid.Children.Add(_typeDetail);
+                _typeDetail.Visibility = Visibility.Visible;
+                //_detailsGrid.Children.Remove(_typeDetail);
+                //_detailsGrid.Children.Add(_typeDetail);
             }
             else if (item is PropertyViewModel)
             {
-                _detailsGrid.Children.Remove(_propertyDetail);
-                _detailsGrid.Children.Add(_propertyDetail);
+                //_detailsGrid.Children.Remove(_propertyDetail);
+                //_detailsGrid.Children.Add(_propertyDetail);
+                _propertyDetail.Visibility = Visibility.Visible;
                 _propertyDetail.DoActivate(item as PropertyViewModel);
             }
             else if (item is MethodViewModel)
             {
                 _methodDetail.DoActivate(item as MethodViewModel);
-                _detailsGrid.Children.Remove(_methodDetail);
-                _detailsGrid.Children.Add(_methodDetail);
+                _methodDetail.Visibility = Visibility.Visible;
+                //_detailsGrid.Children.Remove(_methodDetail);
+                //_detailsGrid.Children.Add(_methodDetail);
             }
             else if (item is EventViewModel)
             {
                 _eventDetail.DoActivate(item as EventViewModel);
-                _detailsGrid.Children.Remove(_eventDetail);
-                _detailsGrid.Children.Add(_eventDetail);
+                _eventDetail.Visibility = Visibility.Visible;
+                //_detailsGrid.Children.Remove(_eventDetail);
+                //_detailsGrid.Children.Add(_eventDetail);
             }
             else if (item is ConstructorViewModel)
             {
                 _constructorDetail.DoActivate(item as ConstructorViewModel);
-                _detailsGrid.Children.Remove(_constructorDetail);
-                _detailsGrid.Children.Add(_constructorDetail);
+                _constructorDetail.Visibility = Visibility.Visible;
+                //_detailsGrid.Children.Remove(_constructorDetail);
+                //_detailsGrid.Children.Add(_constructorDetail);
             }
             else if (item is FieldViewModel)
             {
                 _fieldDetail.DoActivate(item as FieldViewModel);
-                _detailsGrid.Children.Remove(_fieldDetail);
-                _detailsGrid.Children.Add(_fieldDetail);
+                _fieldDetail.Visibility = Visibility.Visible;
+                //_detailsGrid.Children.Remove(_fieldDetail);
+                //_detailsGrid.Children.Add(_fieldDetail);
             }
             else
             {

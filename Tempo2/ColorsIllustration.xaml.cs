@@ -60,6 +60,8 @@ namespace Tempo
             ColorSamples = colorSamples;
         }
 
+        public static string Description => "Colors from the Windows.UI.Colors class";
+
 
         public IList<ColorSample> ColorSamples
         {
