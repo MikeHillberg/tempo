@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI;
+using System.Threading;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -295,6 +296,9 @@ namespace Tempo
 
         static int _cacheCounter = 0;
 
+        // Keeps count of outstanding calls to GetMembers
+        // There can be more than one because it runs on another thread
+        int _gettingMembersCount = 0;
 
         private async void DoSearch()
         {
@@ -321,6 +325,7 @@ namespace Tempo
 
             IList<MemberViewModel> newResults = null;
             DateTime _startTime = DateTime.Now;
+            _gettingMembersCount++;
             var searchTask = Task.Run(() =>
             {
                 var iteration = ++Manager.RecalculateIteration;
@@ -347,14 +352,16 @@ namespace Tempo
                 // Bugbug: sometimes the ShowAsync returns:
                 // "An async operation was not properly started. (0x80000019)"
                 // (KeyShowAsync)
-                try
-                {
-                    var dialogTask = dialog.ShowAsync().AsTask();
-                }
-                catch(Exception e)
-                {
-                    UnhandledExceptionManager.ProcessException(e);
-                }
+                //try
+                //{
+                //    var dialogTask = dialog.ShowAsync().AsTask();
+                //}
+                //catch(Exception e)
+                //{
+                //    UnhandledExceptionManager.ProcessException(e);
+                //}
+
+                SlowSearchInProgress = true;
 
                 // Get rid of the stale data while the search continues
                 Results = null;
@@ -362,17 +369,35 @@ namespace Tempo
                 // Wait again for the search to complete, while the dialog is showing.
                 // But make sure the dialog shows for at least half a second so that the screen's not flashing
                 delayTask = Task.Delay(1);
-                await Task.WhenAll( new Task[] { searchTask, delayTask });
+                await Task.WhenAll(new Task[] { searchTask /*, delayTask*/ });
 
                 // Search complete
-                dialog.Hide();
+                //dialog.Hide();
             }
 
+            --_gettingMembersCount;
 
-            SearchDelay = (DateTime.Now - _startTime).Milliseconds;
-            Results = newResults;
-            NothingFound = (Results.Count == 0);
+            if (_gettingMembersCount == 0)
+            {
+                SlowSearchInProgress = false;
+
+                SearchDelay = (DateTime.Now - _startTime).Milliseconds;
+                Results = newResults;
+                NothingFound = (Results.Count == 0);
+            }
         }
+
+
+        /// <summary>
+        /// Indicates that search has taken too long, we should show a progress UI
+        /// </summary>
+        public bool SlowSearchInProgress
+        {
+            get { return (bool)GetValue(SlowSearchInProgressProperty); }
+            set { SetValue(SlowSearchInProgressProperty, value); }
+        }
+        public static readonly DependencyProperty SlowSearchInProgressProperty =
+            DependencyProperty.Register("SlowSearchInProgress", typeof(bool), typeof(SearchResults), new PropertyMetadata(false));
 
 
 

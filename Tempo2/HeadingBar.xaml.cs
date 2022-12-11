@@ -31,7 +31,7 @@ namespace Tempo
             if (connectedAnimation == null)
                 return;
 
-            var started = connectedAnimation.TryStart(_textBlock);
+            var started = connectedAnimation.TryStart(_heading);
         }
 
 

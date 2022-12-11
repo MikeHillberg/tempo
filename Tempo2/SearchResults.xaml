@@ -31,7 +31,7 @@
                     Results="{x:Bind Results, Mode=OneWay}"/>
 
         <!-- Wide mode view
-             Code behind moves the content between here and skinny mode -->
+             Code behind moves the content between here and skinny mode Grid depending on width -->
         <Grid  x:Name="_wideMode" Visibility="{x:Bind IsWide, Mode=OneWay}"  Grid.Row="1">
             
             <!-- A left pane with a list, a right pane with detail -->
@@ -71,9 +71,8 @@
                     Grid.Row="1"/>
 
                 <!-- No Background here so that Mica can be seen -->
-                <ListView x:Name="_listView"
+                <ListView x:Name="_listView" Grid.Row="2"
                           ItemsSource="{x:Bind Results, Mode=OneWay}"
-                          Grid.Row="2"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           ItemClick="ListView_ItemClick" IsItemClickEnabled="True"
                           SelectedItem="{x:Bind CurrentItem, Mode=TwoWay}"
@@ -87,11 +86,14 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Grid.Row="2"
+                <TextBlock Grid.Row="2"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
                            Visibility="{x:Bind NothingFound, Mode=OneWay}">
                     This space intentionally left blank; nothing found
                 </TextBlock>
+
+                <local:SmokeLayer Grid.Row="2"
+                                  Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
             </Grid>
 
             <!-- Detail area (could be a type view or a member view, second of two columns) -->
@@ -103,7 +105,29 @@
                 <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}">
                         <local:TypeOrMemberDetailView  x:Name="_detailsView" />
                 </Grid>
+
+                <local:SmokeLayer Grid.Row="2" 
+                      CornerRadius="5,0,0,0"
+                      Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
             </Grid>
+
+            <!-- Progress UI that turns on when/while search is slow -->
+            <StackPanel Grid.ColumnSpan="2"
+                        Background="White"
+                        CornerRadius="5"
+                        Padding="{StaticResource ContentMargin}"
+                        Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" >
+                <TextBlock Text="Searching" HorizontalAlignment="Center" />
+                
+                <!-- bugbug: best way to stop the animation so it's not wasting battery?
+                     For now, set it on IsIndeterminate -->
+                <ProgressBar Height="20"
+                             Width="200"
+                             IsIndeterminate="{x:Bind SlowSearchInProgress, Mode=OneWay}"
+                             Margin="{StaticResource ContentMargin}"/>
+            </StackPanel>
 
         </Grid>
 
@@ -125,8 +149,10 @@
         <!-- Status bar -->
         <StackPanel Background="{StaticResource ApplicationPageBackgroundThemeBrush}" Grid.Row="2">
             <Rectangle Height="1" Fill="DarkGray" />
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Name="_statusTextBlock" Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
+            <Grid >
+                <TextBlock Name="_statusTextBlock" 
+                           HorizontalAlignment="Left"
+                           Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
                        ><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTotal, Mode=OneWay}" FontWeight="Bold"
                        /><Run Text=" matches: " xml:space="preserve" FontWeight="Bold" 
                        /><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTypes, Mode=OneWay}" 
@@ -139,7 +165,9 @@
                        /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
                        />ms</TextBlock>
 
-            </StackPanel>
+                <local:SmokeLayer 
+                      Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
+            </Grid>
         </StackPanel>
 
     </Grid>

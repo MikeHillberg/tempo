@@ -126,6 +126,7 @@
     <None Remove="FiltersFlyout3.xaml" />
     <None Remove="LoadingDialog.xaml" />
     <None Remove="MemberMore.xaml" />
+    <None Remove="SmokeLayer.xaml" />
     <None Remove="TimedTextBox.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +136,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="SmokeLayer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="CommonCommandBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

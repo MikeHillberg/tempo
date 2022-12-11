@@ -13,7 +13,8 @@
         <!-- Background was: "{ThemeResource ApplicationPageBackgroundThemeBrush}" -->
         <Grid VerticalAlignment="Top"
               Background="White"
-              Padding="40">
+              Padding="40"
+              CornerRadius="5">
             <Grid.RowDefinitions>
                 <!-- Search box -->
                 <RowDefinition Height="Auto" />
