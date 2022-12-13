@@ -171,7 +171,7 @@ namespace Tempo
 
         private static void TypeClick(Hyperlink sender, HyperlinkClickEventArgs args)
         {
-            TypeDetailPage.GoToItem(GetTypeTarget(sender));
+            TypeDetailView.GoToItem(GetTypeTarget(sender));
         }
 
 

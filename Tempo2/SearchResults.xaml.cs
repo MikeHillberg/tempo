@@ -41,7 +41,7 @@ namespace Tempo
             // There's a button and global accelerator to show the filters
             App.FilterRequested += (s, e) =>
             {
-                if (MainPage.AdaptiveSettings.IsWide && IsLoaded)
+                if (HomePage.AdaptiveSettings.IsWide && IsLoaded)
                 {
                     // Mark to suppress a navigation to the filters
                     e.Handled = true;
@@ -63,7 +63,7 @@ namespace Tempo
 
             // When we get to the Home page (navigate there or hit the Home button)
             // reset the nav stack
-            MainPage.MainPageLoaded += (s, e) =>
+            HomePage.HomePageLoaded += (s, e) =>
             {
                 _saveSelectedItem = null;
                 this._navigationStack.Clear();
@@ -339,7 +339,7 @@ namespace Tempo
             // If the search didn't complete in a half second, put up a dialog to show progress
             if (!searchTask.IsCompleted)
             {
-                var dialog = new ContentDialog() { XamlRoot = App.MainPage.XamlRoot };
+                var dialog = new ContentDialog() { XamlRoot = App.HomePage.XamlRoot };
                 dialog.Content = new StackPanel()
                 {
                     Children =

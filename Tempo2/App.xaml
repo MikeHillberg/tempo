@@ -5,6 +5,28 @@
     xmlns:local="using:Tempo" xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     RequestedTheme="Light">
 
+    
+    <!-- 
+
+    General structure of views
+    
+    There's a detail view for each of the member types, so
+    "MemberDetailView" means [Property|Method|Event|Field|Constructor]DetailView
+    Note that TypeDetailView can show up in two places,
+    MemberDetailView can show up in three places
+    
+    Frame
+	HomePage 
+	TypeDetailView
+	MemberDetailView 
+	SearchResults 
+		TypeOrMemberDetailView
+			TypeDetailView
+				MemberDetailView
+			MemberDetailView
+    
+    -->
+    
     <Application.Resources>
         <controls:XamlControlsResources>
             <controls:XamlControlsResources.MergedDictionaries>
@@ -46,11 +68,14 @@
                         <!--<Setter Property="MinHeight" Value="30" />-->
                     </Style>
 
+                    <!-- Bugbug: reevaluate what's going on here -->
                     <Thickness x:Key="ContentMargin">15,20,15,0</Thickness>
+                    <Thickness x:Key="ContentMargin2">15</Thickness>
                     <Thickness x:Key="ContentMarginMinusHeight">15,0,15,0</Thickness>
 
                     <!-- Vertical spacing in a stack -->
                     <Thickness x:Key="VerticalMargin">0,5,0,0</Thickness>
+                    <Thickness x:Key="BottomVerticalMargin">0,0,0,5</Thickness>
 
                     <!-- bugbug -->
                     <Thickness x:Key="HeaderedContentMargin">15,4,0,0</Thickness>

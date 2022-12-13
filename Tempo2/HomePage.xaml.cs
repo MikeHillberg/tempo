@@ -17,13 +17,13 @@ namespace Tempo
     /// <summary>
     /// Home page
     /// </summary>
-    public sealed partial class MainPage : MySerializableControl
+    public sealed partial class HomePage : MySerializableControl
     {
 
         // bugbug:  This would make more sense on App, but you can't x:Bind to a static on the App class
-        static public MainPageSettings AdaptiveSettings { get; private set; } = new MainPageSettings();
+        static public HomePageSettings AdaptiveSettings { get; private set; } = new HomePageSettings();
 
-        static MainPage()
+        static HomePage()
         {
             // mikehill_ua
             // Should have warned me about CoreWindow
@@ -34,7 +34,7 @@ namespace Tempo
             //MainWindow.Instance.SizeChanged += Window_SizeChanged;
         }
 
-        public MainPage()
+        public HomePage()
         {
             this.InitializeComponent();
 
@@ -44,7 +44,7 @@ namespace Tempo
 
             Namespaces = App.Namespaces;
 
-            App.MainPage = this;
+            App.HomePage = this;
 
             // There's a button and global accelerator to show the filters
             App.FilterRequested += (s, e) =>
@@ -94,7 +94,7 @@ namespace Tempo
         }
 
         // mikehill_ua:
-        // Error CS0104	'WindowSizeChangedEventArgs' is an ambiguous reference between 'Windows.UI.Core.WindowSizeChangedEventArgs' and 'Microsoft.UI.Xaml.WindowSizeChangedEventArgs'	UwpTempo2 C:\Users\Mike\source\repos\TempoOnline\UwpTempo2\MainPage.xaml.cs	57	N/A
+        // Error CS0104	'WindowSizeChangedEventArgs' is an ambiguous reference between 'Windows.UI.Core.WindowSizeChangedEventArgs' and 'Microsoft.UI.Xaml.WindowSizeChangedEventArgs'	UwpTempo2 C:\Users\Mike\source\repos\TempoOnline\UwpTempo2\HomePage.xaml.cs	57	N/A
         // Should be a TODO here because it's referencing a CoreWindow
 
         static private void Window_SizeChanged(object sender, Microsoft.UI.Xaml.WindowSizeChangedEventArgs args)
@@ -118,7 +118,7 @@ namespace Tempo
 
         protected override object OnSuspending()
         {
-            var state = new MainPageNavivgationState()
+            var state = new HomePageNavivgationState()
             {
                 SearchString = App.Instance.SearchText,
                 OriginalSettings = _originalSettings
@@ -128,7 +128,7 @@ namespace Tempo
 
         protected override void OnReactivated(object parameter, object state)
         {
-            var s = state as MainPageNavivgationState;
+            var s = state as HomePageNavivgationState;
             App.Instance.SearchText = s.SearchString;
             _originalSettings = s.OriginalSettings;
 
@@ -139,7 +139,7 @@ namespace Tempo
 
         Settings _originalSettings;
 
-        class MainPageNavivgationState
+        class HomePageNavivgationState
         {
             public int PivotIndex { get; set; }
             public string SearchString { get; set; }
@@ -162,7 +162,7 @@ namespace Tempo
             }
 
             // Signal that we're at the Home page so the nav stack can reset
-            MainPageLoaded?.Invoke(this, null);
+            HomePageLoaded?.Invoke(this, null);
 
             //_customFilesTip.IsOpen = true;
 
@@ -178,7 +178,7 @@ namespace Tempo
             MainWindow.Instance.SetMicaBackdrop();
         }
 
-        static public event EventHandler MainPageLoaded;
+        static public event EventHandler HomePageLoaded;
 
 
         public IList<object> Namespaces
@@ -187,7 +187,7 @@ namespace Tempo
             set { SetValue(NamespacesProperty, value); }
         }
         public static readonly DependencyProperty NamespacesProperty =
-            DependencyProperty.Register("Namespaces", typeof(IList<object>), typeof(MainPage), new PropertyMetadata(null));
+            DependencyProperty.Register("Namespaces", typeof(IList<object>), typeof(HomePage), new PropertyMetadata(null));
 
 
 
@@ -198,8 +198,8 @@ namespace Tempo
             set { SetValue(SelectedNamespaceProperty, value); }
         }
         public static readonly DependencyProperty SelectedNamespaceProperty =
-            DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(MainPage),
-                new PropertyMetadata("", (s, e) => (s as MainPage).SelectedNamespaceChanged()));
+            DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(HomePage),
+                new PropertyMetadata("", (s, e) => (s as HomePage).SelectedNamespaceChanged()));
 
         // bugbug:  Bind directly to Manager?
         private void SelectedNamespaceChanged()
@@ -225,7 +225,7 @@ namespace Tempo
             set { SetValue(BackButtonVisibilityProperty, value); }
         }
         public static readonly DependencyProperty BackButtonVisibilityProperty =
-            DependencyProperty.Register("BackButtonVisibility", typeof(Visibility), typeof(MainPage), new PropertyMetadata(Visibility.Collapsed));
+            DependencyProperty.Register("BackButtonVisibility", typeof(Visibility), typeof(HomePage), new PropertyMetadata(Visibility.Collapsed));
 
 
 

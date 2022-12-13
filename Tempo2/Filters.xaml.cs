@@ -39,7 +39,7 @@ namespace Tempo
                 if (string.IsNullOrEmpty(e.PropertyName))
                 {
                     Initialize();
-                    MainPage.AdaptiveSettings.UpdateFilterBackground();
+                    HomePage.AdaptiveSettings.UpdateFilterBackground();
                     RaisePropertyChanged(nameof(Settings));
                 }
             };
@@ -108,13 +108,13 @@ namespace Tempo
             set { SetValue(SelectedNamespaceProperty, value); }
         }
         public static readonly DependencyProperty SelectedNamespaceProperty =
-            DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(MainPage),
+            DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(HomePage),
                 new PropertyMetadata("", (s, e) => (s as Filters).SelectedNamespaceChanged()));
 
         // bugbug:  Bind directly to Manager?
         private void SelectedNamespaceChanged()
         {
-            MainPage.AdaptiveSettings.UpdateFilterBackground();
+            HomePage.AdaptiveSettings.UpdateFilterBackground();
         }
 
         // bugbug: Can't figure out how to make x:Bind work if this is typed as TypeKind
@@ -124,7 +124,7 @@ namespace Tempo
             set { SetValue(SelectedTypeKindProperty, value); }
         }
         public static readonly DependencyProperty SelectedTypeKindProperty =
-            DependencyProperty.Register("SelectedTypeKind", typeof(object), typeof(MainPage),
+            DependencyProperty.Register("SelectedTypeKind", typeof(object), typeof(HomePage),
                 new PropertyMetadata(TypeKind.Any, (d, e) => (d as Filters).SelectedTypeKindChanged()));
 
         private void SelectedTypeKindChanged()
@@ -137,7 +137,7 @@ namespace Tempo
             {
                 Manager.Settings.TypeKind = (TypeKind)SelectedTypeKind;
             }
-            MainPage.AdaptiveSettings.UpdateFilterBackground();
+            HomePage.AdaptiveSettings.UpdateFilterBackground();
         }
 
         public object SelectedMemberKind
@@ -146,7 +146,7 @@ namespace Tempo
             set { SetValue(SelectedMemberKindProperty, value); }
         }
         public static readonly DependencyProperty SelectedMemberKindProperty =
-            DependencyProperty.Register("SelectedMemberKind", typeof(object), typeof(MainPage),
+            DependencyProperty.Register("SelectedMemberKind", typeof(object), typeof(HomePage),
                 new PropertyMetadata(MemberKind.Any, (d, e) => (d as Filters).SelectedMemberKindChanged()));
 
         private void SelectedMemberKindChanged()
@@ -160,7 +160,7 @@ namespace Tempo
             {
                 Settings.MemberKind = (MemberKind)SelectedMemberKind;
             }
-            MainPage.AdaptiveSettings.UpdateFilterBackground();
+            HomePage.AdaptiveSettings.UpdateFilterBackground();
         }
 
         private void _memberKindComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

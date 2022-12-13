@@ -99,7 +99,7 @@ namespace Tempo
             // Show a "Loading" message while we're downloading from nuget.org
             _contentDialog = new LoadingDialog();
             _contentDialog.Message = loadingMessage;
-            _contentDialog.XamlRoot = App.MainPage.XamlRoot;
+            _contentDialog.XamlRoot = App.HomePage.XamlRoot;
             _contentDialogTask = _contentDialog.ShowAsync().AsTask();
             _contentDialog.CloseButtonText = "Cancel";
 

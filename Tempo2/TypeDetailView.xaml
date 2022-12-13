@@ -1,5 +1,5 @@
 ﻿<local:MySerializableControl
-    x:Class="Tempo.TypeDetailPage"
+    x:Class="Tempo.TypeDetailView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="White" PointerPressed="Grid_PointerPressed">
+    <Grid Background="White" PointerPressed="Grid_PointerPressed"
+         Padding="15" >
 
         <Grid.RowDefinitions>
             <!-- Command bar and heading -->
@@ -34,6 +35,7 @@
                         SubSubHeading="{x:Bind TypeVM.TypeKindString, Mode=OneWay}"
                         IsPreview="{x:Bind TypeVM.IsPreview, Mode=OneWay}"
                         IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}"
+                                  Margin="{StaticResource BottomVerticalMargin}"
                         />
             </StackPanel>
         </Border>
@@ -57,7 +59,7 @@
                     IsSummaryDisabled="{x:Bind IsWide, Mode=OneWay}" />
             </Border>
 
-            <Border x:Name="_wideModeCol1" Padding="40,0,0,0" Grid.Column="1" Background="#f0f0f0">
+            <Border x:Name="_wideModeCol1" Grid.Column="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                 <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
                 <local:TypeDetailPageTypeInfo x:Name="_typeInfo"  TypeVM="{x:Bind TypeVM, Mode=OneWay}"  />
             </Border>

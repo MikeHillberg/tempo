@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid Margin="{StaticResource ContentMargin}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -19,11 +19,11 @@
             <StackPanel  >
 
                 <local:CommonCommandBar 
+                    Margin="{StaticResource BottomVerticalMargin}"
                     Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
                     IsBackEnabled="True"  />
                 
                 <local:HeadingBar Heading="{x:Bind MethodVM.Name, Mode=OneWay}"
-                                  Margin="{StaticResource VerticalMargin}"
                                   SubHeading="{x:Bind MethodVM.DeclaringType.Name, Mode=OneWay}"
                                   SubSubHeading="method"
                                   IsSubheading="{x:Bind IsNested, Mode=OneWay}"   />

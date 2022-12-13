@@ -12,18 +12,17 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ScrollViewer >
+        <ScrollViewer Padding="{StaticResource ContentMargin2}">
             <StackPanel  >
 
                 <local:CommonCommandBar 
+                    Margin="{StaticResource BottomVerticalMargin}"
                     Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
                     IsBackEnabled="True"
-                    Margin="{StaticResource VerticalMargin}"
                     />
 
                 <local:HeadingBar Heading="{x:Bind ConstructorVM.FlexibleName, Mode=OneWay}"
                         SubSubHeading="constructor"
-                                          Margin="{StaticResource VerticalMargin}"
                         IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
                         />
 

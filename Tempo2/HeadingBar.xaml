@@ -25,7 +25,7 @@
 
             <StackPanel Orientation="Vertical">
                 <TextBlock x:Name="_heading" FontWeight="Bold" TextWrapping="Wrap" 
-                           Margin="0,0,10,0" IsTextSelectionEnabled="True"
+                           IsTextSelectionEnabled="True"
                            Style="{x:Bind TitleStyle, Mode=OneWay}">
                     <Run Text="{x:Bind Heading, Mode=OneWay}" />
                     <Run Text="{x:Bind SubSubHeading, Mode=OneWay}" />

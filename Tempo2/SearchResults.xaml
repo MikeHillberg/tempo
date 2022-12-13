@@ -97,12 +97,13 @@
             </Grid>
 
             <!-- Detail area (could be a type view or a member view, second of two columns) -->
-            <Grid x:Name="Pane1" Grid.Column="1" Grid.Row="1">
+            <Grid x:Name="Pane1" Grid.Column="1" Grid.Row="1" >
                 <!-- bugbug: This gives an error due to the Utils.Not, probably the combination with Visibility magic
                  "The name 'obj' does not exist in the current context"
                  Visibility="{x:Bind local:Utils.Not(NothingFound), Mode=OneWay}"  -->
 
-                <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}">
+                <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}"
+                      Padding="15">
                         <local:TypeOrMemberDetailView  x:Name="_detailsView" />
                 </Grid>
 

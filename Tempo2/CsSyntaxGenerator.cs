@@ -394,7 +394,7 @@ namespace Tempo
             if (withHyperlink)
             {
                 var hl = new Hyperlink();
-                hl.Click += (s, e) => TypeDetailPage.GoToItem(member);
+                hl.Click += (s, e) => TypeDetailView.GoToItem(member);
 
                 inlines.Add(hl);
                 inlines = hl.Inlines;

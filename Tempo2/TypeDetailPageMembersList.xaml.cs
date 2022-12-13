@@ -161,7 +161,7 @@ namespace Tempo
             set { SetValue(ShowMeProperty, value); }
         }
         public static readonly DependencyProperty ShowMeProperty =
-            DependencyProperty.Register("ShowMe", typeof(string), typeof(TypeDetailPage), new PropertyMetadata(null));
+            DependencyProperty.Register("ShowMe", typeof(string), typeof(TypeDetailView), new PropertyMetadata(null));
 
 
 

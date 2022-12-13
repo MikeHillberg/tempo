@@ -15,18 +15,18 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer >
+        <ScrollViewer Padding="{StaticResource ContentMargin2}">
             <StackPanel  >
 
                 <local:CommonCommandBar 
                     Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
                     IsBackEnabled="True"
+                    Margin="{StaticResource BottomVerticalMargin}"
                     />
                 <local:HeadingBar Heading="{x:Bind EventVM.Name, Mode=OneWay}"
                                      SubHeading="{x:Bind EventVM.DeclaringType.Name, Mode=OneWay}"
                                      SubSubHeading="event"
                                      IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
-                                     Margin="{StaticResource VerticalMargin}"
                                      />
 
                 <TextBlock Margin="{StaticResource VerticalMargin}"

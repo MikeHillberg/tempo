@@ -7,9 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="White"  Padding="10"  x:Name="_detailsGrid"
-          CornerRadius="5,0,0,0">
-        <local:TypeDetailPage  Background="White" x:Name="_typeDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
+    <Grid Background="White"  x:Name="_detailsGrid"
+          CornerRadius="5,0,0,0"
+          >
+        <local:TypeDetailView  Background="White" x:Name="_typeDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
         <local:MethodDetailView Background="White" x:Name="_methodDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
         <local:EventDetailView Background="White" x:Name="_eventDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
         <local:ConstructorDetailView Background="White" x:Name="_constructorDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />

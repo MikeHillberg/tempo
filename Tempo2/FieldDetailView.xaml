@@ -15,10 +15,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer >
+        <ScrollViewer Padding="{StaticResource ContentMargin2}">
             <StackPanel  >
 
                 <local:CommonCommandBar 
+                    Margin="{StaticResource BottomVerticalMargin}"
                     Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
                     IsBackEnabled="True"
                     />
@@ -26,7 +27,6 @@
                                      SubHeading="{x:Bind FieldVM.DeclaringType.Name, Mode=OneWay}"
                                      SubSubHeading="field"
                                      IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
-                                     Margin="{StaticResource VerticalMargin}"
                                      />
 
                 <TextBlock Margin="{StaticResource VerticalMargin}"

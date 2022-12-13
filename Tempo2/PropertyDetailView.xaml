@@ -8,49 +8,49 @@
     mc:Ignorable="d">
 
 
-    <Grid>
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer >
+        <ScrollViewer Padding="{StaticResource ContentMargin2}">
             <StackPanel  >
                 <local:CommonCommandBar 
+                    Margin="{StaticResource BottomVerticalMargin}"
                     Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
                     IsBackEnabled="True"
                     HorizontalAlignment="Left" />
-                
-                <local:HeadingBar 
-                    Margin="{StaticResource VerticalMargin}"
-                    Heading="{x:Bind PropertyVM.Name, Mode=OneWay}"
-                    SubHeading="{x:Bind PropertyVM.DeclaringType.PrettyName, Mode=OneWay}"
-                    SubSubHeading="property"
-                    IsSubheading="{x:Bind IsNested, Mode=OneWay}" />
 
-                <TextBlock Text="{x:Bind PropertyVM.ApiDescriptionAsync, Mode=OneWay}" 
+                    <local:HeadingBar 
+                        Heading="{x:Bind PropertyVM.Name, Mode=OneWay}"
+                        SubHeading="{x:Bind PropertyVM.DeclaringType.PrettyName, Mode=OneWay}"
+                        SubSubHeading="property"
+                        IsSubheading="{x:Bind IsNested, Mode=OneWay}" />
+
+                    <TextBlock Text="{x:Bind PropertyVM.ApiDescriptionAsync, Mode=OneWay}" 
                            Margin="{StaticResource VerticalMargin}"
                            TextWrapping="Wrap" IsTextSelectionEnabled="True" />
 
-                <!-- Horizontal line -->
-                <local:StackListHeaderItem/>
+                    <!-- Horizontal line -->
+                    <local:StackListHeaderItem/>
 
-                <!-- Bugbug: had to put it all in code -->
-                <RichTextBlock  
+                    <!-- Bugbug: had to put it all in code -->
+                    <RichTextBlock  
                     Style="{StaticResource SampleCodeStyleRTB}"
                     local:CsSyntaxGenerator.Member="{x:Bind PropertyVM, Mode=OneWay}"
                     TextWrapping="Wrap"/>
 
-                <StackPanel Margin="{StaticResource VerticalMargin}">
-                    <local:StackListHeaderItem>Version</local:StackListHeaderItem>
-                    <local:BuildNumberText MemberVM="{x:Bind PropertyVM, Mode=OneWay }" />
-                    <TextBlock Text="{x:Bind PropertyVM.Contract, Mode=OneWay}" />
-                </StackPanel>
+                    <StackPanel Margin="{StaticResource VerticalMargin}">
+                        <local:StackListHeaderItem>Version</local:StackListHeaderItem>
+                        <local:BuildNumberText MemberVM="{x:Bind PropertyVM, Mode=OneWay }" />
+                        <TextBlock Text="{x:Bind PropertyVM.Contract, Mode=OneWay}" />
+                    </StackPanel>
 
-                <StackPanel Margin="{StaticResource VerticalMargin}">
-                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
-                    <local:MemberMore MemberVM="{x:Bind PropertyVM, Mode=Oneway}"/>
-                </StackPanel>
+                    <StackPanel Margin="{StaticResource VerticalMargin}">
+                        <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                        <local:MemberMore MemberVM="{x:Bind PropertyVM, Mode=Oneway}"/>
+                    </StackPanel>
 
             </StackPanel>
         </ScrollViewer>

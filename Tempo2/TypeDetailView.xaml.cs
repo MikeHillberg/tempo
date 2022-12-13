@@ -24,9 +24,9 @@ namespace Tempo
     /// <summary>
     /// Show type's members and other info
     /// </summary>
-    public sealed partial class TypeDetailPage : MySerializableControl
+    public sealed partial class TypeDetailView : MySerializableControl
     {
-        public TypeDetailPage()
+        public TypeDetailView()
         {
             this.InitializeComponent();
             UpdateArrangementAndView();
@@ -43,8 +43,8 @@ namespace Tempo
             set { SetValue(IsWideProperty, value); }
         }
         public static readonly DependencyProperty IsWideProperty =
-            DependencyProperty.Register("IsWide", typeof(bool), typeof(TypeDetailPage), 
-                new PropertyMetadata(true, (s,e) => (s as TypeDetailPage).UpdateArrangementAndView()));
+            DependencyProperty.Register("IsWide", typeof(bool), typeof(TypeDetailView), 
+                new PropertyMetadata(true, (s,e) => (s as TypeDetailView).UpdateArrangementAndView()));
 
         void UpdateArrangementAndView()
         {
@@ -113,7 +113,7 @@ namespace Tempo
         }
         public static readonly DependencyProperty DependentsTitleProperty =
             DependencyProperty.Register("DependentsTitle", typeof(string), 
-                typeof(TypeDetailPage), new PropertyMetadata(""));
+                typeof(TypeDetailView), new PropertyMetadata(""));
 
         public IList<TypeViewModel> ReferencedBy
         {
@@ -121,7 +121,7 @@ namespace Tempo
             set { SetValue(ReferencedByProperty, value); }
         }
         public static readonly DependencyProperty ReferencedByProperty =
-            DependencyProperty.Register("ReferencedBy", typeof(IList<TypeViewModel>), typeof(TypeDetailPage), new PropertyMetadata(null));
+            DependencyProperty.Register("ReferencedBy", typeof(IList<TypeViewModel>), typeof(TypeDetailView), new PropertyMetadata(null));
 
 
 
@@ -131,8 +131,8 @@ namespace Tempo
             set { SetValue(TypeVMProperty, value); }
         }
         public static readonly DependencyProperty TypeVMProperty =
-            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailPage),
-                new PropertyMetadata(null, (s,e) => (s as TypeDetailPage).ResetSelectedMember()));
+            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailView),
+                new PropertyMetadata(null, (s,e) => (s as TypeDetailView).ResetSelectedMember()));
 
         private void ResetSelectedMember()
         {
@@ -146,7 +146,7 @@ namespace Tempo
             set { SetValue(GroupedTypeMembersProperty, value); }
         }
         public static readonly DependencyProperty GroupedTypeMembersProperty =
-            DependencyProperty.Register("GroupedTypeMembers", typeof(GroupedTypeMembers), typeof(TypeDetailPage),
+            DependencyProperty.Register("GroupedTypeMembers", typeof(GroupedTypeMembers), typeof(TypeDetailView),
                 new PropertyMetadata(null));
 
 
@@ -157,7 +157,7 @@ namespace Tempo
         }
         // Using a DependencyProperty as the backing store for InfoDetails.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InfoDetailsProperty =
-            DependencyProperty.Register("InfoDetails", typeof(IList<object>), typeof(TypeDetailPage), new PropertyMetadata(null));
+            DependencyProperty.Register("InfoDetails", typeof(IList<object>), typeof(TypeDetailView), new PropertyMetadata(null));
 
 
         protected override void OnActivated(object parameter)
@@ -173,7 +173,7 @@ namespace Tempo
             set { SetValue(HeadingOrientationProperty, value); }
         }
         public static readonly DependencyProperty HeadingOrientationProperty =
-            DependencyProperty.Register("HeadingOrientation", typeof(Orientation), typeof(TypeDetailPage), new PropertyMetadata(Orientation.Vertical));
+            DependencyProperty.Register("HeadingOrientation", typeof(Orientation), typeof(TypeDetailView), new PropertyMetadata(Orientation.Vertical));
 
 
 
@@ -255,7 +255,7 @@ namespace Tempo
             set { SetValue(SelectedPivotProperty, value); }
         }
         public static readonly DependencyProperty SelectedPivotProperty =
-            DependencyProperty.Register("SelectedPivot", typeof(int), typeof(TypeDetailPage), new PropertyMetadata(0));
+            DependencyProperty.Register("SelectedPivot", typeof(int), typeof(TypeDetailView), new PropertyMetadata(0));
 
         // bugbug
         internal App Appp { get { return Application.Current as App; } }

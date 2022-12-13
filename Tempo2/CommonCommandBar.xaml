@@ -38,7 +38,7 @@
                     x:Name="_filterButton"
                     ToolTipService.ToolTip="Filter results"
                     Label="Filter"
-                    Background="{x:Bind local:MainPage.AdaptiveSettings.FilterBackground, Mode=OneWay}"
+                    Background="{x:Bind local:HomePage.AdaptiveSettings.FilterBackground, Mode=OneWay}"
                     >
                 <SymbolIcon Symbol="Filter" />
                 <Button.Flyout>

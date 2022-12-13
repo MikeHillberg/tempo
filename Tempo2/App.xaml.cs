@@ -151,6 +151,7 @@ namespace Tempo
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
                 RootFrame = new Frame();
+
                 // Place the frame in the current Window
                 Window.Content = RootFrame;
             }
@@ -163,8 +164,8 @@ namespace Tempo
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                // TODO Raname this MainPage type in case your app MainPage has a different name
-                RootFrame.Navigate(typeof(MainPage), e.Arguments);
+                // TODO Raname this HomePage type in case your app HomePage has a different name
+                RootFrame.Navigate(typeof(HomePage), e.Arguments);
             }
 
             Window.Activate();
@@ -321,7 +322,7 @@ namespace Tempo
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                RootFrame.Navigate(typeof(MainPage), null); // e.Arguments);
+                RootFrame.Navigate(typeof(HomePage), null); // e.Arguments);
             }
 
             // Enable the DragOver and Drop events
@@ -420,19 +421,19 @@ namespace Tempo
         /// </summary>
         static void RunOnUIThread(Action action)
         {
-            var dq = App.MainPage.DispatcherQueue;
+            var dq = App.HomePage.DispatcherQueue;
             if (dq.HasThreadAccess)
             {
                 action();
             }
             else
             {
-                App.MainPage.DispatcherQueue.TryEnqueue(() => action());
+                App.HomePage.DispatcherQueue.TryEnqueue(() => action());
             }
         }
 
         /// <summary>
-        /// Check for filenames that should be loaded. This is called by MainPage by which point we have things loaded.
+        /// Check for filenames that should be loaded. This is called by HomePage by which point we have things loaded.
         /// </summary>
         internal void ProcessCommandLine()
         {
@@ -513,7 +514,7 @@ namespace Tempo
         static public App Instance { get; private set; }
 
         // Main window so that we can get the XamlRoot and DispatcherQueue
-        static public FrameworkElement MainPage;
+        static public FrameworkElement HomePage;
 
         // IsWinPlatformScope means show the Windows APIs
         static bool _isWinPlatformScope = false;
@@ -849,7 +850,7 @@ namespace Tempo
                             await (new ContentDialog()
                             {
                                 Content = "No APIs found",
-                                XamlRoot = MainPage.XamlRoot,
+                                XamlRoot = HomePage.XamlRoot,
                                 CloseButtonText = "OK"
                             }).ShowAsync();
 
@@ -958,7 +959,7 @@ namespace Tempo
                         await (new ContentDialog()
                         {
                             Content = "No APIs found",
-                            XamlRoot = MainPage.XamlRoot,
+                            XamlRoot = HomePage.XamlRoot,
                             CloseButtonText = "OK"
                         }).ShowAsync();
 
@@ -1232,7 +1233,7 @@ namespace Tempo
         /// </summary>
         public static void GoHome(string searchString = null)
         {
-            InternalNavigate(typeof(MainPage), searchString);
+            InternalNavigate(typeof(HomePage), searchString);
         }
 
         /// <summary>
@@ -1309,7 +1310,7 @@ namespace Tempo
         public static Type GetViewTypeFor(MemberViewModel memberVM)
         {
             if (memberVM is TypeViewModel)
-                return typeof(TypeDetailPage);
+                return typeof(TypeDetailView);
             else if (memberVM is PropertyViewModel)
                 return typeof(PropertyDetailView);
             else if (memberVM is MethodViewModel)
@@ -1329,7 +1330,7 @@ namespace Tempo
         public static MySerializableControl GetViewFor(MemberViewModel memberVM)
         {
             if (memberVM is TypeViewModel)
-                return new TypeDetailPage();
+                return new TypeDetailView();
             else if (memberVM is PropertyViewModel)
                 return new PropertyDetailView();
             else if (memberVM is MethodViewModel)
@@ -1462,13 +1463,13 @@ namespace Tempo
 
         private static void MoveToMainAndFocusToSearch()
         {
-            if (RootFrame.Content is MainPage)
+            if (RootFrame.Content is HomePage)
             {
-                (RootFrame.Content as MainPage).FocusToSearchString();
+                (RootFrame.Content as HomePage).FocusToSearchString();
             }
             else
             {
-                RootFrame.Navigate(typeof(MainPage)); // bugbug: helper method
+                RootFrame.Navigate(typeof(HomePage)); // bugbug: helper method
             }
         }
 

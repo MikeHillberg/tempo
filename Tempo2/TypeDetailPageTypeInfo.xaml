@@ -12,10 +12,10 @@
 
     <!-- bugbug:  UserControl.Background doesn't work -->
 
-    <ScrollViewer Padding="0,0,20,0"   Background="#f0f0f0">
+    <ScrollViewer Padding="15"   Background="#f0f0f0">
         <StackPanel >
 
-            <TextBlock Margin="0,20,0,0" Text="{x:Bind TypeVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" 
+            <TextBlock Text="{x:Bind TypeVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" 
                        IsTextSelectionEnabled="True" />
 
             <local:StackListHeaderItem/>

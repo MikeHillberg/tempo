@@ -12907,7 +12907,7 @@
         "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Microsoft.HockeyApp.Kit.xr.xml",
         "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Views/FeedbackFormPage.xbf",
         "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Views/FeedbackImagePage.xbf",
-        "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Views/FeedbackMainPage.xbf",
+        "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Views/FeedbackHomePage.xbf",
         "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Views/LoginPage.xbf",
         "lib/portable-wpa81/Microsoft.HockeyApp.Kit/Views/UpdatePage.xbf",
         "tools/Init.ps1"

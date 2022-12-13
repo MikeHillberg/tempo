@@ -18,7 +18,7 @@ namespace Tempo
         {
             var contentDialog = new ContentDialog()
             {
-                XamlRoot = App.MainPage.XamlRoot,
+                XamlRoot = App.HomePage.XamlRoot,
                 Content = new StackPanel()
                 {
                     Children =

@@ -34,7 +34,7 @@
                   ItemsSource="{x:Bind _cvs.View}" SelectionMode="None"
                   IsItemClickEnabled="True"
                   ItemClick="ListView_ItemClick"
-                  Visibility="{x:Bind local:MainPage.AdaptiveSettings.IsSkinny, Mode=OneWay}">
+                  Visibility="{x:Bind local:HomePage.AdaptiveSettings.IsSkinny, Mode=OneWay}">
 
                 <ListView.GroupStyle>
                     <GroupStyle>
@@ -55,7 +55,7 @@
             </ListView>
 
             <!-- bugbug: deferral -->
-            <Grid Visibility="{x:Bind local:MainPage.AdaptiveSettings.IsWide, Mode=OneWay}" 
+            <Grid Visibility="{x:Bind local:HomePage.AdaptiveSettings.IsWide, Mode=OneWay}" 
                   HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="400" />

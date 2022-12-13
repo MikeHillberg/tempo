@@ -12,9 +12,9 @@ using Microsoft.UI;
 
 namespace Tempo
 {
-    public class MainPageSettings : INotifyPropertyChanged
+    public class HomePageSettings : INotifyPropertyChanged
     {
-        public MainPageSettings()
+        public HomePageSettings()
         {
             Settings.Changed += (s, e) =>
              {
