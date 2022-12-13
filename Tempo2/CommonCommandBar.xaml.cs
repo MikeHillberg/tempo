@@ -183,23 +183,21 @@ namespace Tempo
         void ShowTeachingTips()
         {
             var shouldContinue = TeachingTips.TryShow(
-                TeachingTipIds.Filters, _root,
+                TeachingTipIds.Filters, _root, _filterButton,
                 () => new TeachingTip()
                 {
                     Title = "Filter your search",
                     Subtitle = "Reduce results by filtering what you search. For example only search properties, or ignore base types. The Home button (F3) resets everything.",
-                    Target = _filterButton
                 });
             if (!shouldContinue)
                 return;
 
             shouldContinue = TeachingTips.TryShow(
-                TeachingTipIds.ApiScopeSwitcher, _root,
+                TeachingTipIds.ApiScopeSwitcher, _root, _apiScopeButton,
                 () => new TeachingTip()
                 {
                     Title = "Change your API scope",
                     Subtitle = "Change the APIs you're searching, for example search WinAppSDK rather than Windows APIs",
-                    Target = _apiScopeButton
                 });// ;
             if (!shouldContinue)
                 return;

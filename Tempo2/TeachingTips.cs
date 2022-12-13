@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,8 +65,9 @@ namespace Tempo
         /// <summary>
         /// Try showing a teaching tip. If it's not shown, the tip won't be created.
         /// Returns false if we shouldn't continue to even try anyore (we've already shown enough)
+        /// Target is passed as a parameter so we can validate it's not collapsed first
         /// </summary>
-        internal static bool TryShow(TeachingTipIds id, Panel parent, Func<TeachingTip> action)
+        internal static bool TryShow(TeachingTipIds id, Panel parent, FrameworkElement target, Func<TeachingTip> action)
         {
             EnsureShownTipIdsLoaded();
 
@@ -82,8 +84,14 @@ namespace Tempo
                 return true;
             }
 
+            // If the target is collapsed, try moving on to the next tip
+            if(target.ActualWidth == 0)
+            {
+                return true;
+            }            
+
             // Show a tip
-            DoShow(id, parent, action);
+            DoShow(id, parent, target, action);
             _aTipHasBeenShown = true;
 
             // Return false to say don't try to show any more tips
@@ -93,13 +101,14 @@ namespace Tempo
         /// <summary>
         /// Show a teaching tip
         /// </summary>
-        static async void DoShow(TeachingTipIds id, Panel parent, Func<TeachingTip> action)
+        static async void DoShow(TeachingTipIds id, Panel parent, FrameworkElement target, Func<TeachingTip> action)
         {
             // Tips don't animate in, and so I don't think draw attention
             // So delay a bit before showing
             await Task.Delay(1000);
 
             var tip = action();
+            tip.Target = target;
 
             // The tip has to be in the tree or it can't find the XamlRoot
             parent.Children.Add(tip);

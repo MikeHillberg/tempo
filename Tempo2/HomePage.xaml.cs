@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -59,34 +60,30 @@ namespace Tempo
                     flyout.ShowAt(this, options);
                 }
             };
-
-            ShowTeachingTips();
         }
 
 
         /// <summary>
-        /// Show teaching tips for this page, if appropriate
+        /// Show teaching tips for this page, if appropriate. (Wait to Loaded to invoke)
         /// </summary>
         void ShowTeachingTips()
         {
             var shouldContinue = TeachingTips.TryShow(
-                TeachingTipIds.CustomFiles, _root,
+                TeachingTipIds.CustomFiles, _root, _customFileLabel,
                 () => new TeachingTip()
                 {
                     Title = "Pick your own files",
                     Subtitle = "View the APIs in nupkg/DLLs/WinMDs that you pick. For example download a nupkg from nuget.org and view its APIs",
-                    Target = _customFileLabel
                 });
             if (!shouldContinue)
                 return;
 
             shouldContinue = TeachingTips.TryShow(
-                TeachingTipIds.CommandPrompt, _root,
+                TeachingTipIds.CommandPrompt, _root, _commandPromptText,
                 () => new TeachingTip()
                 {
                     Title = "Start from the command prompt",
                     Subtitle = "Open a file of APIs directly from the command prompt",
-                    Target = _commandPromptText
                 });
             if (!shouldContinue)
                 return;
@@ -176,6 +173,8 @@ namespace Tempo
             }
 
             MainWindow.Instance.SetMicaBackdrop();
+
+            ShowTeachingTips();
         }
 
         static public event EventHandler HomePageLoaded;
