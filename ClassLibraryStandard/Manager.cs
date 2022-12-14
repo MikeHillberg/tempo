@@ -716,6 +716,10 @@ namespace Tempo
                     }
                 }
 
+                // Update the result stats
+                PostToUIThread(() => MatchingStats.RaiseAllPropertiesChanged());
+
+                // And we're done
                 yield break;
             }
 

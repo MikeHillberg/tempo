@@ -50,13 +50,14 @@
                 <SymbolIcon Symbol="Find"  />
             </Button>
             
-            <Button Click="ShowFilters">
+            <Button Click="ShowFilters" 
+                    Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
                 Filters
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="F"/>
                     
                     <!-- Keeping the old one around to see how it looks -->
-                    <KeyboardAccelerator Modifiers="Control,Shift" Key="F"/>
+                    <KeyboardAccelerator Modifiers="Control,Shift" Key="F" Invoked="ShowOldFilters" />
                 </Button.KeyboardAccelerators>
             </Button>
         </StackPanel>

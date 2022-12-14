@@ -272,26 +272,6 @@ namespace Tempo
                 {
                     App.GoBack();
                 }
-                else if (e2.Key == VirtualKey.T && _keyModifiers == KeyModifiers.Control)
-                {
-                    ToggleTypeFilter();
-                }
-                else if (e2.Key == VirtualKey.P && _keyModifiers == KeyModifiers.Control)
-                {
-                    TogglePropertyFilter();
-                }
-                else if (e2.Key == VirtualKey.H && _keyModifiers == KeyModifiers.Control)
-                {
-                    ToggleMethodFilter();
-                }
-                else if (e2.Key == VirtualKey.N && _keyModifiers == KeyModifiers.Control)
-                {
-                    ToggleEventFilter();
-                }
-                else if (e2.Key == VirtualKey.S && _keyModifiers == KeyModifiers.Control)
-                {
-                    Manager.Settings.CaseSensitive = !Manager.Settings.CaseSensitive;
-                }
             };
 
 
@@ -1452,6 +1432,11 @@ namespace Tempo
                 Manager.Settings.MemberKind = MemberKind.Type;
             else
                 Manager.Settings.MemberKind = MemberKind.Any;
+        }
+
+        public static void ToggleCaseSensitive()
+        {
+            Manager.Settings.CaseSensitive = !Manager.Settings.CaseSensitive;
         }
 
         internal static void ResetAndGoHome()

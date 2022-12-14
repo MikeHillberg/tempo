@@ -11,11 +11,11 @@ using Microsoft.UI.Xaml.Controls;
 namespace Tempo
 {
     /// <summary>
-    /// Old UI for search filters
+    /// Old UI for search filters, just keeping it around for demo purposes
     /// </summary>
-    public sealed partial class Filters : Page, INotifyPropertyChanged
+    public sealed partial class Filters1 : Page, INotifyPropertyChanged
     {
-        public Filters()
+        public Filters1()
         {
             Application.Current.DebugSettings.IsBindingTracingEnabled = true;
 
@@ -99,7 +99,7 @@ namespace Tempo
             set { SetValue(IsFlyoutModeProperty, value); }
         }
         public static readonly DependencyProperty IsFlyoutModeProperty =
-            DependencyProperty.Register("IsFlyoutMode", typeof(bool), typeof(Filters), new PropertyMetadata(false));
+            DependencyProperty.Register("IsFlyoutMode", typeof(bool), typeof(Filters1), new PropertyMetadata(false));
 
 
         public string SelectedNamespace
@@ -109,7 +109,7 @@ namespace Tempo
         }
         public static readonly DependencyProperty SelectedNamespaceProperty =
             DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(HomePage),
-                new PropertyMetadata("", (s, e) => (s as Filters).SelectedNamespaceChanged()));
+                new PropertyMetadata("", (s, e) => (s as Filters1).SelectedNamespaceChanged()));
 
         // bugbug:  Bind directly to Manager?
         private void SelectedNamespaceChanged()
@@ -125,7 +125,7 @@ namespace Tempo
         }
         public static readonly DependencyProperty SelectedTypeKindProperty =
             DependencyProperty.Register("SelectedTypeKind", typeof(object), typeof(HomePage),
-                new PropertyMetadata(TypeKind.Any, (d, e) => (d as Filters).SelectedTypeKindChanged()));
+                new PropertyMetadata(TypeKind.Any, (d, e) => (d as Filters1).SelectedTypeKindChanged()));
 
         private void SelectedTypeKindChanged()
         {
@@ -147,7 +147,7 @@ namespace Tempo
         }
         public static readonly DependencyProperty SelectedMemberKindProperty =
             DependencyProperty.Register("SelectedMemberKind", typeof(object), typeof(HomePage),
-                new PropertyMetadata(MemberKind.Any, (d, e) => (d as Filters).SelectedMemberKindChanged()));
+                new PropertyMetadata(MemberKind.Any, (d, e) => (d as Filters1).SelectedMemberKindChanged()));
 
         private void SelectedMemberKindChanged()
         {

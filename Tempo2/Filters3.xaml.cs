@@ -85,6 +85,32 @@ namespace Tempo
             DependencyProperty.Register("FilteredSettings", typeof(IEnumerable<IGrouping<string, SettingViewBase>>), typeof(Filters3), new PropertyMetadata(null));
 
 
+        bool OnlyShowTypes
+        {
+            set { App.ToggleTypeFilter(); }
+            get { return Settings.ShowTypes; }
+        }
+        bool OnlyShowProperties
+        {
+            set { App.TogglePropertyFilter(); }
+            get { return Settings.ShowProperties; }
+        }
+
+        bool OnlyShowMethods
+        {
+            set { App.ToggleMethodFilter(); }
+            get { return Settings.ShowMethods; }
+        }
+
+        bool OnlyShowEvents
+        {
+            set { App.ToggleEventFilter(); }
+            get { return Settings.ShowEvents; }
+        }
+
+
+
+
         /// <summary>
         /// When the filter search text box is invoked, update FilteredSettings property
         /// </summary>
@@ -174,6 +200,32 @@ namespace Tempo
                 _isInLoadedEvent = false;
             }
         }
+
+        private void BooleanSettingView_Setted(object sender, EventArgs e)
+        {
+        }
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            ((sender as FrameworkElement).DataContext as BooleanSettingView).RaiseClick();
+        }
+
+        private void ToggleTypeFilter(object sender, BooleanSettingView e)
+        {
+            App.ToggleTypeFilter();
+        }
+        private void TogglePropertyFilter(object sender, BooleanSettingView e)
+        {
+            App.TogglePropertyFilter();
+        }
+        private void ToggleMethodFilter(object sender, BooleanSettingView e)
+        {
+            App.ToggleMethodFilter();
+        }
+        private void ToggleEventFilter(object sender, BooleanSettingView e)
+        {
+            App.ToggleEventFilter();
+        }
     }
 
     // bugbug: has to be a DO for two-way data bindings
@@ -232,7 +284,23 @@ namespace Tempo
             }
         }
         public static readonly DependencyProperty SettingProperty =
-            DependencyProperty.Register("Setting", typeof(bool?), typeof(SettingViewBase), new PropertyMetadata(null));
+            DependencyProperty.Register("Setting", typeof(bool?), typeof(SettingViewBase), 
+                new PropertyMetadata(null, (d,dp) => (d as BooleanSettingView).SettingChanged()));
+
+        public event EventHandler<BooleanSettingView> Click;
+        public void RaiseClick()
+        {
+            Click?.Invoke(this, null);
+        }
+
+        void SettingChanged()
+        {
+            if(Setting == true)
+            {
+                Setted?.Invoke(this, null);
+            }
+        }
+        internal event EventHandler Setted;
 
         bool? _currentSettingHack = null;
 

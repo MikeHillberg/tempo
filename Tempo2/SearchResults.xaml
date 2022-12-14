@@ -60,7 +60,7 @@
                             </Style>
                         </Flyout.FlyoutPresenterStyle>
 
-                        <local:Filters IsFlyoutMode="True" />
+                        <local:Filters1 IsFlyoutMode="True" />
                     </Flyout>
                 </Grid.Tag>
 

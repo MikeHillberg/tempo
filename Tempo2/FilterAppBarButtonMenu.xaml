@@ -7,10 +7,31 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <MenuFlyoutItem Text="Types only" Click="TypeNamesOnly_Click"  />
-    <MenuFlyoutItem Text="Properties only" Click="PropertyNamesOnly_Click"  />
-    <MenuFlyoutItem Text="Methods only" Click="MethodNamesOnly_Click"  />
-    <MenuFlyoutItem Text="Events only" Click="EventNamesOnly_Click"  />
+    <MenuFlyoutItem Text="Types only" Click="TypeNamesOnly_Click"  >
+        <MenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Modifiers="Control" Key="T"/>
+        </MenuFlyoutItem.KeyboardAccelerators>
+    </MenuFlyoutItem>
+    
+    <MenuFlyoutItem Text="Properties only" Click="PropertyNamesOnly_Click"  >
+        <MenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Modifiers="Control" Key="P"/>
+        </MenuFlyoutItem.KeyboardAccelerators>
+    </MenuFlyoutItem>
+    
+    <MenuFlyoutItem Text="Methods only" Click="MethodNamesOnly_Click"  >
+        <MenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Modifiers="Control" Key="H"/>
+        </MenuFlyoutItem.KeyboardAccelerators>
+    </MenuFlyoutItem>
+    
+    <MenuFlyoutItem Text="Events only" Click="EventNamesOnly_Click"  >
+        <MenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Modifiers="Control" Key="N"/>
+        </MenuFlyoutItem.KeyboardAccelerators>
+    </MenuFlyoutItem>
+
+    <MenuFlyoutSeparator/>
 
     <MenuFlyoutItem Text="More filters ..." Click="AppBarButton_Click"  >
         <MenuFlyoutItem.KeyboardAccelerators>

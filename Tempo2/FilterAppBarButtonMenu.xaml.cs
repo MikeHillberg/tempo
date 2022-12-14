@@ -46,5 +46,9 @@ namespace Tempo
             App.ToggleEventFilter();
         }
 
+        private void CaseSensitive_Click(object sender, RoutedEventArgs e)
+        {
+            App.ToggleCaseSensitive();
+        }
     }
 }

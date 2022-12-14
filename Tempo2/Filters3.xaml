@@ -21,6 +21,43 @@
             <local:MyRibbonTabs x:Name="_tabbedSettings">
 
                 <local:MyRibbonTab Name="Main">
+                    <local:MyRibbonGroup2 Section="Common">
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.CaseSensitive, Mode=TwoWay}" 
+                                    IsThreeState="False"
+                                    GroupName="Common"
+                                    Label="Case sensitive"  
+                                    Description="Match string case"/>
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.OnlyShowTypes, Mode=OneWay}" 
+                                    IsThreeState="False"
+                                    GroupName="Common"
+                                    Click="ToggleTypeFilter"
+                                    Label="Types only"  
+                                    Description="Only search type names"/>
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.OnlyShowProperties, Mode=OneWay}" 
+                                    IsThreeState="False"
+                                    GroupName="Common"
+                                    Click="TogglePropertyFilter"
+                                    Label="Properties only"  
+                                    Description="Only search property names"/>
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.OnlyShowMethods, Mode=OneWay}" 
+                                    IsThreeState="False"
+                                    Click="ToggleMethodFilter"
+                                    GroupName="Common"
+                                    Label="Methods only"  
+                                    Description="Only search method names"/>
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.OnlyShowEvents, Mode=OneWay}" 
+                                    IsThreeState="False"
+                                    Click="ToggleEventFilter"
+                                    GroupName="Common"
+                                    Label="Events only"  
+                                    Description="Only search event names"/>
+                    </local:MyRibbonGroup2>
+
                     <local:MyRibbonGroup2 Section="Search on">
                         <local:BooleanSettingView 
                                     Setting="{x:Bind Settings.FilterOnReturnType, Mode=TwoWay}" 
@@ -266,15 +303,21 @@
                  (for ChoiceSettingView) -->
             
             <local:SettingVewTemplateSelector x:Key="_settingViewTemplateSelector">
+                
+                <!-- Template to use for Boolean settings -->
                 <local:SettingVewTemplateSelector.BooleanTemplate>
                     <DataTemplate x:Name="_booleanSettingViewTemplate" x:DataType="local:BooleanSettingView">
-                        <CheckBox IsChecked="{x:Bind Setting, Mode=TwoWay}" 
-                          Content="{x:Bind Label}"  
-                          IsThreeState="{x:Bind IsThreeState}"
-                          ToolTipService.ToolTip="{x:Bind Description}"/>
+                        <CheckBox
+                              Tag="{x:Bind}"
+                              IsChecked="{x:Bind Setting, Mode=TwoWay}" 
+                              Content="{x:Bind Label}"  
+                              IsThreeState="{x:Bind IsThreeState}"
+                              ToolTipService.ToolTip="{x:Bind Description}"
+                              Click="CheckBox_Click"/>
                     </DataTemplate>
                 </local:SettingVewTemplateSelector.BooleanTemplate>
 
+                <!-- Template to use for choose-one settings -->
                 <local:SettingVewTemplateSelector.ChoiceTemplate>
                     <!-- bugbug (cbsvp): can't use SelectedValue[Path], use events for code behind -->
                     <DataTemplate x:Name="_choiceSettingViewTemplate" x:DataType="local:ChoiceSettingView">

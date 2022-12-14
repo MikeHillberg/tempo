@@ -80,7 +80,14 @@ namespace Tempo
             App.GotoFilters(showOld:false);
         }
 
-
+        /// <summary>
+        /// Show the old/bad version of the filters (demo purposes)
+        /// </summary>
+        private void ShowOldFilters(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            args.Handled = true;
+            App.GotoFilters(showOld: true);
+        }
 
         public string PlaceholderText
         {

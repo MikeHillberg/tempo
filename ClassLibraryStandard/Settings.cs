@@ -245,7 +245,7 @@ namespace Tempo
         public bool? IsFinal
         {
             get { return _isFinal; }
-            set { _isFinal = value; NotifyChange(); }
+            set { Set(ref _isFinal, value); }
         }
 
         bool _isGrouped = true;
@@ -255,28 +255,28 @@ namespace Tempo
             { 
                 return _isGrouped && !Flat; 
             }
-            set { _isGrouped = value; NotifyChange(); }
+            set { Set(ref _isGrouped, value); }
         }
 
         bool _namespaceInclusive = true;
         public bool NamespaceInclusive
         {
             get { return _namespaceInclusive; }
-            set { _namespaceInclusive = value; NotifyChange(); }
+            set { Set(ref _namespaceInclusive, value); }
         }
 
         bool _namespaceExclusive = false;
         public bool NamespaceExclusive
         {
             get { return _namespaceExclusive; }
-            set { _namespaceExclusive = value; NotifyChange(); }
+            set { Set(ref _namespaceExclusive, value); }
         }
 
         bool _namespaceExcluded = false;
         public bool NamespaceExcluded
         {
             get { return _namespaceExcluded; }
-            set { _namespaceExcluded = value; NotifyChange(); }
+            set { Set(ref _namespaceExcluded, value); }
         }
 
 
@@ -284,7 +284,7 @@ namespace Tempo
         public bool? IsOverride
         {
             get { return _isOverride; }
-            set { _isOverride = value; NotifyChange(); }
+            set { Set(ref _isOverride, value); }
         }
 
         // Compare the current typeset to a baseline typeset (for finding deltas)
@@ -292,42 +292,42 @@ namespace Tempo
         public bool? CompareToBaseline
         {
             get { return _compareToBaseline; }
-            set { _compareToBaseline = value; NotifyChange(); }
+            set { Set(ref _compareToBaseline, value); }
         }
 
         bool? _isAsync = null;
         public bool? IsAsync
         {
             get { return _isAsync; }
-            set { _isAsync = value; NotifyChange(); }
+            set { Set(ref _isAsync, value); }
         }
 
         bool? _isRemoteAsync = null;
         public bool? IsRemoteAsync
         {
             get { return _isRemoteAsync; }
-            set { _isRemoteAsync = value; NotifyChange(); }
+            set { Set(ref _isRemoteAsync, value); }
         }
 
         bool? _isFirstWordAVerb = null;
         public bool? IsFirstWordAVerb
         {
             get { return _isFirstWordAVerb; }
-            set { _isFirstWordAVerb = value; NotifyChange(); }
+            set { Set(ref _isFirstWordAVerb, value); }
         }
 
         bool? _isRestricted = null;
         public bool? IsRestricted
         {
             get { return _isRestricted; }
-            set { _isRestricted = value;  NotifyChange(); }
+            set { Set(ref _isRestricted, value); }
         }
 
         public bool? _hasApiDesignNotes = null;
         public bool? HasApiDesignNotes
         {
             get { return _hasApiDesignNotes; }
-            set { _hasApiDesignNotes = true; NotifyChange(); }
+            set { Set(ref _hasApiDesignNotes, value); }
         }
 
 
@@ -335,14 +335,36 @@ namespace Tempo
         public bool FilterOnDeclaringType
         {
             get { return _filterOnDeclaringType; }
-            set { _filterOnDeclaringType = value; NotifyChange(); }
+            set { Set(ref _filterOnDeclaringType, value); }
         }
 
         bool _caseSensitive = false;
         public bool CaseSensitive
         {
             get { return _caseSensitive; }
-            set { _caseSensitive = value; NotifyChange(); }
+            set { Set(ref _caseSensitive, value); }
+        }
+
+        // Update a property and raise a notification, if it changed
+        void Set( ref bool _current, bool value, 
+                  [CallerMemberName] string memberName = null)
+        {
+            if(_current != value)
+            {
+                _current = value;
+                NotifyChange(isReset: false, name: memberName);
+            }
+        }
+
+        // bugbug: Is there a way to write a generic version of that that handles any type? Even any value type?
+        void Set(ref bool? _current, bool? value,
+          [CallerMemberName] string memberName = null)
+        {
+            if (_current != value)
+            {
+                _current = value;
+                NotifyChange(isReset: false, name: memberName);
+            }
         }
 
         bool _internalInterfaces = false;
@@ -351,6 +373,10 @@ namespace Tempo
             get { return _internalInterfaces; }
             set 
             { 
+                if(_internalInterfaces == value)
+                {
+                    return;
+                }
                 _internalInterfaces = value;
 
                 // Special notification for this property changing, so that ViewModels can
@@ -370,21 +396,21 @@ namespace Tempo
         public bool? DualApi
         {
             get { return _dualApi; }
-            set { _dualApi = value; NotifyChange(); }
+            set { Set(ref _dualApi, value); }
         }
 
         bool? _nameAndNamespaceConflict = null;
         public bool? NameAndNamespaceConflict
         {
             get { return _nameAndNamespaceConflict; }
-            set { _nameAndNamespaceConflict = value; NotifyChange(); }
+            set { Set(ref _nameAndNamespaceConflict, value); }
         }
 
         bool? _oneWordName = null;
         public bool? OneWordName
         {
             get { return _oneWordName; }
-            set { _oneWordName = value; NotifyChange(); }
+            set { Set(ref _oneWordName, value); }
         }
 
 
@@ -392,21 +418,21 @@ namespace Tempo
         public bool? IsMuse
         {
             get { return _isMuse; }
-            set { _isMuse = value; NotifyChange(); }
+            set { Set(ref _isMuse, value); }
         }
 
         bool? _isUac = null;
         public bool? IsUac
         {
             get { return _isUac; }
-            set { _isUac = value; NotifyChange(); }
+            set { Set(ref _isUac, value); }
         }
 
         bool? _typeInWindows = null;
         public bool? TypeInWindows
         {
             get { return _typeInWindows; }
-            set { _typeInWindows = value; NotifyChange(); }
+            set { Set(ref _typeInWindows, value);}
         }
 
 
@@ -415,7 +441,7 @@ namespace Tempo
         public bool? TypeInPhone
         {
             get { return _typeInPhone; }
-            set { _typeInPhone = value; NotifyChange(); }
+            set { Set(ref _typeInPhone, value); }
         }
 
 
@@ -424,70 +450,70 @@ namespace Tempo
         public bool? TypeInCustom
         {
             get { return _typeInCustom; }
-            set { _typeInCustom = value; NotifyChange(); }
+            set { Set(ref _typeInCustom, value); }
         }
 
         bool? _typeInWpf = null;
         public bool? TypeInWpf
         {
             get { return _typeInWpf; }
-            set { _typeInWpf = value; NotifyChange(); }
+            set { Set(ref _typeInWpf, value); }
         }
 
         bool? _hasMatchingPropertyAndSetMethod = null;
         public bool? HasMatchingPropertyAndSetMethod
         {
             get { return _hasMatchingPropertyAndSetMethod;  }
-            set { _hasMatchingPropertyAndSetMethod = value; NotifyChange(); }
+            set { Set(ref _hasMatchingPropertyAndSetMethod, value); }
         }
 
         bool? _duplicateEnumValues = null;
         public bool? DuplicateEnumValues
         {
             get { return _duplicateEnumValues; }
-            set { _duplicateEnumValues = value; NotifyChange(); }
+            set { Set(ref _duplicateEnumValues, value); }
         }
 
         bool? _conflictingOverrides = null;
         public bool? ConflictingOverrides
         {
             get { return _conflictingOverrides; }
-            set { _conflictingOverrides = value; NotifyChange(); }
+            set { Set(ref _conflictingOverrides, value); }
         }
 
         bool? _isFlagsEnum = null;
         public bool? IsFlagsEnum
         {
             get { return _isFlagsEnum; }
-            set { _isFlagsEnum = value; NotifyChange(); }
+            set { Set(ref _isFlagsEnum, value); }
         }
 
         bool? _memberInWindows = null;
         public bool? MemberInWindows
         {
             get { return _memberInWindows; }
-            set { _memberInWindows = value; NotifyChange(); }
+            set { Set(ref _memberInWindows, value); }
         }
 
         bool? _memberInCustom = null;
         public bool? MemberInCustom
         {
             get { return _memberInCustom; }
-            set { _memberInCustom = value; NotifyChange(); }
+            set { Set(ref _memberInCustom, value); }
         }
 
         bool? _memberInWpf = null;
         public bool? MemberInWpf
         {
             get { return _memberInWpf; }
-            set { _memberInWpf = value; NotifyChange(); }
+            set { Set(ref _memberInWpf, value); }
         }
 
         bool? _memberInPhone = null;
         public bool? MemberInPhone
         {
             get { return _memberInPhone; }
-            set { _memberInPhone = value; NotifyChange(); }
+            set { Set(ref _memberInPhone, value); }
         }
 
 
@@ -496,63 +522,63 @@ namespace Tempo
         public bool? Deprecated
         {
             get { return _deprecated; }
-            set { _deprecated = value; NotifyChange(); }
+            set { Set(ref _deprecated, value); }
         }
 
         bool? _propertyNameMatchesTypeName = null;
         public bool? PropertyNameMatchesTypeName
         {
             get { return _propertyNameMatchesTypeName; }
-            set { _propertyNameMatchesTypeName = value; NotifyChange(); }
+            set { Set(ref _propertyNameMatchesTypeName, value); }
         }
 
         bool? _returnsHostType = null;
         public bool? ReturnsHostType
         {
             get { return _returnsHostType; }
-            set { _returnsHostType = value; NotifyChange(); }
+            set { Set(ref _returnsHostType, value); }
         }
 
         bool? _customInParameters = null;
         public bool? CustomInParameters
         {
             get { return _customInParameters; }
-            set { _customInParameters = value; NotifyChange(); }
+            set { Set(ref _customInParameters, value); }
         }
 
         bool? _markerInterfaces = null;
         public bool? MarkerInterfaces
         {
             get { return _markerInterfaces; }
-            set { _markerInterfaces = value; NotifyChange(); }
+            set { Set(ref _markerInterfaces, value); }
         }
 
         bool? _untypedArgs = null;
         public bool? UntypedArgs
         {
             get { return _untypedArgs; }
-            set { _untypedArgs= value; NotifyChange(); }
+            set { Set(ref _untypedArgs, value); }
         }
 
         bool _unobtainableType = false;
         public bool UnobtainableType
         {
             get { return _unobtainableType; }
-            set { _unobtainableType = value; NotifyChange(); }
+            set { Set(ref _unobtainableType, value); }
         }
 
         bool _duplicateTypeName = false;
         public bool DuplicateTypeName
         {
             get { return _duplicateTypeName; }
-            set { _duplicateTypeName = value; NotifyChange(); }
+            set { Set(ref _duplicateTypeName, value); }
         }
 
         bool? _isAbstract = null;
         public bool? IsAbstract
         {
             get { return _isAbstract; }
-            set { _isAbstract = value; NotifyChange(); }
+            set { Set(ref _isAbstract, value); }
         }
 
 
@@ -560,7 +586,7 @@ namespace Tempo
         public bool? IsExplicit
         {
             get { return _isExplicit; }
-            set { _isExplicit = value; NotifyChange(); }
+            set { Set(ref _isExplicit, value); }
         }
 
 
@@ -568,21 +594,21 @@ namespace Tempo
         public bool? HasOutParameter
         {
             get { return _hasOutParameter; }
-            set { _hasOutParameter = value; NotifyChange(); }
+            set { Set(ref _hasOutParameter, value); }
         }
 
         bool? _hasAddedSetter = null;
         public bool? HasAddedSetter
         {
             get { return _hasAddedSetter; }
-            set { _hasAddedSetter = value; NotifyChange(); }
+            set { Set(ref _hasAddedSetter, value); }
         }
 
         bool? _hasMultipleOutParameters = null;
         public bool? HasMultipleOutParameters
         {
             get { return _hasMultipleOutParameters; }
-            set { _hasMultipleOutParameters = value;  NotifyChange(); }
+            set { Set(ref _hasMultipleOutParameters, value); }
         }
 
 
@@ -590,91 +616,91 @@ namespace Tempo
         public bool? ImplementsInternalInterface
         {
             get { return _implementsInternalInterface; }
-            set { _implementsInternalInterface = value; NotifyChange(); }
+            set { Set(ref _implementsInternalInterface, value); }
         }
 
         bool? _hasInParameter = null;
         public bool? HasInParameter
         {
             get { return _hasInParameter; }
-            set { _hasInParameter = value; NotifyChange(); }
+            set { Set(ref _hasInParameter, value); }
         }
 
         bool? _hasAgileParameter = null;
         public bool? HasAgileParameter
         {
             get { return _hasAgileParameter; }
-            set { _hasAgileParameter = value; NotifyChange(); }
+            set { Set(ref _hasAgileParameter, value); }
         }
 
         bool? _hasInterfaceParameter = null;
         public bool? HasInterfaceParameter
         {
             get { return _hasInterfaceParameter; }
-            set { _hasInterfaceParameter = value; NotifyChange(); }
+            set { Set(ref _hasInterfaceParameter, value); }
         }
 
         bool? _hasDelegateParameter = null;
         public bool? HasDelegateParameter
         {
             get { return _hasDelegateParameter; }
-            set { _hasDelegateParameter = value; NotifyChange(); }
+            set { Set(ref _hasDelegateParameter, value); }
         }
 
         bool? _hasMutableParameter = null;
         public bool? HasMutableParameter
         {
             get { return _hasMutableParameter; }
-            set { _hasMutableParameter = value; NotifyChange(); }
+            set { Set(ref _hasMutableParameter, value); }
         }
 
         bool? _hasRefParameter = null;
         public bool? HasRefParameter
         {
             get { return _hasRefParameter; }
-            set { _hasRefParameter = value; NotifyChange(); }
+            set { Set(ref _hasRefParameter, value); }
         }
 
         bool? _hasReturnValue = null;
         public bool? HasReturnValue
         {
             get { return _hasReturnValue; }
-            set { _hasReturnValue = value; NotifyChange();  }
+            set { Set(ref _hasReturnValue, value);  }
         }
 
         bool? _hasPrimitiveReturnValue = null;
         public bool? HasPrimitiveReturnValue
         {
             get { return _hasPrimitiveReturnValue; }
-            set { _hasPrimitiveReturnValue = value; NotifyChange(); }
+            set { Set(ref _hasPrimitiveReturnValue, value); }
         }
 
         bool? _isAddedMember = null;
         public bool? IsAddedMember
         {
             get { return _isAddedMember; }
-            set { _isAddedMember = value; NotifyChange(); }
+            set { Set(ref _isAddedMember, value); }
         }
 
         bool _filterOnFullName = true;
         public bool FilterOnFullName
         {
             get { return _filterOnFullName || _flat; }
-            set { _filterOnFullName = value; NotifyChange(); }
+            set { Set(ref _filterOnFullName, value); }
         }
 
         bool _filterOnReturnType = true;
         public bool FilterOnReturnType
         {
             get { return _filterOnReturnType && !_flat; }
-            set { _filterOnReturnType = value; NotifyChange(); }
+            set { Set(ref _filterOnReturnType, value); }
         }
 
         bool _flat = false;
         public bool Flat
         {
             get { return _flat; }
-            set { _flat = value; NotifyChange(); }
+            set { Set(ref _flat, value); }
         }
 
         public bool NotFlat
@@ -687,14 +713,14 @@ namespace Tempo
         public bool FilterOnName
         {
             get { return _filterOnName; }
-            set { _filterOnName = value; NotifyChange(); }
+            set { Set(ref _filterOnName, value); }
         }
 
         bool _filterOnBaseType = true;
         public bool FilterOnBaseType
         {
             get { return _filterOnBaseType && !_flat; }
-            set { _filterOnBaseType = value; NotifyChange(); }
+            set { Set(ref _filterOnBaseType, value); }
         }
 
         // Used to default this to false because in .Net Reflection it was really slow
@@ -702,14 +728,14 @@ namespace Tempo
         public bool FilterOnAttributes
         {
             get { return _filterOnAttributes; }
-            set { _filterOnAttributes = value; NotifyChange(); }
+            set { Set(ref _filterOnAttributes, value); }
         }
 
         bool _filterOnParameters = true;
         public bool FilterOnParameters
         {
             get { return _filterOnParameters && !_flat; }
-            set { _filterOnParameters = value; NotifyChange(); }
+            set { Set(ref _filterOnParameters, value); }
         }
 
 
@@ -724,7 +750,7 @@ namespace Tempo
         public bool? IsActivatable
         {
             get { return _isActivatable; }
-            set { _isActivatable = value; NotifyChange(); }
+            set { Set(ref _isActivatable, value); }
         }
 
         public bool ShowTypes
@@ -732,26 +758,31 @@ namespace Tempo
             get { return MemberKind == MemberKind.Type || MemberKind == MemberKind.Any; }
         }
 
+        public bool OnlyShowTypes
+        {
+            get { return MemberKind == MemberKind.Type; }
+        }
+
 
         bool? _isStatic = null;
         public bool? IsStatic
         {
             get { return _isStatic; }
-            set { _isStatic = value; NotifyChange(); }
+            set { Set(ref _isStatic, value); }
         }
 
         bool? _hasDefaultConstructor = null;
         public bool? HasDefaultConstructor
         {
             get { return _hasDefaultConstructor; }
-            set { _hasDefaultConstructor = value; NotifyChange(); }
+            set { Set(ref _hasDefaultConstructor, value); }
         }
 
         bool? _hasNonDefaultConstructor = null;
         public bool? HasNonDefaultConstructor
         {
             get { return _hasNonDefaultConstructor; }
-            set { _hasNonDefaultConstructor = value; NotifyChange(); }
+            set { Set(ref _hasNonDefaultConstructor, value); }
         }
 
 
@@ -759,7 +790,7 @@ namespace Tempo
         public bool? HasProtectedConstructors
         {
             get { return _hasProtectedConstructors; }
-            set { _hasProtectedConstructors = value; NotifyChange(); }
+            set { Set(ref _hasProtectedConstructors, value); }
         }
 
 
@@ -767,7 +798,7 @@ namespace Tempo
         public bool? HasPublicConstructors
         {
             get { return _hasPublicConstructors; }
-            set { _hasPublicConstructors = value; NotifyChange(); }
+            set { Set(ref _hasPublicConstructors, value); }
         }
 
 
@@ -775,14 +806,14 @@ namespace Tempo
         public bool? HasStaticConstructor
         {
             get { return _hasStaticConstructor; }
-            set { _hasStaticConstructor = value; NotifyChange(); }
+            set { Set(ref _hasStaticConstructor, value); }
         }
 
         bool? _hasBaseType = null;
         public bool? HasBaseType
         {
             get { return _hasBaseType; }
-            set { _hasBaseType = value; NotifyChange(); }
+            set { Set(ref _hasBaseType, value); }
         }
 
 
@@ -790,7 +821,7 @@ namespace Tempo
         public bool? IndexedProperty
         {
             get { return _indexedProperty; }
-            set { _indexedProperty = value; NotifyChange(); }
+            set { Set(ref _indexedProperty, value); }
         }
 
         public bool? IsEnum
@@ -852,21 +883,21 @@ namespace Tempo
         public bool? IsGeneric
         {
             get { return _isGeneric; }
-            set { _isGeneric = value; NotifyChange(); }
+            set { Set(ref _isGeneric, value); }
         }
 
         bool? _isStaticClass = null;
         public bool? IsStaticClass
         {
             get { return _isStaticClass; }
-            set { _isStaticClass = value; NotifyChange(); }
+            set { Set(ref _isStaticClass, value); }
         }
 
         bool? _isMutableType = null;
         public bool? IsMutableType
         {
             get { return _isMutableType;  }
-            set { _isMutableType = value; NotifyChange(); }
+            set { Set(ref _isMutableType, value); }
         }
 
         bool? _isWebHostHiden = null;
@@ -879,63 +910,63 @@ namespace Tempo
                 else
                     return _isWebHostHiden; 
             }
-            set { _isWebHostHiden = value; NotifyChange(); }
+            set { Set(ref _isWebHostHiden, value); }
         }
 
         bool? _experimental = null;
         public bool? Experimental
         {
             get { return _experimental; }
-            set { _experimental = value; NotifyChange(); }
+            set { Set(ref _experimental, value); }
         }
 
         bool _isWebHostHiddenEnabled = true;
         public bool IsWebHostHiddenEnabled
         {
             get { return _isWebHostHiddenEnabled; }
-            set { _isWebHostHiddenEnabled = value; NotifyChange(); }
+            set { Set(ref _isWebHostHiddenEnabled, value); }
         }
 
         bool? _isSealedType = null;
         public bool? IsSealedType
         {
             get { return _isSealedType; }
-            set { _isSealedType = value; NotifyChange(); }
+            set { Set(ref _isSealedType, value); }
         }
 
         bool? _isDelegateType = null;
         public bool? IsDelegateType
         {
             get { return _isDelegateType; }
-            set { _isDelegateType = value; NotifyChange();  }
+            set { Set(ref _isDelegateType, value); }
         }
 
         bool? _isEventArgsType = null;
         public bool? IsEventArgsType
         {
             get { return _isEventArgsType; }
-            set { _isEventArgsType = value; NotifyChange(); }
+            set { Set(ref _isEventArgsType, value); }
         }
 
         bool? _isMultiVersion = null;
         public bool? IsMultiVersion
         {
             get { return _isMultiVersion;  }
-            set { _isMultiVersion = value; NotifyChange(); }
+            set { Set(ref _isMultiVersion, value); }
         }
 
         bool? _isAbstractType = null;
         public bool? IsAbstractType
         {
             get { return _isAbstractType; }
-            set { _isAbstractType = value; NotifyChange(); }
+            set { Set(ref _isAbstractType, value); }
         }
 
         bool? _hasInterfaces;
         public bool? HasInterfaces
         {
             get { return _hasInterfaces; }
-            set { _hasInterfaces = value; NotifyChange(); }
+            set { Set(ref _hasInterfaces, value); }
         }
 
 
@@ -946,7 +977,7 @@ namespace Tempo
         public bool? IsProtected
         {
             get { return _isProtected; }
-            set { _isProtected = value; NotifyChange(); }
+            set { Set(ref _isProtected, value); }
         }
 
 
@@ -954,7 +985,7 @@ namespace Tempo
         public bool? IsVirtual
         {
             get { return _isVirtual; }
-            set { Update(ref _isVirtual, value); }
+            set { Set(ref _isVirtual, value); }
         }
 
 
@@ -962,7 +993,7 @@ namespace Tempo
         public bool? IsOverloaded
         {
             get { return _isOverloaded; }
-            set { _isOverloaded = value; NotifyChange(); }
+            set { Set(ref _isOverloaded, value); }
         }
 
 
@@ -970,7 +1001,7 @@ namespace Tempo
         public bool? CanWrite
         {
             get { return _canWrite; }
-            set { _canWrite = value; NotifyChange(); }
+            set { Set(ref _canWrite, value); }
         }
 
 
@@ -978,7 +1009,7 @@ namespace Tempo
         public bool? IsDO
         {
             get { return _isDO; }
-            set { _isDO = value; NotifyChange(); }
+            set { Set(ref _isDO, value); }
         }
 
 
@@ -986,14 +1017,14 @@ namespace Tempo
         public bool? IsDP
         {
             get { return _isDP; }
-            set { _isDP = value; NotifyChange(); }
+            set { Set(ref _isDP, value); }
         }
 
         bool? _isRoutedEvent = null;
         public bool? IsRoutedEvent
         {
             get { return _isRoutedEvent; }
-            set { _isRoutedEvent = value; NotifyChange(); }
+            set { Set(ref _isRoutedEvent, value); }
         }
 
 
@@ -1110,16 +1141,6 @@ namespace Tempo
             }
         }
 
-        void Update(ref bool? current, bool? newValue) 
-        {
-            if(current != newValue) 
-            {
-                current = newValue;
-                NotifyChange();
-            }
-        }
-
-
         private object[] _memberKindValues =
         {
             new { Name = "All member kinds", Value = MemberKind.Any },
@@ -1177,6 +1198,8 @@ namespace Tempo
             }
         }
 
+        public bool OnlyShowProperties => MemberKind == MemberKind.Property;
+
 
         public bool ShowMethods
         {
@@ -1189,6 +1212,8 @@ namespace Tempo
             }
         }
 
+        public bool OnlyShowMethods => MemberKind == MemberKind.Method;
+
         public bool ShowEvents
         {
             get
@@ -1199,6 +1224,7 @@ namespace Tempo
                     return false;
             }
         }
+        public bool OnlyShowEvents => MemberKind == MemberKind.Event;
 
 
         public bool ShowFields

@@ -10,7 +10,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Opacity="0.8" Background ="{ThemeResource ContentDialogBackgroundThemeBrush}">
+    <Grid Opacity="0.8" 
+          Background ="{ThemeResource ContentDialogBackgroundThemeBrush}"
+          CornerRadius="5,0,0,0">
     </Grid>
 
 </UserControl>

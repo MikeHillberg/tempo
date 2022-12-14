@@ -53,7 +53,15 @@ namespace Tempo
                         Placement = FlyoutPlacementMode.RightEdgeAlignedTop
                     };
 
-                    var flyout = new FiltersFlyout3();
+                    Flyout flyout;
+                    if (e.ShowOld)
+                    {
+                        flyout = new FiltersFlyout();
+                    }
+                    else
+                    {
+                        flyout = new FiltersFlyout3();
+                    }
                     flyout.ShowAt(Pane0, options);
                 }
             };
@@ -267,7 +275,7 @@ namespace Tempo
             {
                 RelativeScrollPosition = relativeScrollPosition,
                 CacheCounter = (int)_root.Tag,
-                FilterCounter = Filters.ShowCount,
+                FilterCounter = Filters1.ShowCount,
                 NavigationStack = _navigationStack
             };
         }
@@ -275,7 +283,7 @@ namespace Tempo
         protected override void OnReactivated(object parameter, object state)
         {
             var s = state as SearchResultsNavigationState;
-            if (s.CacheCounter != (int)_root.Tag || s.FilterCounter != Filters.ShowCount)
+            if (s.CacheCounter != (int)_root.Tag || s.FilterCounter != Filters1.ShowCount)
             {
                 _root.Tag = s.CacheCounter;
                 _searchString = parameter as string;
