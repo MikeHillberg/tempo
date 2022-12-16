@@ -85,31 +85,6 @@ namespace Tempo
             DependencyProperty.Register("FilteredSettings", typeof(IEnumerable<IGrouping<string, SettingViewBase>>), typeof(Filters3), new PropertyMetadata(null));
 
 
-        bool OnlyShowTypes
-        {
-            set { App.ToggleTypeFilter(); }
-            get { return Settings.ShowTypes; }
-        }
-        bool OnlyShowProperties
-        {
-            set { App.TogglePropertyFilter(); }
-            get { return Settings.ShowProperties; }
-        }
-
-        bool OnlyShowMethods
-        {
-            set { App.ToggleMethodFilter(); }
-            get { return Settings.ShowMethods; }
-        }
-
-        bool OnlyShowEvents
-        {
-            set { App.ToggleEventFilter(); }
-            get { return Settings.ShowEvents; }
-        }
-
-
-
 
         /// <summary>
         /// When the filter search text box is invoked, update FilteredSettings property
@@ -226,6 +201,15 @@ namespace Tempo
         {
             App.ToggleEventFilter();
         }
+        private void ToggleFieldFilter(object sender, BooleanSettingView e)
+        {
+            App.ToggleFieldFilter();
+        }
+        private void ToggleConstructorFilter(object sender, BooleanSettingView e)
+        {
+            App.ToggleConstructorFilter();
+        }
+
     }
 
     // bugbug: has to be a DO for two-way data bindings

@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <ItemsControl ItemsSource="{x:Bind AttributeVMs, Mode=OneWay}"
+    <ItemsControl ItemsSource="{x:Bind AttributeTypeInfos, Mode=OneWay}"
                       Background="Transparent"
                       BorderThickness="0"
                       Padding="0"
@@ -20,9 +20,17 @@
         </ItemsControl.ItemContainerStyle>
 
         <ItemsControl.ItemTemplate>
+
+            <!-- Display each attribute with name and parameters/arguments. E.g.
+                 [Experimental]
+                 [ContentProperty]
+                    Name=IconSource
+                 [MarshalingBehavior]
+                    MarshalingType = Agile
+            -->
+
             <DataTemplate x:DataType="local:AttributeTypeInfo">
-                <StackPanel Margin="1" Orientation="Horizontal">
-                    <!--<l:FilterHilighter SearchText="{Binding TypeName}" Tag="8"/>-->
+                <StackPanel Margin="1">
                     <TextBlock Text="{x:Bind TypeName}" IsTextSelectionEnabled="True" />
                     <TextBlock  
                                 Margin="5,0,0,0"

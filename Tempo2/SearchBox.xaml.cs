@@ -20,9 +20,6 @@ namespace Tempo
 
         private void Search_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_searchBox.Text))
-                return;
-
             App.Instance.GotoSearch(_searchBox.Text);
         }
 

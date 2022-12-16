@@ -222,6 +222,47 @@ namespace Tempo
             }
         }
 
+
+        // Attributes in WinMD that you don't see in a projection
+        static string[] _winmdAttributes = new string[]
+        {
+            "ComImportAttribute",
+            "StaticAttribute",
+            "DeprecatedAttribute",
+            "ActivatableAttribute",
+            "ContractVersionAttribute",
+            "ComposableAttribute",
+            "OverloadAttribute"
+        };
+
+
+        IList<CustomAttributeViewModel> _nonWinMdCustomAttributes;
+
+        /// <summary>
+        /// CustomAttributes, with the WinMD attributes like "ComposableAttribute" filtered out
+        /// </summary>
+        public IList<CustomAttributeViewModel> NonWinmdCustomAttributes
+        {
+            get
+            {
+                if(_nonWinMdCustomAttributes != null)
+                {
+                    return _nonWinMdCustomAttributes;
+                }
+                _nonWinMdCustomAttributes = new List<CustomAttributeViewModel>();
+
+                foreach(var attr in CustomAttributes)
+                {
+                    if(!_winmdAttributes.Contains(attr.Name))
+                    {
+                        _nonWinMdCustomAttributes.Add(attr);
+                    }
+                }
+
+                return _nonWinMdCustomAttributes;
+            }
+        }
+
         public virtual bool IsOverloaded => false;
 
         abstract public bool IsProtected { get; }

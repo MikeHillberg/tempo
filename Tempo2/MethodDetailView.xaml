@@ -18,34 +18,53 @@
         <ScrollViewer >
             <StackPanel  >
 
+                <!-- Command bar -->
                 <local:CommonCommandBar 
                     Margin="{StaticResource BottomVerticalMargin}"
                     Visibility="{x:Bind local:Utils.VisibleIfEither(IsRoot,IsTopLevel), Mode=OneWay}"
                     IsBackEnabled="True"  />
-                
+
+                <!-- Heading -->
                 <local:HeadingBar Heading="{x:Bind MethodVM.Name, Mode=OneWay}"
                                   SubHeading="{x:Bind MethodVM.DeclaringType.Name, Mode=OneWay}"
                                   SubSubHeading="method"
                                   IsSubheading="{x:Bind IsNested, Mode=OneWay}"   />
 
+                <TextBlock Visibility="{x:Bind MethodVM.IsExperimental, Mode=OneWay}"
+                       Margin="{StaticResource BottomVerticalMargin}"
+                       Foreground="Red"
+                       >(Experimental)</TextBlock>
+
                 <TextBlock Margin="{StaticResource VerticalMargin}"
+                           local:CollapseIfEmpty.IsEnabled="True"
                            Text="{x:Bind MethodVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" />
 
                 <!-- Horizontal line -->
                 <local:StackListHeaderItem/>
 
+                <!-- Method definition in C# syntax -->
                 <!-- Bugbug: had to put it all in code -->
                 <RichTextBlock Style="{StaticResource SampleCodeStyleRTB}"
                            local:CsSyntaxGenerator.Member="{x:Bind MethodVM, Mode=OneWay}"
                            TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
 
 
+                <!-- Version -->
                 <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind MethodVM, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind MethodVM.Contract, Mode=OneWay}" />
                 </StackPanel>
 
+                <!-- Custom atributes -->
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}">
+                    <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                    <local:AttributesView2 
+                        x:Name="_attributesView"
+                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(MethodVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
+                </StackPanel>
+
+                <!-- Miscellaneous -->
                 <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem >More</local:StackListHeaderItem>
                     <local:MemberMore MemberVM="{x:Bind MethodVM, Mode=Oneway}"/>

@@ -29,7 +29,13 @@
                                      IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
                                      />
 
+                <TextBlock Visibility="{x:Bind EventVM.IsExperimental, Mode=OneWay}"
+                       Margin="{StaticResource BottomVerticalMargin}"
+                       Foreground="Red"
+                       >(Experimental)</TextBlock>
+
                 <TextBlock Margin="{StaticResource VerticalMargin}"
+                           local:CollapseIfEmpty.IsEnabled="True"
                            Text="{x:Bind EventVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap"  IsTextSelectionEnabled="True"/>
 
                 <!-- Horizontal line -->
@@ -52,6 +58,13 @@
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind EventVM, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind EventVM.Contract, Mode=OneWay}" />
+                </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}">
+                    <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                    <local:AttributesView2 
+                        x:Name="_attributesView"
+                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(EventVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
                 </StackPanel>
 
                 <StackPanel Margin="{StaticResource VerticalMargin}">

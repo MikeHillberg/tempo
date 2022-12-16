@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="Tempo.TypeDetailPageTypeInfo"
+    x:Class="Tempo.TypeDetailViewTypeInfo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
@@ -15,8 +15,14 @@
     <ScrollViewer Padding="15"   Background="#f0f0f0">
         <StackPanel >
 
+            <TextBlock Visibility="{x:Bind TypeVM.IsExperimental, Mode=OneWay}"
+                       Margin="{StaticResource BottomVerticalMargin}"
+                       Foreground="Red"
+                       >(Experimental)</TextBlock>
+            
             <TextBlock Text="{x:Bind TypeVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" 
-                       IsTextSelectionEnabled="True" />
+                       IsTextSelectionEnabled="True"
+                       local:CollapseIfEmpty.IsEnabled="True"/>
 
             <local:StackListHeaderItem/>
 
@@ -128,7 +134,7 @@
                     <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
                     <local:AttributesView2 
                         x:Name="_attributesView"
-                        AttributeVMs="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(TypeVM.CustomAttributes), Mode=OneWay}"/>
+                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(TypeVM.CustomAttributes), Mode=OneWay}"/>
                 </StackPanel>
 
                 <StackPanel>

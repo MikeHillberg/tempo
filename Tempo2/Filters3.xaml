@@ -56,6 +56,20 @@
                                     GroupName="Common"
                                     Label="Events only"  
                                     Description="Only search event names"/>
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.OnlyShowFields, Mode=OneWay}" 
+                                    IsThreeState="False"
+                                    Click="ToggleFieldFilter"
+                                    GroupName="Common"
+                                    Label="Fields only"  
+                                    Description="Only search field names"/>
+                        <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.OnlyShowConstructors, Mode=OneWay}" 
+                                    IsThreeState="False"
+                                    Click="ToggleConstructorFilter"
+                                    GroupName="Common"
+                                    Label="Constructors only"  
+                                    Description="Only search constructor names"/>
                     </local:MyRibbonGroup2>
 
                     <local:MyRibbonGroup2 Section="Search on">

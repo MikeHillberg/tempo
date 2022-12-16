@@ -1237,6 +1237,7 @@ namespace Tempo
                     return false;
             }
         }
+        public bool OnlyShowFields => MemberKind == MemberKind.Field;
 
         public bool ShowConstructors
         {
@@ -1248,6 +1249,7 @@ namespace Tempo
                     return false;
             }
         }
+        public bool OnlyShowConstructors => MemberKind == MemberKind.Constructor;
 
 
 

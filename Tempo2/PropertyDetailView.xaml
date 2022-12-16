@@ -22,35 +22,48 @@
                     IsBackEnabled="True"
                     HorizontalAlignment="Left" />
 
-                    <local:HeadingBar 
+                <local:HeadingBar 
                         Heading="{x:Bind PropertyVM.Name, Mode=OneWay}"
                         SubHeading="{x:Bind PropertyVM.DeclaringType.PrettyName, Mode=OneWay}"
                         SubSubHeading="property"
                         IsSubheading="{x:Bind IsNested, Mode=OneWay}" />
 
-                    <TextBlock Text="{x:Bind PropertyVM.ApiDescriptionAsync, Mode=OneWay}" 
+                <TextBlock Visibility="{x:Bind PropertyVM.IsExperimental, Mode=OneWay}"
+                       Margin="{StaticResource BottomVerticalMargin}"
+                       Foreground="Red"
+                       >(Experimental)</TextBlock>
+
+                <TextBlock Text="{x:Bind PropertyVM.ApiDescriptionAsync, Mode=OneWay}" 
                            Margin="{StaticResource VerticalMargin}"
+                           local:CollapseIfEmpty.IsEnabled="True"
                            TextWrapping="Wrap" IsTextSelectionEnabled="True" />
 
-                    <!-- Horizontal line -->
-                    <local:StackListHeaderItem/>
+                <!-- Horizontal line -->
+                <local:StackListHeaderItem/>
 
-                    <!-- Bugbug: had to put it all in code -->
-                    <RichTextBlock  
-                    Style="{StaticResource SampleCodeStyleRTB}"
-                    local:CsSyntaxGenerator.Member="{x:Bind PropertyVM, Mode=OneWay}"
-                    TextWrapping="Wrap"/>
+                <!-- Bugbug: had to put it all in code -->
+                <RichTextBlock  
+                        Style="{StaticResource SampleCodeStyleRTB}"
+                        local:CsSyntaxGenerator.Member="{x:Bind PropertyVM, Mode=OneWay}"
+                        TextWrapping="Wrap"/>
 
-                    <StackPanel Margin="{StaticResource VerticalMargin}">
-                        <local:StackListHeaderItem>Version</local:StackListHeaderItem>
-                        <local:BuildNumberText MemberVM="{x:Bind PropertyVM, Mode=OneWay }" />
-                        <TextBlock Text="{x:Bind PropertyVM.Contract, Mode=OneWay}" />
-                    </StackPanel>
+                <StackPanel Margin="{StaticResource VerticalMargin}">
+                    <local:StackListHeaderItem>Version</local:StackListHeaderItem>
+                    <local:BuildNumberText MemberVM="{x:Bind PropertyVM, Mode=OneWay }" />
+                    <TextBlock Text="{x:Bind PropertyVM.Contract, Mode=OneWay}" />
+                </StackPanel>
 
-                    <StackPanel Margin="{StaticResource VerticalMargin}">
-                        <local:StackListHeaderItem >More</local:StackListHeaderItem>
-                        <local:MemberMore MemberVM="{x:Bind PropertyVM, Mode=Oneway}"/>
-                    </StackPanel>
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}">
+                    <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                    <local:AttributesView2 
+                        x:Name="_attributesView"
+                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(PropertyVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
+                </StackPanel>
+
+                <StackPanel Margin="{StaticResource VerticalMargin}">
+                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                    <local:MemberMore MemberVM="{x:Bind PropertyVM, Mode=Oneway}"/>
+                </StackPanel>
 
             </StackPanel>
         </ScrollViewer>

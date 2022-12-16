@@ -20,9 +20,9 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Tempo
 {
-    public sealed partial class TypeDetailPageMembersList : global::Tempo.MySerializableControl
+    public sealed partial class TypeDetailViewMembersList : global::Tempo.MySerializableControl
     {
-        public TypeDetailPageMembersList()
+        public TypeDetailViewMembersList()
         {
             this.InitializeComponent();
             IsSummaryDisabledChanged(); // bugbug
@@ -43,8 +43,8 @@ namespace Tempo
         }
 
         public static readonly DependencyProperty IsSummaryDisabledProperty =
-            DependencyProperty.Register("IsSummaryDisabled", typeof(bool), typeof(TypeDetailPageMembersList),
-                new PropertyMetadata(false, (s, e) => (s as TypeDetailPageMembersList).IsSummaryDisabledChanged()));
+            DependencyProperty.Register("IsSummaryDisabled", typeof(bool), typeof(TypeDetailViewMembersList),
+                new PropertyMetadata(false, (s, e) => (s as TypeDetailViewMembersList).IsSummaryDisabledChanged()));
 
         void IsSummaryDisabledChanged()
         {
@@ -62,7 +62,7 @@ namespace Tempo
             set { SetValue(SummaryVisibilityProperty, value); }
         }
         public static readonly DependencyProperty SummaryVisibilityProperty =
-            DependencyProperty.Register("SummaryVisibility", typeof(Visibility), typeof(TypeDetailPageMembersList), new PropertyMetadata(Visibility.Collapsed));
+            DependencyProperty.Register("SummaryVisibility", typeof(Visibility), typeof(TypeDetailViewMembersList), new PropertyMetadata(Visibility.Collapsed));
 
 
 
@@ -72,8 +72,8 @@ namespace Tempo
             set { SetValue(TypeVMProperty, value); }
         }
         public static readonly DependencyProperty TypeVMProperty =
-            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailPageMembersList),
-                new PropertyMetadata(null, (d, e) => (d as TypeDetailPageMembersList).TypeVMChanged()));
+            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailViewMembersList),
+                new PropertyMetadata(null, (d, e) => (d as TypeDetailViewMembersList).TypeVMChanged()));
 
         void TypeVMChanged()
         {
@@ -97,7 +97,7 @@ namespace Tempo
             Navigated?.Invoke(this, new TypeNavigatedEventArgs(_listView.SelectedIndex, e.ClickedItem as MemberViewModel));
         }
 
-        public event TypedEventHandler<TypeDetailPageMembersList, TypeNavigatedEventArgs> Navigated;
+        public event TypedEventHandler<TypeDetailViewMembersList, TypeNavigatedEventArgs> Navigated;
 
 
 

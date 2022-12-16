@@ -18,9 +18,9 @@ using System.Diagnostics;
 
 namespace Tempo
 {
-    public sealed partial class TypeDetailPageTypeInfo : UserControl
+    public sealed partial class TypeDetailViewTypeInfo : UserControl
     {
-        public TypeDetailPageTypeInfo()
+        public TypeDetailViewTypeInfo()
         {
             this.InitializeComponent();
         }
@@ -33,8 +33,8 @@ namespace Tempo
             set { SetValue(TypeVMProperty, value); }
         }
         public static readonly DependencyProperty TypeVMProperty =
-            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailPageTypeInfo),
-                new PropertyMetadata(null, (d, dp) => (d as TypeDetailPageTypeInfo).TypeVMChanged()));
+            DependencyProperty.Register("TypeVM", typeof(TypeViewModel), typeof(TypeDetailViewTypeInfo),
+                new PropertyMetadata(null, (d, dp) => (d as TypeDetailViewTypeInfo).TypeVMChanged()));
 
         void TypeVMChanged()
         {

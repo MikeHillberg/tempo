@@ -26,7 +26,13 @@
                         IsSubheading="{x:Bind IsNested, Mode=OneWay}" 
                         />
 
+                <TextBlock Visibility="{x:Bind ConstructorVM.IsExperimental, Mode=OneWay}"
+                       Margin="{StaticResource BottomVerticalMargin}"
+                       Foreground="Red"
+                       >(Experimental)</TextBlock>
+
                 <TextBlock Margin="{StaticResource ContentMargin}"
+                           local:CollapseIfEmpty.IsEnabled="True"
                            Text="{x:Bind ConstructorVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
 
                 <!-- Horizontal line -->
@@ -44,6 +50,14 @@
                     <local:BuildNumberText MemberVM="{x:Bind ConstructorVM, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind ConstructorVM.Contract, Mode=OneWay}" />
                 </StackPanel>
+
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}">
+                    <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                    <local:AttributesView2 
+                        x:Name="_attributesView"
+                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(ConstructorVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
+                </StackPanel>
+
 
                 <StackPanel Margin="{StaticResource VerticalMargin}">
                     <local:StackListHeaderItem >More</local:StackListHeaderItem>

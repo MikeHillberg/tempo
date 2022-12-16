@@ -266,7 +266,7 @@ namespace Tempo
         }
 
         MemberViewModel _selectedMember = null;
-        private void _membersList_Navigated(TypeDetailPageMembersList sender, TypeNavigatedEventArgs args)
+        private void _membersList_Navigated(TypeDetailViewMembersList sender, TypeNavigatedEventArgs args)
         {
             // In wide mode just update the second pane
             if (IsWide)

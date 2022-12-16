@@ -1410,6 +1410,13 @@ namespace Tempo
                 Manager.Settings.MemberKind = MemberKind.Any;
         }
 
+        public static void ToggleFieldFilter()
+        {
+            if (Manager.Settings.MemberKind != MemberKind.Field)
+                Manager.Settings.MemberKind = MemberKind.Field;
+            else
+                Manager.Settings.MemberKind = MemberKind.Any;
+        }
         public static void ToggleMethodFilter()
         {
             if (Manager.Settings.MemberKind != MemberKind.Method)
@@ -1425,6 +1432,15 @@ namespace Tempo
             else
                 Manager.Settings.MemberKind = MemberKind.Any;
         }
+
+        public static void ToggleConstructorFilter()
+        {
+            if (Manager.Settings.MemberKind != MemberKind.Constructor)
+                Manager.Settings.MemberKind = MemberKind.Constructor;
+            else
+                Manager.Settings.MemberKind = MemberKind.Any;
+        }
+
 
         public static void ToggleTypeFilter()
         {

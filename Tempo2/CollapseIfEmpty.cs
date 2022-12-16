@@ -9,6 +9,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Tempo
 {
+    /// <summary>
+    /// Interface recognized by CollapseIfEmpty behavior
+    /// </summary>
     interface ICanBeEmpty
     {
         public bool IsEmpty { get; }

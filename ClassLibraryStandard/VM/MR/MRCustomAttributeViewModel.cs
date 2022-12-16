@@ -20,7 +20,7 @@ namespace Tempo
 
         public override string ToString()
         {
-            return $"MrCustomAttributeViewModel: {Name}";
+            return $"MRCustomAttributeViewModel: {Name}";
         }
 
         void EnsureNameAndNamespace()
