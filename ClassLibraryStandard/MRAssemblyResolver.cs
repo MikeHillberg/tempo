@@ -26,6 +26,12 @@ namespace Tempo
                 DebugLog.Append("Loading " + location);
                 return location;
             }
+            else if (assemblyName == "Windows.Foundation")
+            {
+                // If we can't provide the assembly location, MR will fake it, which is usually fine
+                // Windows.Foundation is pretty handy though, particularly for WinAppSDK.
+                return $@"{Environment.SystemDirectory}\WinMetadata\Windows.Foundation.winmd";
+            }
             else
             {
                 DebugLog.Append($"Couldn't find assembly for namespace '{assemblyName}'");

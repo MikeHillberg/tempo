@@ -48,8 +48,6 @@ namespace Tempo
 
         void IsSummaryDisabledChanged()
         {
-            Debug.WriteLine("IsSummaryEnabledChanged " + SummaryVisibility.ToString());
-
             if (IsSummaryDisabled)
                 SummaryVisibility = Visibility.Collapsed;
             else

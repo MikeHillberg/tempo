@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Tempo
 {
+    /// <summary>
+    /// Methods to load an API Scope (Windows, WinAppSDK, Custom)
+    /// </summary>
     internal class ApiScopeLoader
     {
         bool _isLoaded = false;
@@ -17,9 +20,11 @@ namespace Tempo
         ManualResetEvent _loadCompletedEvent = null;
         ManualResetEvent _loadingEvent = null;
 
-        // Load the scope by running an action off thread
-        // Completed actions run on the UI thread. It's done here rather than in the async completion
-        // to get them run at the right time.
+        /// <summary>
+        /// Load the scope by running an action off thread
+        /// Completed actions run on the UI thread. It's done here rather than in the async completion
+        /// to get them run at the right time.
+        /// </summary>
         internal async void StartLoad(
             Action offThreadLoadAction,     // How to load (runs off thread)
             Action uiThreadCompletedAction, // What to do when load completes (runs on UI thread)
@@ -88,7 +93,9 @@ namespace Tempo
         Task _contentDialogTask = null;
         LoadingDialog _contentDialog = null;
 
-        // Make sure loading has completed, showing a dialog if necessary
+        /// <summary>
+        //// Make sure loading has completed, showing a dialog if necessary
+        /// </summary>
         internal async Task<bool> EnsureLoadedAsync(string loadingMessage)
         {
             if (_isLoaded)

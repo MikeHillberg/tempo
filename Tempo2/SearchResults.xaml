@@ -86,12 +86,14 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
+                <!-- Show "Nothing found" if we're done with the search and came up empty -->
                 <TextBlock Grid.Row="2"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{x:Bind NothingFound, Mode=OneWay}">
+                           Visibility="{x:Bind AndNot(NothingFound, SlowSearchInProgress), Mode=OneWay}">
                     This space intentionally left blank; nothing found
                 </TextBlock>
 
+                <!-- Blur out the content area while a search is in progress -->
                 <local:SmokeLayer Grid.Row="2"
                                   Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
             </Grid>
@@ -166,6 +168,7 @@
                        /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
                        />ms</TextBlock>
 
+                <!-- Blur out the status bar while a search is in progress -->
                 <local:SmokeLayer 
                       Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
             </Grid>

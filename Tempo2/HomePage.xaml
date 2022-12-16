@@ -11,7 +11,8 @@
           PointerPressed="TeachingTipDemo_PointerPressed">
 
         <!-- Background was: "{ThemeResource ApplicationPageBackgroundThemeBrush}" -->
-        <Grid VerticalAlignment="Top"
+        <Grid VerticalAlignment="Center"
+              HorizontalAlignment="Center"
               Background="White"
               Padding="40"
               CornerRadius="5">

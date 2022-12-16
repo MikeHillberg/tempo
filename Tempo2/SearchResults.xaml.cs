@@ -231,6 +231,11 @@ namespace Tempo
                 SetValue(SomethingFoundProperty, true);
         }
 
+        Visibility AndNot(bool a, bool b)
+        {
+            return (a && !b) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
 
         /// <summary>
         /// Indicates the search results are non-empty

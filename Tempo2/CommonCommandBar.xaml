@@ -16,7 +16,7 @@
                     HorizontalAlignment="Left">
             <AppBarButton Click="BackButton_Click" Label="Back"
                 Background="Transparent"
-                IsEnabled="{x:Bind CanGoBack, Mode=OneWay}"
+                IsEnabled="{x:Bind CanGoBack}"
                 Visibility="{x:Bind IsBackEnabled, Mode=OneWay}" >
                 <SymbolIcon Symbol="Back"/>
             </AppBarButton>
