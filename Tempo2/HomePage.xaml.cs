@@ -10,6 +10,8 @@ using Windows.System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -329,19 +331,16 @@ namespace Tempo
 
         private async void OpenBaseline(object sender, RoutedEventArgs e)
         {
-            if (Manager.BaselineTypeSet != null)
-            {
-                App.CloseBaselineScope();
-            }
 
+            // Get filenames
             var filenames = await App.TryPickMetadataFilesAsync();
             if (filenames == null)
             {
                 return;
             }
 
-            App.Instance.BaselineFilenames = filenames.ToArray();
-            App.StartLoadBaselineScope(App.Instance.BaselineFilenames);
+            // Set them as the baseline
+            App.Instance.OpenBaseline(filenames);
         }
 
 
@@ -384,6 +383,121 @@ namespace Tempo
                 _root.Children.Add(tip);
                 tip.Closed += (_, __) => _root.Children.Remove(tip);
                 tip.IsOpen = true;
+            }
+        }
+
+        /// <summary>
+        /// Listen to DragOver event and decide to accept or not
+        /// </summary>
+        private void HandleDragOver(object sender, DragEventArgs e)
+        {
+            if (!e.DataView.AvailableFormats.Contains(StandardDataFormats.StorageItems))
+            {
+                return;
+            }
+
+            e.AcceptedOperation = DataPackageOperation.Link;
+        }
+
+        /// <summary>
+        /// Process dropped custom API scope files
+        /// </summary>
+        private async void CustomScope_Drop(object sender, DragEventArgs e)
+        {
+            var deferral = e.GetDeferral();
+            try
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+
+                // Only support one file for now
+                if (items.Count == 1)
+                {
+                    var storageFile = items[0] as StorageFile;
+                    if (storageFile == null)
+                    {
+                        return;
+                    }
+
+                    App.Instance.NavigateToNewCustomScope(new string[] { storageFile.Path });
+                }
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        }
+
+        /// <summary>
+        /// Convert DragEnter/DragLeave into a property
+        /// </summary>
+        private void CustomScope_DragEnter(object sender, DragEventArgs e)
+        {
+            IsDraggingOverCustom = true;
+        }
+        private void CustomScope_DragLeave(object sender, DragEventArgs e)
+        {
+            IsDraggingOverCustom = false;
+        }
+
+
+        public bool IsDraggingOverCustom
+        {
+            get { return (bool)GetValue(IsDraggingOverCustomProperty); }
+            set { SetValue(IsDraggingOverCustomProperty, value); }
+        }
+        public static readonly DependencyProperty IsDraggingOverCustomProperty =
+            DependencyProperty.Register("IsDraggingOverCustom", typeof(bool), typeof(HomePage), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Convert Drag enter/leave into an IsDraggingOverBaseline property
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Baseline_DragEnter(object sender, DragEventArgs e)
+        {
+            IsDraggingOverBaseline = true;
+        }
+        private void Baseline_DragLeave(object sender, DragEventArgs e)
+        {
+            IsDraggingOverBaseline = false;
+        }
+
+        /// <summary>
+        ///  Indicates if a drag is happening over the baseline files area
+        /// </summary>
+        public bool IsDraggingOverBaseline
+        {
+            get { return (bool)GetValue(IsDraggingOverBaselineProperty); }
+            set { SetValue(IsDraggingOverBaselineProperty, value); }
+        }
+        public static readonly DependencyProperty IsDraggingOverBaselineProperty =
+            DependencyProperty.Register("IsDraggingOverBaseline", typeof(bool), typeof(HomePage), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Handle a drop of new baseline files
+        /// </summary>
+        private async void Baseline_Drop(object sender, DragEventArgs e)
+        {
+            var deferral = e.GetDeferral();
+            try
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+
+                // Only support one file for now
+                if (items.Count == 1)
+                {
+                    var storageFile = items[0] as StorageFile;
+                    if (storageFile == null)
+                    {
+                        return;
+                    }
+
+                    App.Instance.OpenBaseline(new string[] { storageFile.Path});
+                }
+            }
+            finally
+            {
+                deferral.Complete();
             }
         }
     }

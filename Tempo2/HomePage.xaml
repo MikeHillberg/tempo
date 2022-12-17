@@ -99,7 +99,8 @@
 
                             <StackPanel>
                                 <!-- bugbug: this xBind should not be this hard -->
-                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" GroupName="Test">
+                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" GroupName="Test"
+                                             AccessKey="W">
                                     <StackPanel>
                                         <TextBlock>Windows</TextBlock>
                                         <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" >
@@ -109,7 +110,8 @@
 
                                 </RadioButton>
 
-                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" GroupName="Test">
+                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" GroupName="Test"
+                                             AccessKey="K">
                                     <StackPanel>
                                         <TextBlock >Windows App SDK</TextBlock>
                                         <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
@@ -120,58 +122,78 @@
                                 </RadioButton>
 
                                 <!-- Custom API scope -->
-                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsCustomApiScope, Mode=TwoWay}" GroupName="Test">
-                                    <StackPanel>
-                                        <TextBlock x:Name="_customFileLabel">Custom file</TextBlock>
-                                        <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
-                                        Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file over this window.
-                                        </TextBlock>
+                                <Grid Margin="0,10,0,0"
+                                      AccessKey="C">
+                                    <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                            Margin="-10"
+                                            Visibility="{x:Bind IsDraggingOverCustom, Mode=OneWay}"/>
+                                    
+                                    <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsCustomApiScope, Mode=TwoWay}" GroupName="Test"
+                                             AllowDrop="True" DragOver="HandleDragOver" Drop="CustomScope_Drop"
+                                             DragEnter="CustomScope_DragEnter" DragLeave="CustomScope_DragLeave">
+                                        <StackPanel>
+                                            <TextBlock x:Name="_customFileLabel">Custom file</TextBlock>
+                                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                                Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file over this window.
+                                            </TextBlock>
 
-                                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                                            <Button Click="OpenCustomClick">Open</Button>
-                                            <Button Click="CloseCustomClick">Close</Button>
-                                        </StackPanel>
+                                            <TextBlock Margin="0,10,0,0" VerticalAlignment="Center"
+                                                   TextWrapping="Wrap" >(Click Open or drop a file)</TextBlock>
 
-                                        <!-- Show loaded custom filenames -->
-                                        <StackPanel Margin="0,5,0,0"
+                                            <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                                <Button Click="OpenCustomClick">Open</Button>
+                                                <Button Click="CloseCustomClick">Close</Button>
+                                            </StackPanel>
+
+                                            <!-- Show loaded custom filenames -->
+                                            <StackPanel Margin="0,5,0,0"
                                                     local:CollapseIfEmpty.IsEnabledFor="{x:Bind _customFilenamesText}">
-                                            <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                            <TextBlock x:Name="_customFilenamesText"
+                                                <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                                                <TextBlock x:Name="_customFilenamesText"
                                                        Text="{x:Bind FilenamesToText(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}"
                                                        TextWrapping="Wrap"
                                                        Margin="5,0,0,0"/>
+                                            </StackPanel>
                                         </StackPanel>
-                                    </StackPanel>
-                                </RadioButton>
+                                    </RadioButton>
+                                </Grid>
 
                                 <!-- Baseline APIs -->
-                                <StackPanel>
-                                    
-                                    <!-- Horizontal line -->
-                                    <local:StackListHeaderItem />
-                                    
-                                    <TextBlock FontWeight="Bold">Baseline</TextBlock>
-                                    <TextBlock Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline</TextBlock>
-                                    <CheckBox IsThreeState="False" IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
+                                <local:StackListHeaderItem />
+                                <Grid>
+                                    <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                            Margin="-10"
+                                            Visibility="{x:Bind IsDraggingOverBaseline, Mode=OneWay}"/>
+     
+                                    <!-- Set the Background to transparent so that the drag/drop hit-testing always works -->
+                                    <StackPanel
+                                             AllowDrop="True" DragOver="HandleDragOver" Drop="Baseline_Drop"
+                                             DragEnter="Baseline_DragEnter" DragLeave="Baseline_DragLeave"
+                                             Background="Transparent">
+
+                                        <TextBlock FontWeight="Bold">Baseline</TextBlock>
+                                        <TextBlock Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline</TextBlock>
+                                        <CheckBox IsThreeState="False" IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
                                               Content="Show only new compared to baseline"
                                               IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
 
-                                    <!-- Open/Close buttons -->
-                                    <StackPanel Orientation="Horizontal" Margin="0,5">
-                                        <Button Click="OpenBaseline">Open</Button>
-                                        <Button Click="CloseBaseline"
+                                        <!-- Open/Close buttons -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                                            <Button Click="OpenBaseline">Open</Button>
+                                            <Button Click="CloseBaseline"
                                                 IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
-                                    </StackPanel>
+                                        </StackPanel>
 
-                                    <!-- Show loaded filenames -->
-                                    <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
-                                        <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                        <TextBlock x:Name="_baselineFilenamesText"
+                                        <!-- Show loaded filenames -->
+                                        <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
+                                            <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                                            <TextBlock x:Name="_baselineFilenamesText"
                                             Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
                                             TextWrapping="Wrap"
                                             Margin="5,0,0,0"/>
+                                        </StackPanel>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </StackPanel>
 
 

@@ -305,55 +305,7 @@ namespace Tempo
                 RootFrame.Navigate(typeof(HomePage), null); // e.Arguments);
             }
 
-            // Enable the DragOver and Drop events
-            RootFrame.AllowDrop = true;
 
-            // Accept file drops
-            RootFrame.DragOver += (s, e) =>
-            {
-                if (!e.DataView.AvailableFormats.Contains(StandardDataFormats.StorageItems))
-                {
-                    return;
-                }
-
-                e.AcceptedOperation = DataPackageOperation.Copy;
-            };
-
-            // When a file is dropped, try to open it
-            RootFrame.Drop += async (s, e) =>
-            {
-                var deferral = e.GetDeferral();
-                try
-                {
-                    var items = await e.DataView.GetStorageItemsAsync();
-
-                    // Only support one file for now
-                    if (items.Count == 1)
-                    {
-                        var storageFile = items[0] as StorageFile;
-                        if (storageFile == null)
-                        {
-                            return;
-                        }
-
-                        CloseCustomScope(goHome: false);
-
-                        // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
-                        _isCustomApiScope = true;
-                        RaisePropertyChange(nameof(IsCustomApiScope));
-
-                        // Start loading and go to the search page
-                        StartLoadCustomScope(
-                            new string[] { storageFile.Path },
-                            navigateToSearchResults: true);
-                        App.Instance.GotoSearch(null);
-                    }
-                }
-                finally
-                {
-                    deferral.Complete();
-                }
-            };
 
 
             // Ensure the current window is active
@@ -394,6 +346,24 @@ namespace Tempo
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Load a custom API scope and navigate to the search results page
+        /// </summary>
+        /// <param name="paths"></param>
+        public void NavigateToNewCustomScope(string[] paths)
+        {
+            CloseCustomScope(goHome: false);
+
+            // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
+            _isCustomApiScope = true;
+            RaisePropertyChange(nameof(IsCustomApiScope));
+
+            // Start loading and go to the search page
+            StartLoadCustomScope(
+                paths,
+                navigateToSearchResults: true);
         }
 
         /// <summary>
@@ -957,6 +927,16 @@ namespace Tempo
                 });
         }
 
+        public void OpenBaseline(IEnumerable<string> filenames)
+        {
+            if (Manager.BaselineTypeSet != null)
+            {
+                App.CloseBaselineScope();
+            }
+
+            BaselineFilenames = filenames.ToArray();
+            StartLoadBaselineScope(BaselineFilenames);
+        }
 
         static void GoToWindowsScopeAndGoHome()
         {
