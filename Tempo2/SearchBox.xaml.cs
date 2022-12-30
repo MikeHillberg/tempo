@@ -16,10 +16,13 @@ namespace Tempo
         {
             this.InitializeComponent();
             IsAllVisibleChanged();
+
+            SearchExpression.SearchExpressionError += (s, e) => HasSearchExpressionError = true;
         }
 
         private void Search_Click(object sender, RoutedEventArgs e)
         {
+            HasSearchExpressionError = false;
             App.Instance.GotoSearch(_searchBox.Text);
         }
 
@@ -36,6 +39,20 @@ namespace Tempo
             // Move the cursor to the end of the line
             _searchBox.SelectionStart = _searchBox.Text.Length;
         }
+
+
+        /// <summary>
+        /// Indicates an error in the search expression
+        /// </summary>
+        public bool HasSearchExpressionError
+        {
+            get { return (bool)GetValue(HasSearchExpressionErrorProperty); }
+            set { SetValue(HasSearchExpressionErrorProperty, value); }
+        }
+        public static readonly DependencyProperty HasSearchExpressionErrorProperty =
+            DependencyProperty.Register("HasSearchExpressionError", typeof(bool), typeof(SearchBox), new PropertyMetadata(false));
+
+
 
         internal void FocusAndSelect()
         {

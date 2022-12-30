@@ -159,6 +159,9 @@ namespace Tempo
         }
     }
 
+    /// <summary>
+    /// Base class for any of the VMs. Following .Net precedent, "Member" here includes types
+    /// </summary>
     abstract public class MemberViewModel : BaseViewModel
     {
         bool _isDeprecated = false;
@@ -240,6 +243,19 @@ namespace Tempo
             return false;
         }
 
+        public static string NormalizePropertyNameForQueries(string s)
+        {
+            // If a query asks for Name, they probably want PrettyName
+            // (like "Foo()" rather than ".ctor")
+            if (s == "Name")
+            {
+                s = "PrettyName";
+            }
+
+            return s;
+        }
+
+
 
         public virtual bool IsUac { get { return false; } }
 
@@ -257,6 +273,20 @@ namespace Tempo
         public virtual bool IsEvent => false;
         public virtual bool IsField => false;
         public virtual bool IsConstructor => false;
+
+        // Define on this most base of classes so that you can e.g. check IsInterface on a property
+        // to see if it's a property of an interface
+        abstract public bool IsInterface { get; }
+        abstract public bool IsEnum { get; }
+        abstract public bool IsValueType { get; }
+        abstract public bool IsClass { get; }
+        abstract public bool IsStruct { get; }
+        abstract public bool IsDelegate { get; }
+
+        public bool IsType => IsInterface || IsEnum || IsClass || IsStruct || IsDelegate;
+        public bool IsMember => !IsType;
+
+
 
         public string MemberPrettyName
         {

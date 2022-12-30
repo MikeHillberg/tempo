@@ -2,8 +2,8 @@
     
     Search box used in the home page and on the search results page.
 -->
-    
-    
+
+
 <UserControl
     x:Class="Tempo.SearchBox"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -15,9 +15,7 @@
     >
 
     <Grid >
-        
-        
-        
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
@@ -25,7 +23,13 @@
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
+            <!-- "Search" label, text box, and search button -->
             <RowDefinition Height="Auto"/>
+
+            <!-- Error bar if a search expression error -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- "Or" label, show all button -->
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -33,38 +37,44 @@
                    Margin="0,5,10,0"
             HorizontalAlignment="Right"
             Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Search:</TextBlock>
-        
-        <TextBlock Grid.Row="1" Grid.Column="0"
-                   Margin="0,17,20,0"
-                   HorizontalAlignment="Right"
-                   Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Or:</TextBlock>
-        
-        <TextBox x:Name="_searchBox" Grid.Column="1"
+
+        <TextBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
                  KeyDown="_searchBox_KeyDown"
                  InputScope="Search" IsSpellCheckEnabled="False"
                  Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
                  PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"/>
 
-        <StackPanel Grid.Column="2" Orientation="Horizontal">
+        <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
             <Button Click="Search_Click" >
                 <SymbolIcon Symbol="Find"  />
             </Button>
-            
+
             <Button Click="ShowFilters" 
                     Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
                 Filters
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="F"/>
-                    
+
                     <!-- Keeping the old one around to see how it looks -->
                     <KeyboardAccelerator Modifiers="Control,Shift" Key="F" Invoked="ShowOldFilters" />
                 </Button.KeyboardAccelerators>
             </Button>
         </StackPanel>
-        
-        <Button Grid.Column="1" Grid.Row="1"
+
+        <Border Grid.Row="1" Grid.Column="1"
+                Visibility="{x:Bind HasSearchExpressionError, Mode=OneWay}"
+                Background="LightYellow" >
+            <TextBlock>Search expression error</TextBlock>
+        </Border>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   Margin="0,17,20,0"
+                   HorizontalAlignment="Right"
+                   Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Or:</TextBlock>
+
+        <Button Grid.Row="2"  Grid.Column="1"
                 Margin="0,10,0,0"
             Click="ShowAll" Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Show everything</Button>
     </Grid>
-    
+
 </UserControl>

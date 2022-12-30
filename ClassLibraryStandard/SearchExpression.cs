@@ -7,8 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Tempo;
 
 namespace Tempo
 {
@@ -24,7 +22,9 @@ namespace Tempo
 
                 _ensured = false;
                 _typeRegex = _memberRegex = null;
-                SearchCondition = null;
+                WhereCondition = null;
+                _aqsExpression = null;
+
 
                 RaisePropertyChanged();
                 Changed?.Invoke(null, null);
@@ -36,6 +36,19 @@ namespace Tempo
         public bool IsTwoPart
         {
             get { return TypeRegex != MemberRegex; }
+        }
+
+        /// <summary>
+        /// Indicates that the search expression has a syntax error
+        /// </summary>
+        static public event EventHandler SearchExpressionError;
+
+        /// <summary>
+        /// Raise `SearchExpressionError` event
+        /// </summary>
+        static public void RaiseSearchExpressionError()
+        {
+            SearchExpressionError?.Invoke(null, null);
         }
 
         public bool HasNoSearchString
@@ -50,6 +63,23 @@ namespace Tempo
         // http://msdn.microsoft.com/en-us/library/az24scfc.aspx
         Regex _typeRegex;
         Regex _memberRegex;
+        AqsExpression _aqsExpression = null;
+
+        /// <summary>
+        /// Evaluate the AQS expression, if any.
+        /// True if it matches, false if it doesn't, null if was uninteresting (like no AQS present)
+        /// </summary>
+        /// <param name="propertyEvaluator"></param>
+        /// <returns></returns>
+        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator)
+        {
+            if (_aqsExpression == null)
+            {
+                return null;
+            }
+
+            return _aqsExpression.Evaluate(propertyEvaluator);
+        }
 
         public Regex TypeRegex
         {
@@ -79,63 +109,167 @@ namespace Tempo
                 return;
             }
 
-            SplitFilter();
+            ParseRawValue();
 
             _ensured = true;
         }
 
 
-
-        public void SplitFilter()
+        /// <summary>
+        /// Parse `_rawValue`
+        /// </summary>
+        public void ParseRawValue()
         {
+            _typeRegex = _memberRegex = null;
+
+            if (string.IsNullOrEmpty(_rawValue))
+            {
+                return;
+            }
+
             var searchString = _rawValue;
             if (searchString != null)
+            {
                 searchString = searchString.Trim();
+            }
 
+            // A "::" means Type::Member syntax, a single ":" means AQS syntax
+            // To avoid confusion, convert "::" to "%"
+            searchString = searchString.Replace("::", "%");
+
+            // Check for -where clause
             if (!string.IsNullOrEmpty(searchString) && _rawValue.Contains("-where"))
             {
                 var split = searchString.MySplit("-where");
                 if (split.Length > 1)
                 {
-                    SearchCondition = null;
+                    WhereCondition = null;
                     searchString = split[0].Trim();
 
-                    SearchCondition = TryParseExpression(split[1]);
+                    WhereCondition = TryParseExpression(split[1]);
                 }
             }
 
-            if (string.IsNullOrEmpty(searchString) || !_rawValue.Contains(":"))
+            // Check for AQS clause
+            if (searchString.Contains(':'))
             {
+                // Looks like we have an AQS
+                
+                // The search term has to come before the AQS.
+                // Separate the search term out (into an updated `searchString`),
+                // and then parse the AQS
+
+                var searchStringBuilder = new StringBuilder();
+                StringBuilder queryStringBuilder = null;
+
+                var parts = searchString.Split(' ');
+                foreach (var part in parts)
+                {
+                    if (part == "")
+                    {
+                        // Skip redundant interior spaces
+                        continue;
+                    }
+
+                    if (queryStringBuilder == null)
+                    {
+                        // We haven't seen the beginning of the AQS part yet
+
+                        if (part.Contains(':') || part.Contains('(') || AqsExpression.IsOperator(part))
+                        {
+                            // We just transitioned to the AQS part
+                            queryStringBuilder = new StringBuilder();
+                            queryStringBuilder.Append($"{part}");
+                        }
+                        else
+                        {
+                            searchStringBuilder.Append($" {part}");
+                        }
+                    }
+                    else
+                    {
+                        // We're in the AQS part
+                        queryStringBuilder.Append($" {part}");
+                    }
+                }
+
+
+                // Parse the AQS into _aqsExpression
+                if (queryStringBuilder != null)
+                {
+                    // Might return null
+                    _aqsExpression = TryParseAqs(queryStringBuilder.ToString());
+                }
+
+                // Update the `searchString` to be minus the AQS part
+                searchString = searchStringBuilder.ToString().Trim();
+            }
+
+
+            //Build the regular expression(s) from `searchString`
+
+            if (!searchString.Contains("%"))
+            {
+                // Typical case, no "Type::Member" syntax
                 _typeRegex = string.IsNullOrEmpty(searchString) ? null : SplitFilterForGenerics(searchString);
                 _memberRegex = _typeRegex;
             }
             else
             {
-                var split = searchString.Split(':');
-                try
-                {
-                    _memberRegex = new Regex(
-                        split[1],
-                        Manager.Settings.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
-                }
-                catch(ArgumentException)
-                {
-                    // User hasn't typed in a valid regex
-                    _memberRegex = new Regex("");
-                }
+                // "Type::Member" syntax
+                var split = searchString.Split('%');
                 _typeRegex = SplitFilterForGenerics(split[0]);
+                _memberRegex = CreateRegex(split[1]);
             }
 
         }
 
-        private SearchCondition TryParseExpression(string expressionString)
+
+        AqsExpression TryParseAqs(string searchString)
+        {
+            // Make sure that all AQS operators are space-separated
+            searchString = searchString.Replace(":", " : ");
+            searchString = searchString.Replace("(", " ( ");
+            searchString = searchString.Replace(")", " ) ");
+            searchString = searchString.Replace("!", " ! ");
+
+            return AqsExpression.TryParse(searchString, Manager.Settings.CaseSensitive, AqsKeyValidator);
+        }
+
+        IList<string> _validAqsKeys = null;
+
+        /// <summary>
+        /// Validate AQS keys, like "Name" or "Namespace"
+        /// </summary>
+        bool AqsKeyValidator(string key)
+        {
+            if (_validAqsKeys == null)
+            {
+                // Bugbug: share these with TryGetVMProperty
+
+                var propertyInfos = typeof(TypeViewModel).GetProperties()
+                    .Union(typeof(PropertyViewModel).GetProperties())
+                    .Union(typeof(MethodViewModel).GetProperties())
+                    .Union(typeof(EventViewModel).GetProperties())
+                    .Union(typeof(FieldViewModel).GetProperties())
+                    .Union(typeof(ConstructorViewModel).GetProperties());
+
+                _validAqsKeys = (from i in propertyInfos select i.Name).ToList();
+            }
+
+            key = MemberMemberViewModelBase.NormalizePropertyNameForQueries(key);
+            return _validAqsKeys.Contains(key);
+        }
+
+
+        private WhereCondition TryParseExpression(string expressionString)
         {
             var parts = expressionString.Trim().Split(' ');
 
             Stack<CompoundSearchCondition> stack = null;
 
             int i = 0;
-            while(i < parts.Length)
+            while (i < parts.Length)
             {
                 if (parts.Length - i < 3)
                     break;
@@ -153,7 +287,7 @@ namespace Tempo
                     var pop = stack.Pop() as CompoundSearchCondition;
                     pop.Operand2 = comparisson;
 
-                    while(stack.Count != 0)
+                    while (stack.Count != 0)
                     {
                         var pop2 = stack.Pop();
                         pop2.Operand2 = pop;
@@ -174,7 +308,7 @@ namespace Tempo
                 if (stack == null)
                 {
                     var booleanCondition = new CompoundSearchCondition();
-                    booleanCondition.Operator = (CompoundSearchOperator) nextOp;
+                    booleanCondition.Operator = (CompoundSearchOperator)nextOp;
                     booleanCondition.Operand1 = comparisson;
 
                     stack = new Stack<CompoundSearchCondition>();
@@ -185,7 +319,7 @@ namespace Tempo
                     var peek = stack.Peek();
                     var booleanCondition = new CompoundSearchCondition();
 
-                    if (nextOp > peek.Operator )
+                    if (nextOp > peek.Operator)
                     {
                         booleanCondition.Operator = (CompoundSearchOperator)nextOp;
                         booleanCondition.Operand1 = comparisson;
@@ -274,7 +408,7 @@ namespace Tempo
             return condition;
         }
 
-        private SearchCondition TryParseExpression_old(string expressionString)
+        private WhereCondition TryParseExpression_old(string expressionString)
         {
             expressionString = expressionString.Trim();
             var compoundOperator = CompoundSearchOperator.And;
@@ -375,7 +509,10 @@ namespace Tempo
             return CreateRegex(value);
         }
 
-        private Regex CreateRegex(string value)
+        /// <summary>
+        /// Create a regex, or return null if invalid
+        /// </summary>
+        static internal Regex CreateRegex(string value)
         {
             try
             {
@@ -416,7 +553,9 @@ namespace Tempo
             return newQuery;
         }
 
-        public SearchCondition SearchCondition { get; private set; }
+        public bool HasAqsExpression => _aqsExpression != null;
+
+        public WhereCondition WhereCondition { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         void RaisePropertyChanged([CallerMemberName] string name = null)
@@ -427,13 +566,13 @@ namespace Tempo
     }
 
 
-    abstract public class SearchCondition
+    abstract public class WhereCondition
     {
         public abstract bool Evaluate(MemberViewModel memberVM, bool caseSensitive,
             SearchExpression filter,
             Func<string, object> getter);
 
-        public static object Unset = typeof(SearchCondition);
+        public static object Unset = typeof(WhereCondition);
 
         public static string ToWhereString(object value)
         {
@@ -472,13 +611,13 @@ namespace Tempo
         }
     }
 
-    public class SearchComparisson : SearchCondition
+    public class SearchComparisson : WhereCondition
     {
         public string Key;
         public string Value;
         public SearchConditionOperator Operator;
 
-        public override bool Evaluate(MemberViewModel memberVM, bool caseSensitive, 
+        public override bool Evaluate(MemberViewModel memberVM, bool caseSensitive,
             SearchExpression filter,
             Func<string, object> getter)
         {
@@ -488,7 +627,7 @@ namespace Tempo
             //var value = propInfo.GetValue(memberVM);
 
             var value = getter(Key);
-            if (value != SearchCondition.Unset)
+            if (value != WhereCondition.Unset)
             {
                 if (value == null)
                     value = string.Empty;
@@ -519,7 +658,7 @@ namespace Tempo
                 }
 
                 else if (Operator == SearchConditionOperator.Finds)
-                { 
+                {
                     if (value is TypeViewModel)
                     {
                         var type = value as TypeViewModel;
@@ -532,7 +671,7 @@ namespace Tempo
                         if (Manager.MatchesFilterString(regex, type, true, true, null, ref abort, ref meaningfulMatch))
                             return true;
 
-                        foreach(var member in type.Members)
+                        foreach (var member in type.Members)
                         {
                             var filtersMatch = true;
                             Manager.CheckMemberName(member, regex, ref abort, out filtersMatch, out meaningfulMatch);
@@ -555,10 +694,10 @@ namespace Tempo
         And
     }
 
-    public class CompoundSearchCondition : SearchCondition
+    public class CompoundSearchCondition : WhereCondition
     {
-        public SearchCondition Operand1 { get; set; }
-        public SearchCondition Operand2 { get; set; }
+        public WhereCondition Operand1 { get; set; }
+        public WhereCondition Operand2 { get; set; }
 
         public CompoundSearchOperator Operator { get; set; }
 

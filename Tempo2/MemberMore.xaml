@@ -16,7 +16,8 @@
         </StackPanel>
 
         <StackPanel Margin="10,0,0,0">
-            <TextBlock Text="{x:Bind MemberVM.ExclusiveToInterface, Mode=OneWay}" IsTextSelectionEnabled="True" x:Name="_exclusiveTo"/>
+            <TextBlock Text="{x:Bind MemberVM.ExclusiveToInterface, Mode=OneWay}" IsTextSelectionEnabled="True" x:Name="_exclusiveTo"
+                       local:CollapseIfEmpty.IsEnabledFor="{x:Bind _exclusiveTo}"/>
             <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind MemberVM.DeclaringType, Mode=OneWay}" />
         </StackPanel>
 

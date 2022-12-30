@@ -87,8 +87,6 @@ namespace Tempo
             _isFullyOpenGenericType = bool.Parse(v);
         }
 
-
-
         public bool IsArray { get { return BaseType != null && BaseType.FullName == "System.Array"; } }
 
         public override string MsdnRelativePath
@@ -1180,8 +1178,6 @@ namespace Tempo
 
 
 
-        abstract public bool IsStruct { get; }
-        abstract public bool IsDelegate { get; }
         abstract public bool IsEventArgs { get; }
 
         abstract public TypeViewModel GetGenericTypeDefinition();
@@ -2348,11 +2344,7 @@ namespace Tempo
 
         //abstract public string FullName { get; }
         abstract public string Namespace { get; }
-        abstract public bool IsInterface { get; }
         abstract public Assembly Assembly { get; }
-        abstract public bool IsEnum { get; }
-        abstract public bool IsValueType { get; }
-        abstract public bool IsClass { get; }
 
         abstract public string AssemblyLocation { get; }
 

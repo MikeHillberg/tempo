@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -324,14 +325,12 @@ namespace Tempo
 
             SearchString = _searchString;
 
-            var normalized = NormalizeSearchString(SearchString);
-
             // Do the search
-            var filter = new SearchExpression();
-            filter.RawValue = normalized;
+            var searchExpression = new SearchExpression();
+            searchExpression.RawValue = SearchString;
 
             // Keep track for search results highlighting
-            App.SearchExpression = filter;
+            App.SearchExpression = searchExpression;
 
             // Can't x:Bind to statics in TH2
             Heading = "\"" + SearchString + "\" (" + Manager.MatchingStats.MatchingTotal + " matches)";
@@ -342,7 +341,7 @@ namespace Tempo
             var searchTask = Task.Run(() =>
             {
                 var iteration = ++Manager.RecalculateIteration;
-                newResults = Manager.GetMembers(filter, iteration);
+                newResults = Manager.GetMembers(searchExpression, iteration);
             });
 
             // Do a blocking wait for a half second to see if the search can complete quickly
@@ -424,28 +423,6 @@ namespace Tempo
 
 
 
-        private static string NormalizeSearchString(string normalized)
-        {
-            // Trim whitespace from the ends, but also remove it from the middle
-            // (This way you can type "check box" to search for "checkbox")
-
-            normalized = normalized == null ? "" : normalized.Trim();
-            while (true)
-            {
-                var split = normalized.Split(' ');
-                if (split.Length == 1)
-                    break;
-
-                var sb = new StringBuilder();
-                foreach (var piece in split)
-                {
-                    sb.Append(piece);
-                }
-                normalized = sb.ToString();
-            }
-
-            return normalized;
-        }
 
         static Stack<string> _relativeScrollPositions = new Stack<string>();
 
@@ -691,59 +668,116 @@ namespace Tempo
             MemberViewModel secondPlace = null;
             MemberViewModel thirdPlace = null;
 
-            var searchString = NormalizeSearchString(SearchString);
-
-            foreach (var item in _listView.Items)
+            if (App.SearchExpression.MemberRegex == null
+                || App.SearchExpression.TypeRegex == null)
             {
-                var member = item as MemberViewModel;
-                if (member == null)
-                    continue;
+                // We're showing everything, not searching.
 
-                // bugbug:  how does this work with regex?
-                if (member.Name.StartsWith(searchString, StringComparison.CurrentCultureIgnoreCase))
+                var items = _listView.Items;
+
+                if (items.Count == 0)
                 {
-                    if (member is TypeViewModel)
+                    // Don't think this case happens
+                    return;
+                }
+
+                // Pick a type at random, so every time you see something new
+                var index = Random.Shared.Next(items.Count-1);
+                targetItem = items[0] as MemberViewModel;
+
+                for (int i = index; i >= 0; i--)
+                {
+                    if (_listView.Items[i] is TypeViewModel)
                     {
-                        targetItem = member;
-                        secondPlace = null;
-                        thirdPlace = null;
+                        targetItem = items[i] as MemberViewModel;
                         break;
                     }
-
-                    if (secondPlace == null)
-                        secondPlace = member;
                 }
-                else if (
-                    secondPlace == null
-                    && thirdPlace == null
-                    && member.Name.Contains(searchString))
+            }
+
+            else
+            {
+                // Find the most interesting match
+
+                // We'll give all the items a priority and take the higest one
+                var highestPriority = MatchPriority.None;
+
+                foreach (var item in _listView.Items)
                 {
-                    thirdPlace = member;
-                }
-            }
+                    var member = item as MemberViewModel;
+                    if (member == null)
+                    {
+                        continue;
+                    }
 
-            if (targetItem != null)
-            {
-                ;
-            }
-            else if (secondPlace != null)
-            {
-                targetItem = secondPlace;
-            }
-            else if (thirdPlace != null)
-            {
-                targetItem = thirdPlace;
+                    var priority = MatchPriority.None;
+
+                    if (member is TypeViewModel)
+                    {
+                        var match = App.SearchExpression.TypeRegex.Match(member.Name);
+                        if(match != Match.Empty)
+                        {
+                            if(match.Value == member.Name)
+                            {
+                                priority = MatchPriority.ExactMatchType;
+                            }
+                            else if(member.Name.StartsWith(match.Value))
+                            {
+                                priority = MatchPriority.StartsWithType;
+                            }
+                            else
+                            {
+                                priority = MatchPriority.MatchesType;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var match = App.SearchExpression.MemberRegex.Match(member.Name);
+                        if (match != Match.Empty)
+                        {
+                            if (match.Value == member.Name)
+                            {
+                                priority = MatchPriority.ExactMatchMember;
+                            }
+                            else if (member.Name.StartsWith(match.Value))
+                            {
+                                priority = MatchPriority.StartsWithMember;
+                            }
+                            else
+                            {
+                                priority = MatchPriority.MatchesMember;
+                            }
+                        }
+                    }
+
+                    if(priority > highestPriority)
+                    {
+                        highestPriority = priority;
+                        targetItem = member;
+                    }
+
+                    if(priority == MatchPriority.Max)
+                    {
+                        break;
+                    }
+                }
             }
 
             if (targetItem == null)
             {
+                // We didn't find anything, just select the first item
+
                 if (_listView.Items.Count != 0)
                 {
                     _listView.SelectedIndex = 0;
                 }
             }
+
             else
             {
+                // Select the identified item and scroll it into view
+
                 _listView.ScrollIntoView(targetItem, ScrollIntoViewAlignment.Leading);
 
                 _listView.SelectedIndex = Results.IndexOf(targetItem);
@@ -764,6 +798,25 @@ namespace Tempo
                     Debug.Assert(true); // Why didn't layout run?
                 }
             }
+        }
+
+
+
+        /// <summary>
+        /// Used by `PickSelectedItem`
+        /// </summary>
+        private enum MatchPriority
+        {
+            // Low priority to high, using Button.Click as an example
+
+            None = 0,
+            MatchesMember,     // "ick"
+            MatchesType,       // "utton"
+            StartsWithMember,  // "Cli"
+            StartsWithType,    // "But"
+            ExactMatchMember,  // "Click"
+            ExactMatchType,    // "Button"
+            Max = ExactMatchType
         }
 
 

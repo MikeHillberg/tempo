@@ -51,12 +51,12 @@
                                 <TextBlock>button.*args</TextBlock>
                                 <TextBlock>^button</TextBlock>
                                 <TextBlock>button$</TextBlock>
-                                <TextBlock>but:cli</TextBlock>
-                                <TextBlock xml:space="preserve">check     box</TextBlock>
+                                <TextBlock>but::cli</TextBlock>
+                                <!--<TextBlock xml:space="preserve">check     box</TextBlock>-->
                                 <TextBlock>iasync&lt;storagefile</TextBlock>
                             </StackPanel>
 
-                            <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search text can be simple text or a regular expression.  Spaces are compressed out, so for example "check box" (two words) is the same as "checkbox" (one word).</TextBlock>
+                            <!--<TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search text can be simple text or a regular expression.  Spaces are compressed out, so for example "check box" (two words) is the same as "checkbox" (one word).</TextBlock>-->
 
                             <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search string is checked against type/property/method/event/field names.  It's also checked against parameter names and their types, against ancestors of a class, against implemented interfaces on a class, and anything else on an API that can be found.</TextBlock>
 

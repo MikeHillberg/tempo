@@ -1,4 +1,5 @@
-﻿using CommonLibrary;
+﻿using ClassLibraryStandard;
+using CommonLibrary;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -671,7 +672,8 @@ namespace Tempo
 
             if (Settings.IsDefault
                 && searchExpression.HasNoSearchString
-                && searchExpression.SearchCondition == null
+                && searchExpression.WhereCondition == null
+                && !searchExpression.HasAqsExpression
                 && Settings.Contract == null)
             {
                 foreach (var type in CurrentTypeSet.Types)
@@ -755,7 +757,15 @@ namespace Tempo
 
                 bool meaningfulMatch = false;
                 var abortType = false;
+
+                // This says that the type didn't get rejected by anything; it didn't not match
                 var typeMatches = false;
+
+                // This says that the type actually passed a check.
+                // For example, if we're filtering to only show unsealed types,
+                // and this type is unsealed, then it's a meaningful match.
+                // But if we're filtering to only show static properties, then `typeMatches` will be
+                // true, but `meaningfulTypeMatch` will be false.
                 var meaningfulTypeMatch = false;
 
                 if (Settings.IgnoreAllSettings == true)
@@ -781,26 +791,55 @@ namespace Tempo
                     typeMatches = matchesCheckers;
                 }
 
-                if (typeMatches && meaningfulMatch || searchExpression.HasNoSearchString && searchExpression.SearchCondition != null)
+                // Check for -where queries
+                // Bugbug: remove this? Just rely on AQS queries
+                if (searchExpression.WhereCondition != null)
                 {
-                    if (EvaluateWhere.TypeCheck(types[i], searchExpression))
+                    if (typeMatches && meaningfulMatch || searchExpression.HasNoSearchString && searchExpression.WhereCondition != null)
                     {
-                        typeMatches = true;
-                        meaningfulMatch = true;
-                        typeMatchesFilters = true;
-                    }
-                    else
-                    {
-                        meaningfulMatch = false;
-                        typeMatches = false;
+                        if (EvaluateWhere.TypeCheck(types[i], searchExpression))
+                        {
+                            typeMatches = true;
+                            meaningfulMatch = true;
+                            typeMatchesFilters = true;
+                        }
+                        else
+                        {
+                            meaningfulMatch = false;
+                            typeMatches = false;
+                        }
                     }
                 }
 
 
+                else if(typeMatches)
+                {
+                    // Check for AQS queries
+
+                    // This will return null if there is no AQS query or the query wasn't really used
+                    var aqsResult = EvaluateAqsExpression(searchExpression, types[i]);
+
+                    if (aqsResult == false)
+                    {
+                        // Something didn't match
+                        meaningfulMatch = false;
+                        typeMatches = false;
+                        typeMatchesFilters = false;
+                    }
+                    else if (aqsResult == true)
+                    {
+                        // It matched, and actually checked something.
+                        // So worthy of attention (like the count of matches)
+                        meaningfulMatch = true;
+                        typeMatchesFilters = true;
+                    }
+                }
+
 
                 meaningfulTypeMatch = meaningfulMatch;
 
-                // If the type doesn't match and this is a "type:member" search string, carry on
+                // If the type doesn't match and this is a "type::member" search string, move on to the next type
+                // The rest of this loop block will be evaluating members
                 if (!typeMatches && searchExpression.IsTwoPart)
                 {
                     continue;
@@ -848,15 +887,42 @@ namespace Tempo
                         continue;
                     }
 
-                    if (meaningfulMatch || searchExpression.MemberRegex == null)
+                    // Check for -where queries
+                    // Bugbug: remove this? Just rely on AQS queries
+                    if (searchExpression.WhereCondition != null)
                     {
-                        if (!EvaluateWhere.MemberCheck(types[i], member, searchExpression))
+                        if (meaningfulMatch || searchExpression.MemberRegex == null)
                         {
-                            meaningfulMatch = false;
-                            continue;
+                            if (!EvaluateWhere.MemberCheck(types[i], member, searchExpression))
+                            {
+                                meaningfulMatch = false;
+                                continue;
+                            }
                         }
                     }
 
+                    else
+                    {
+                        // Check for AQS conditions
+                        var aqsResult = EvaluateAqsExpression(searchExpression, member);
+
+                        // True means it matched, null means it didn't not match (maybe there was no AQS),
+                        // false means it was rejected
+                        if(aqsResult == true)
+                        {
+                            meaningfulMatch = true;
+                        }
+                        else if (aqsResult == false)
+                        {
+                            meaningfulMatch = false;
+
+                            // Move on to the next member
+                            continue;
+                        }
+
+                    }
+
+                    // If this member was rejected by anything we'd have done a continue above.
                     someMemberMatches = true;
 
                     if (meaningfulMatch && !Settings.IgnoreAllSettings || Settings.IsMemberRequired())
@@ -899,7 +965,7 @@ namespace Tempo
                             || !Settings.IsMemberRequired()
                             || Settings.IgnoreAllSettings)
                         && (Settings.ShowTypes || Settings.IgnoreAllSettings)
-                        && (meaningfulTypeMatch || someMemberMatches || searchExpression.SearchCondition == null)
+                        && (meaningfulTypeMatch || someMemberMatches || searchExpression.WhereCondition == null)
                         )
                     {
                         if (ShouldCountAsMatchingType(meaningfulTypeMatch, typeMatchesFilters, Settings))
@@ -926,6 +992,60 @@ namespace Tempo
             PostToUIThread(() => MatchingStats.RaiseAllPropertiesChanged());
         }
 
+        /// <summary>
+        /// Helper to call SearchExpression.EvaluateAqsExpression and implement the callback
+        /// </summary>
+        /// <returns>True if it matches, false if it doesn't, and null if there was no (meaningful) AQS</returns>
+        static bool? EvaluateAqsExpression(SearchExpression searchExpression, MemberViewModel memberVM)
+        {
+            var keyUsed = false;
+            bool? result = null;
+
+            // Any query syntax errors should get caught during parse. But just in case,
+            // and for robustness against some bug in here, swallow exceptions
+            try
+            {
+                result = searchExpression.EvaluateAqsExpression(
+                    (string key) =>
+                    {
+                        // The evaluator wants to know the value of a property name
+
+                        var tryGet = memberVM.TryGetVMProperty(key, out var value);
+                        if (!tryGet && key.ToLower() == "namespace")
+                        {
+                            var declaringType = memberVM.DeclaringType;
+                            if ((declaringType as MemberViewModel) != memberVM)
+                            {
+                                tryGet = declaringType.TryGetVMProperty(key, out value);
+                            }
+                        }
+
+                        if (!tryGet)
+                        {
+                            // Property name doesn't exist
+                            return null;
+                        }
+
+                        // Remember that something was able to evaluate
+                        keyUsed = true;
+                        return value?.ToString();
+                    });
+            }
+            catch(Exception e)
+            {
+                UnhandledExceptionManager.ProcessException(e);
+                SearchExpression.RaiseSearchExpressionError();
+
+            }
+
+            if(result == null || !keyUsed)
+            {
+                return null;
+            }
+
+            return result;
+        }
+
         private static bool ShouldCountAsMatchingType(bool meaningfulTypeMatch, bool typeMatchesFilters, Settings settings)
         {
             //var ret = settings.IsDefault || typeMatchesFilters;
@@ -947,7 +1067,7 @@ namespace Tempo
                 meaningfulMatch |= meaningfulMatchT;
                 abortType |= abortTypeT;
 
-                if(abortType)
+                if (abortType)
                 {
                     return;
                 }

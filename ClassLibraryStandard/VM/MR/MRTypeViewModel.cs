@@ -617,8 +617,12 @@ namespace Tempo
             if (parts.Length == 0)
                 return false;
 
-            foreach (var part in parts)
+            foreach (var p in parts)
             {
+                var part = p;
+
+                part = NormalizePropertyNameForQueries(part);
+
                 var propInfo = declaringObject.GetType().GetProperty(part);
                 value = propInfo?.GetValue(declaringObject);
                 if (value == null)
@@ -629,7 +633,6 @@ namespace Tempo
 
             return true;
         }
-
 
         protected override TypeViewModel GetBaseType()
         {

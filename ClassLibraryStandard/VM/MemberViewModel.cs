@@ -344,7 +344,7 @@ namespace Tempo
     };
 
 
-    abstract public class PropertyViewModel : MemberViewModel
+    abstract public class PropertyViewModel : MemberMemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Property; } }
 
@@ -622,7 +622,7 @@ namespace Tempo
 
     }
 
-    abstract public class EventViewModel : MemberViewModel
+    abstract public class EventViewModel : MemberMemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Event; } }
 
@@ -918,7 +918,23 @@ namespace Tempo
         }
     }
 
-    abstract public class MethodViewModel : MemberViewModel
+    /// <summary>
+    /// Base for all member (non-type) ViewModels
+    /// </summary>
+    abstract public class MemberMemberViewModelBase : MemberViewModel
+    {
+        // Override all of these abstracts that only get set on a type
+        override public bool IsInterface => false;
+        override public bool IsEnum => false;
+        override public bool IsValueType => false;
+        override public bool IsClass => false;
+        override public bool IsStruct => false;
+        override public bool IsDelegate => false;
+
+    }
+
+
+    abstract public class MethodViewModel : MemberMemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Method; } }
 
@@ -1252,7 +1268,7 @@ namespace Tempo
         }
     }
 
-    abstract public class FieldViewModel : MemberViewModel
+    abstract public class FieldViewModel : MemberMemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Field; } }
         public override MyMemberTypes MemberType { get { return MyMemberTypes.Field; } } //(MyMemberTypes)FieldInfo.MemberType; } }
@@ -1516,7 +1532,7 @@ namespace Tempo
         public virtual bool IsCompilerGenerated { get { return false; } }
     }
 
-    abstract public class ConstructorViewModel : MemberViewModel // (MemberViewModel : BaseViewModel)
+    abstract public class ConstructorViewModel : MemberMemberViewModelBase // (MemberViewModel : BaseViewModel)
     {
         public override MemberKind MemberKind { get { return MemberKind.Constructor; } }
 

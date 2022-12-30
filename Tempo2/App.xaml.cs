@@ -1493,7 +1493,8 @@ namespace Tempo
         //    deferral.Complete();
         //}
 
-        // Used for search results highlighting
+        // Used for search results highlighting.
+        // Globals are bad, but it's nice to be able to drop in a SearchHighlighter at any point and have it just work.
         static SearchExpression _searchExpression = null;
         static public SearchExpression SearchExpression
         {

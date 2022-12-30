@@ -13,7 +13,7 @@ namespace Tempo
             MemberViewModel memberVM,
             SearchExpression filter)
         {
-            if (filter.SearchCondition == null)
+            if (filter.WhereCondition == null)
                 return true;
 
             return Check(memberVM, filter);
@@ -22,7 +22,7 @@ namespace Tempo
 
         static public bool TypeCheck(TypeViewModel t, SearchExpression filter)
         {
-            if (filter.SearchCondition == null)
+            if (filter.WhereCondition == null)
                 return true;
 
             return Check(t, filter);
@@ -32,14 +32,14 @@ namespace Tempo
         static bool Check(MemberViewModel memberVM, SearchExpression filter)
         {
 
-            if (filter.SearchCondition.Evaluate(
+            if (filter.WhereCondition.Evaluate(
                 memberVM,
                 Manager.Settings.CaseSensitive,
                 filter,
                 (string key) =>
                 {
                     if (!memberVM.TryGetVMProperty(key, out var value))
-                        return SearchCondition.Unset;
+                        return WhereCondition.Unset;
 
                     return value;
                 }))
