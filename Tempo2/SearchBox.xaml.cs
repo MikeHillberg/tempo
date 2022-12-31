@@ -4,6 +4,7 @@ using Windows.System;
 using Microsoft.UI.Xaml;
 using System.Diagnostics;
 using System;
+using Windows.Storage;
 
 namespace Tempo
 {
@@ -113,7 +114,9 @@ namespace Tempo
         public static readonly DependencyProperty PlaceholderTextProperty =
             DependencyProperty.Register("PlaceholderText", typeof(string), typeof(SearchBox), new PropertyMetadata(0));
 
-
-
+        private void ShowHelp(object sender, RoutedEventArgs e)
+        {
+            App.Instance.ShowHelp();
+        }
     }
 }

@@ -72,9 +72,18 @@
                    HorizontalAlignment="Right"
                    Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Or:</TextBlock>
 
-        <Button Grid.Row="2"  Grid.Column="1"
-                Margin="0,10,0,0"
-            Click="ShowAll" Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Show everything</Button>
+        <Grid Grid.Row="2"  Grid.Column="1" ColumnDefinitions="Auto,Auto"
+              Margin="0,10,0,0"
+              Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
+            
+            <Button Click="ShowAll" >Show everything</Button>
+            <Button Grid.Column="1" Margin="10,0,0,0" Click="ShowHelp">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="F1"/>
+                </Button.KeyboardAccelerators>
+                Show help
+            </Button>
+        </Grid>
     </Grid>
 
 </UserControl>

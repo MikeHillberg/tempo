@@ -121,6 +121,12 @@
                     </MenuFlyout>
                 </AppBarButton.Flyout>
             </AppBarButton>
+            
+            <AppBarButton Label="Help" Icon="Help" Click="ShowHelp">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="F1"/>
+                </AppBarButton.KeyboardAccelerators>
+            </AppBarButton>
         </CommandBar>
     </Grid>
 

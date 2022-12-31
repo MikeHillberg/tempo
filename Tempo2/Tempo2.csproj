@@ -107,11 +107,9 @@
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.330701">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +122,7 @@
     <None Remove="Filters3.xaml" />
     <None Remove="FiltersFlyout.xaml" />
     <None Remove="FiltersFlyout3.xaml" />
+    <None Remove="HelpPage.xaml" />
     <None Remove="LoadingDialog.xaml" />
     <None Remove="MemberMore.xaml" />
     <None Remove="SmokeLayer.xaml" />
@@ -136,6 +135,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="HelpPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="SmokeLayer.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

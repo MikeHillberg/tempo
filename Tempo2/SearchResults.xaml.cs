@@ -665,8 +665,6 @@ namespace Tempo
             // bugbug: consolidate with desktop
 
             MemberViewModel targetItem = null;
-            MemberViewModel secondPlace = null;
-            MemberViewModel thirdPlace = null;
 
             if (App.SearchExpression.MemberRegex == null
                 || App.SearchExpression.TypeRegex == null)

@@ -1523,5 +1523,21 @@ namespace Tempo
             var t = contentDialog.ShowAsync();
         }
 
+        /// <summary>
+        /// Show help in a separate window
+        /// </summary>
+        internal void ShowHelp()
+        {
+            var helpPage = new HelpPage();
+
+            // Use MainWindow because it has the Mica support
+            var window = new MainWindow();
+            helpPage.Loaded += (_, __) => window.SetMicaBackdrop();
+
+            window.Content = helpPage;
+            window.Title = "Tempo Help";
+
+            window.Activate();
+        }
     }
 }

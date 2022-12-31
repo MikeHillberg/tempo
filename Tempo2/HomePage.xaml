@@ -4,13 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <Grid Background="Transparent" Padding="60" 
           PointerPressed="TeachingTipDemo_PointerPressed">
 
-        <!-- Background was: "{ThemeResource ApplicationPageBackgroundThemeBrush}" -->
         <Grid VerticalAlignment="Center"
               HorizontalAlignment="Center"
               Background="White"
@@ -20,12 +19,12 @@
                 <!-- Search box -->
                 <RowDefinition Height="Auto" />
 
-                <!-- Tab view -->
+                <!-- Info pane and API scope pane -->
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <local:SearchBox x:Name="_searchBox" IsAllVisible="True"                 
-                             Grid.Row="0" 
+            <local:SearchBox x:Name="_searchBox"  Grid.Row="0"
+                             IsAllVisible="True"
                              MaxWidth="800"  />
 
             <Grid x:Name="_root" Grid.Row="1" Margin="50,50,50,0"  >
@@ -195,14 +194,11 @@
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
-
-
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>
+
             </Grid>
-
         </Grid>
-
     </Grid>
 </local:MySerializableControl>

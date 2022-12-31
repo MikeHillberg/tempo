@@ -73,7 +73,6 @@ namespace Tempo
             m_micaController = new Microsoft.UI.Composition.SystemBackdrops.MicaController();
 
             // Enable the system backdrop.
-            // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
             m_micaController.AddSystemBackdropTarget(this.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>());
             m_micaController.SetSystemBackdropConfiguration(m_configurationSource);
         }

@@ -304,6 +304,9 @@ namespace Tempo
             App.Instance.GotoSearch();
         }
 
-
+        private void ShowHelp(object sender, RoutedEventArgs e)
+        {
+            App.Instance.ShowHelp();
+        }
     }
 }
