@@ -103,7 +103,7 @@
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\middleweight-reflection\MiddleweightReflection\MiddleweightReflection.csproj" />
+    <ProjectReference Include="..\..\MiddleweightReflection\MiddleweightReflection\MiddleweightReflection.csproj" />
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
   </ItemGroup>
   <ItemGroup>

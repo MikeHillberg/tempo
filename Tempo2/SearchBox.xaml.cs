@@ -82,7 +82,7 @@ namespace Tempo
         {
             if(IsAllVisible)
             {
-                PlaceholderText = "Name of anything, simple or regex (Control+E)";
+                PlaceholderText = "Name of anything, simple or regex, can include Property:Value (Control+E)";
             }
             else
             {
