@@ -41,7 +41,7 @@ namespace Tempo
             return;
         }
 
-        static public MemberViewModel GetMemberViewModel(
+        static public MemberOrTypeViewModelBase GetMemberViewModel(
             PropertyViewModel propertyVM,
             MethodViewModel methodVM,
             EventViewModel eventVM,

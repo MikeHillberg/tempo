@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Tempo
 {
-    public class MemberList : List<MemberViewModel>
+    public class MemberList : List<MemberOrTypeViewModelBase>
     {
-        public MemberList(IEnumerable<MemberViewModel> list) : base( list)
+        public MemberList(IEnumerable<MemberOrTypeViewModelBase> list) : base( list)
         { }
 
         public string Heading { get; set; }

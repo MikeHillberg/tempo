@@ -56,8 +56,8 @@ namespace Tempo
         {
             get
             {
-                if (_baseViewModel is MemberViewModel)
-                    return (_baseViewModel as MemberViewModel).Contract;
+                if (_baseViewModel is MemberOrTypeViewModelBase)
+                    return (_baseViewModel as MemberOrTypeViewModelBase).Contract;
                 else
                     return string.Empty;
             }
@@ -67,8 +67,8 @@ namespace Tempo
         {
             get
             {
-                if (_baseViewModel is MemberViewModel)
-                    return (_baseViewModel as MemberViewModel).IsDeprecated;
+                if (_baseViewModel is MemberOrTypeViewModelBase)
+                    return (_baseViewModel as MemberOrTypeViewModelBase).IsDeprecated;
                 else
                     return false;
             }
@@ -80,8 +80,8 @@ namespace Tempo
         {
             get
             {
-                if (_baseViewModel is MemberViewModel)
-                    return (_baseViewModel as MemberViewModel).WordCount;
+                if (_baseViewModel is MemberOrTypeViewModelBase)
+                    return (_baseViewModel as MemberOrTypeViewModelBase).WordCount;
                 else
                     return 0;
             }

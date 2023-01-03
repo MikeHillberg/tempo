@@ -344,7 +344,7 @@ namespace Tempo
     };
 
 
-    abstract public class PropertyViewModel : MemberMemberViewModelBase
+    abstract public class PropertyViewModel : MemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Property; } }
 
@@ -622,7 +622,7 @@ namespace Tempo
 
     }
 
-    abstract public class EventViewModel : MemberMemberViewModelBase
+    abstract public class EventViewModel : MemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Event; } }
 
@@ -921,7 +921,7 @@ namespace Tempo
     /// <summary>
     /// Base for all member (non-type) ViewModels
     /// </summary>
-    abstract public class MemberMemberViewModelBase : MemberViewModel
+    abstract public class MemberViewModelBase : MemberOrTypeViewModelBase
     {
         // Override all of these abstracts that only get set on a type
         override public bool IsInterface => false;
@@ -934,7 +934,7 @@ namespace Tempo
     }
 
 
-    abstract public class MethodViewModel : MemberMemberViewModelBase
+    abstract public class MethodViewModel : MemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Method; } }
 
@@ -1268,7 +1268,7 @@ namespace Tempo
         }
     }
 
-    abstract public class FieldViewModel : MemberMemberViewModelBase
+    abstract public class FieldViewModel : MemberViewModelBase
     {
         public override MemberKind MemberKind { get { return MemberKind.Field; } }
         public override MyMemberTypes MemberType { get { return MyMemberTypes.Field; } } //(MyMemberTypes)FieldInfo.MemberType; } }
@@ -1532,7 +1532,7 @@ namespace Tempo
         public virtual bool IsCompilerGenerated { get { return false; } }
     }
 
-    abstract public class ConstructorViewModel : MemberMemberViewModelBase // (MemberViewModel : BaseViewModel)
+    abstract public class ConstructorViewModel : MemberViewModelBase // (MemberViewModel : BaseViewModel)
     {
         public override MemberKind MemberKind { get { return MemberKind.Constructor; } }
 

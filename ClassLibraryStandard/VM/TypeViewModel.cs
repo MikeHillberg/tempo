@@ -24,7 +24,7 @@ namespace Tempo
         Unspecified = -1 // Not part of MarshalingType
     }
 
-    abstract public class TypeViewModel : MemberViewModel
+    abstract public class TypeViewModel : MemberOrTypeViewModelBase
     {
 
         public override bool IsProtected => false; // Only members have protected access
@@ -130,8 +130,8 @@ namespace Tempo
             }
         }
 
-        IList<MemberViewModel> _returnedBy = null;
-        public IList<MemberViewModel> ReturnedByAsync
+        IList<MemberOrTypeViewModelBase> _returnedBy = null;
+        public IList<MemberOrTypeViewModelBase> ReturnedByAsync
         {
             get
             {
@@ -1733,25 +1733,25 @@ namespace Tempo
         }
 
 
-        IList<MemberViewModel> _members;
-        public IList<MemberViewModel> Members
+        IList<MemberOrTypeViewModelBase> _members;
+        public IList<MemberOrTypeViewModelBase> Members
         {
             get
             {
                 if (_members == null)
                 {
-                    var members = (Properties as IEnumerable<MemberViewModel>)
-                        .Union(Methods as IEnumerable<MemberViewModel>)
-                        .Union(Events as IEnumerable<MemberViewModel>)
-                        .Union(Constructors as IEnumerable<MemberViewModel>)
-                        .Union(Fields as IEnumerable<MemberViewModel>);
+                    var members = (Properties as IEnumerable<MemberOrTypeViewModelBase>)
+                        .Union(Methods as IEnumerable<MemberOrTypeViewModelBase>)
+                        .Union(Events as IEnumerable<MemberOrTypeViewModelBase>)
+                        .Union(Constructors as IEnumerable<MemberOrTypeViewModelBase>)
+                        .Union(Fields as IEnumerable<MemberOrTypeViewModelBase>);
                     _members = (from m in members orderby m.Name select m).ToList();
                 }
                 return _members;
             }
         }
 
-        public IEnumerable<MemberViewModel> RawMembers
+        public IEnumerable<MemberOrTypeViewModelBase> RawMembers
         {
             get
             {
@@ -1782,7 +1782,7 @@ namespace Tempo
         }
 
 
-        public IEnumerable<MemberViewModel> GetMember(string name)
+        public IEnumerable<MemberOrTypeViewModelBase> GetMember(string name)
         {
             foreach (var member in Members)
             {

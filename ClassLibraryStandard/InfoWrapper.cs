@@ -45,7 +45,7 @@ namespace Tempo
                     r += "abstract ";
                 else if (
                     memberInfo.IsVirtual
-                    && (!(memberInfo is MemberViewModel) || !(memberInfo as MemberViewModel).IsSealed))
+                    && (!(memberInfo is MemberOrTypeViewModelBase) || !(memberInfo as MemberOrTypeViewModelBase).IsSealed))
                 {
                     r += "virtual ";
                 }

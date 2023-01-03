@@ -325,14 +325,14 @@ namespace Tempo
 
 
 
-        static public IList<MemberViewModel> GetMembers(SearchExpression filter, int iteration)
+        static public IList<MemberOrTypeViewModelBase> GetMembers(SearchExpression filter, int iteration)
         {
             var m = GetMembersHelper(filter, iteration);
             return m.ToList();
         }
 
-        static Dictionary<TypeViewModel, IEnumerable<MemberViewModel>> _memberCache
-            = new Dictionary<TypeViewModel, IEnumerable<MemberViewModel>>();
+        static Dictionary<TypeViewModel, IEnumerable<MemberOrTypeViewModelBase>> _memberCache
+            = new Dictionary<TypeViewModel, IEnumerable<MemberOrTypeViewModelBase>>();
 
         static public string LastType { get; set; }
         static public string LastMember { get; set; }
@@ -653,7 +653,7 @@ namespace Tempo
             new CheckForNotInBaseline()
         };
 
-        static public IEnumerable<MemberViewModel> GetMembersHelper(SearchExpression searchExpression, int iteration)
+        static public IEnumerable<MemberOrTypeViewModelBase> GetMembersHelper(SearchExpression searchExpression, int iteration)
         {
             DebugLog.Append($"GetMembersHelper ({iteration})");
             LastType = null;
@@ -856,7 +856,7 @@ namespace Tempo
 
                 bool someMemberMatches = false;
                 int membersChecked = 0;
-                IEnumerable<MemberViewModel> members;
+                IEnumerable<MemberOrTypeViewModelBase> members;
                 members = types[i].Members;
 
                 // Search all the members
@@ -928,7 +928,7 @@ namespace Tempo
                     if (meaningfulMatch && !Settings.IgnoreAllSettings || Settings.IsMemberRequired())
                     {
                         // Flag this as a matching member so that we can highlight it in the UI
-                        var memberViewModel = member as MemberViewModel;
+                        var memberViewModel = member as MemberOrTypeViewModelBase;
                         memberViewModel.SetMatchGeneration();
                     }
 
@@ -996,7 +996,7 @@ namespace Tempo
         /// Helper to call SearchExpression.EvaluateAqsExpression and implement the callback
         /// </summary>
         /// <returns>True if it matches, false if it doesn't, and null if there was no (meaningful) AQS</returns>
-        static bool? EvaluateAqsExpression(SearchExpression searchExpression, MemberViewModel memberVM)
+        static bool? EvaluateAqsExpression(SearchExpression searchExpression, MemberOrTypeViewModelBase memberVM)
         {
             var keyUsed = false;
             bool? result = null;
@@ -1014,7 +1014,7 @@ namespace Tempo
                         if (!tryGet && key.ToLower() == "namespace")
                         {
                             var declaringType = memberVM.DeclaringType;
-                            if ((declaringType as MemberViewModel) != memberVM)
+                            if ((declaringType as MemberOrTypeViewModelBase) != memberVM)
                             {
                                 tryGet = declaringType.TryGetVMProperty(key, out value);
                             }
@@ -1082,7 +1082,7 @@ namespace Tempo
         }
 
         static bool CheckMemberCheckers(
-            MemberViewModel member,
+            MemberOrTypeViewModelBase member,
             TypeViewModel typeOfMember,
             SearchExpression searchExpression,
             ref int membersChecked,
@@ -1303,7 +1303,7 @@ namespace Tempo
             return true;
         }
 
-        public static void CheckMemberName(MemberViewModel member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
+        public static void CheckMemberName(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
         {
             var method = new DuckMethod(member);
             filtersMatch = false;

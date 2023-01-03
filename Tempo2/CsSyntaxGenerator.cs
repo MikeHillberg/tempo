@@ -21,17 +21,17 @@ namespace Tempo
         static Thickness Indent2 = new Thickness(40, 0, 0, 0);
 
         // bugbug:  should type this as RTB, but that breaks x:Bind
-        public static MemberViewModel GetMember(DependencyObject obj)
+        public static MemberOrTypeViewModelBase GetMember(DependencyObject obj)
         {
-            return (MemberViewModel)obj.GetValue(MemberProperty);
+            return (MemberOrTypeViewModelBase)obj.GetValue(MemberProperty);
         }
 
-        public static void SetMember(DependencyObject obj, MemberViewModel value)
+        public static void SetMember(DependencyObject obj, MemberOrTypeViewModelBase value)
         {
             obj.SetValue(MemberProperty, value);
         }
         public static readonly DependencyProperty MemberProperty =
-            DependencyProperty.RegisterAttached("Member", typeof(MemberViewModel), typeof(CsSyntaxGenerator),
+            DependencyProperty.RegisterAttached("Member", typeof(MemberOrTypeViewModelBase), typeof(CsSyntaxGenerator),
                 new PropertyMetadata(null, (s, e) => MemberChanged(s as RichTextBlock)));
 
 
@@ -352,17 +352,17 @@ namespace Tempo
             SearchHighlighter.HighlightMatches(textBlock, App.SearchExpression?.MemberRegex);
         }
 
-        public static MemberViewModel GetMemberName(DependencyObject obj)
+        public static MemberOrTypeViewModelBase GetMemberName(DependencyObject obj)
         {
-            return (MemberViewModel)obj.GetValue(MemberNameProperty);
+            return (MemberOrTypeViewModelBase)obj.GetValue(MemberNameProperty);
         }
 
-        public static void SetMemberName(DependencyObject obj, MemberViewModel value)
+        public static void SetMemberName(DependencyObject obj, MemberOrTypeViewModelBase value)
         {
             obj.SetValue(MemberNameProperty, value);
         }
         public static readonly DependencyProperty MemberNameProperty =
-            DependencyProperty.RegisterAttached("MemberName", typeof(MemberViewModel), typeof(CsSyntaxGenerator), 
+            DependencyProperty.RegisterAttached("MemberName", typeof(MemberOrTypeViewModelBase), typeof(CsSyntaxGenerator), 
                 new PropertyMetadata(null, (s,e) => MemberNameChanged(s as TextBlock)));
 
         private static void MemberNameChanged(TextBlock textBlock)
@@ -379,7 +379,7 @@ namespace Tempo
 
         // bugbug: consolidate with desktop
         static void GenerateMemberName(
-            MemberViewModel member,
+            MemberOrTypeViewModelBase member,
             InlineCollection inlines,
             bool withHyperlink = true)
         {

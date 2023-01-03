@@ -10,7 +10,7 @@ namespace Tempo
     {
         static public bool MemberCheck(
             TypeViewModel t,
-            MemberViewModel memberVM,
+            MemberOrTypeViewModelBase memberVM,
             SearchExpression filter)
         {
             if (filter.WhereCondition == null)
@@ -29,7 +29,7 @@ namespace Tempo
 
         }
 
-        static bool Check(MemberViewModel memberVM, SearchExpression filter)
+        static bool Check(MemberOrTypeViewModelBase memberVM, SearchExpression filter)
         {
 
             if (filter.WhereCondition.Evaluate(

@@ -177,7 +177,7 @@ namespace Tempo
 
                 }
 
-                var memberVM = memberBaseVM as MemberViewModel;
+                var memberVM = memberBaseVM as MemberOrTypeViewModelBase;
                 if (memberVM != null)
                 {
                     var contractParts = memberVM.Contract.Split(',');
@@ -327,7 +327,7 @@ namespace Tempo
                     }
 
                     showedMembers = true;
-                    var vm = item as MemberViewModel;
+                    var vm = item as MemberOrTypeViewModelBase;
 
                     if (asCsv)
                     {

@@ -131,7 +131,7 @@ namespace Tempo
             }
         }
 
-        public bool MemberExists(TypeViewModel type, MemberViewModel member)
+        public bool MemberExists(TypeViewModel type, MemberOrTypeViewModelBase member)
         {
             var typeInfo = Find(type.Namespace + "." + type.PrettyName); // bugbug
             if (typeInfo == null)

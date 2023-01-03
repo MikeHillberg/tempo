@@ -150,13 +150,13 @@ namespace Tempo
             Clipboard.SetContent(dataPackage);
         }
 
-        public IList<MemberViewModel> Results
+        public IList<MemberOrTypeViewModelBase> Results
         {
-            get { return (IList<MemberViewModel>)GetValue(ResultsProperty); }
+            get { return (IList<MemberOrTypeViewModelBase>)GetValue(ResultsProperty); }
             set { SetValue(ResultsProperty, value); }
         }
         public static readonly DependencyProperty ResultsProperty =
-            DependencyProperty.Register("Results", typeof(IList<MemberViewModel>), typeof(CommonCommandBar), new PropertyMetadata(null));
+            DependencyProperty.Register("Results", typeof(IList<MemberOrTypeViewModelBase>), typeof(CommonCommandBar), new PropertyMetadata(null));
 
         private void OpenInExcel(object sender, RoutedEventArgs e)
         {
@@ -234,13 +234,13 @@ namespace Tempo
         /// <summary>
         /// Member being displayed, used to enable MSDN
         /// </summary>
-        public MemberViewModel MemberVM
+        public MemberOrTypeViewModelBase MemberVM
         {
-            get { return (MemberViewModel)GetValue(MemberVMProperty); }
+            get { return (MemberOrTypeViewModelBase)GetValue(MemberVMProperty); }
             set { SetValue(MemberVMProperty, value); }
         }
         public static readonly DependencyProperty MemberVMProperty =
-            DependencyProperty.Register("MemberVM", typeof(MemberViewModel), typeof(CommonCommandBar),
+            DependencyProperty.Register("MemberVM", typeof(MemberOrTypeViewModelBase), typeof(CommonCommandBar),
                 new PropertyMetadata(null, (s, e) => (s as CommonCommandBar).MemberVMChanged()));
 
         private void MemberVMChanged()

@@ -28,13 +28,13 @@ namespace Tempo
         }
 
 
-        public MemberViewModel MemberVM
+        public MemberOrTypeViewModelBase MemberVM
         {
-            get { return (MemberViewModel)GetValue(MemberVMProperty); }
+            get { return (MemberOrTypeViewModelBase)GetValue(MemberVMProperty); }
             set { SetValue(MemberVMProperty, value); }
         }
         public static readonly DependencyProperty MemberVMProperty =
-            DependencyProperty.Register("MemberVM", typeof(MemberViewModel), typeof(MemberItemView),
+            DependencyProperty.Register("MemberVM", typeof(MemberOrTypeViewModelBase), typeof(MemberItemView),
                 new PropertyMetadata(null, (d,e) => (d as MemberItemView).MemberVMChanged()));
 
         void MemberVMChanged()

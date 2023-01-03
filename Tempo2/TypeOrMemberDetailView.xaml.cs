@@ -43,7 +43,7 @@ namespace Tempo
         public void NavigateToItem(object item)
         {
             // Keep track of the current item (for the go-to-docs link)
-            App.CurrentItem = item as MemberViewModel;
+            App.CurrentItem = item as MemberOrTypeViewModelBase;
 
             // Based on the member, update the detail views
 

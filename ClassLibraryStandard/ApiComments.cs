@@ -15,7 +15,7 @@ namespace Tempo
         static string _lockable = "ApiComments";
 
 
-        static public Task<string> GetCommentsAsync(MemberViewModel member)
+        static public Task<string> GetCommentsAsync(MemberOrTypeViewModelBase member)
         {
             //return await Task.Run(() =>
             //{
@@ -30,7 +30,7 @@ namespace Tempo
 
         }
 
-        private static string GetComments(MemberViewModel member)
+        private static string GetComments(MemberOrTypeViewModelBase member)
         {
             Load();
             var remarks = new StringBuilder();

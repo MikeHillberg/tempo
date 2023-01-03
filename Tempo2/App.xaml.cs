@@ -1262,12 +1262,12 @@ namespace Tempo
             RootFrame.Navigate(typeof(SymbolsIllustration));
         }
 
-        public static void Navigate(MemberViewModel memberVM)
+        public static void Navigate(MemberOrTypeViewModelBase memberVM)
         {
             InternalNavigate(GetViewTypeFor(memberVM), memberVM);
         }
 
-        public static Type GetViewTypeFor(MemberViewModel memberVM)
+        public static Type GetViewTypeFor(MemberOrTypeViewModelBase memberVM)
         {
             if (memberVM is TypeViewModel)
                 return typeof(TypeDetailView);
@@ -1287,7 +1287,7 @@ namespace Tempo
             return null;
         }
 
-        public static MySerializableControl GetViewFor(MemberViewModel memberVM)
+        public static MySerializableControl GetViewFor(MemberOrTypeViewModelBase memberVM)
         {
             if (memberVM is TypeViewModel)
                 return new TypeDetailView();
@@ -1380,7 +1380,7 @@ namespace Tempo
         }
 
         // The current member/type being viewed
-        public static MemberViewModel CurrentItem { get; internal set; }
+        public static MemberOrTypeViewModelBase CurrentItem { get; internal set; }
 
         public static void ToggleEventFilter()
         {

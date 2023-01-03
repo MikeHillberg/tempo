@@ -8,7 +8,7 @@ namespace Tempo
 {
     public class ViewHelpers
     {
-        public static string GetSearchSampleUri(MemberViewModel currentItem)
+        public static string GetSearchSampleUri(MemberOrTypeViewModelBase currentItem)
         {
             // Sample:  https://github.com/Microsoft/Windows-universal-samples/search?utf8=%E2%9C%93&q=GestureRecognizer+GetForCurrentView&type=Code
 
@@ -18,7 +18,7 @@ namespace Tempo
                 query = (currentItem as TypeViewModel).Name;
             else
             {
-                var memberVM = currentItem as MemberViewModel;
+                var memberVM = currentItem as MemberOrTypeViewModelBase;
                 query = memberVM.DeclaringType.Name + "+" + memberVM.Name;
             }
 
@@ -27,7 +27,7 @@ namespace Tempo
         }
 
 
-        public static string GetIndexedSampleUri(MemberViewModel currentItem)
+        public static string GetIndexedSampleUri(MemberOrTypeViewModelBase currentItem)
         {
             string query = "";
 
@@ -35,7 +35,7 @@ namespace Tempo
                 query = (currentItem as TypeViewModel).FullName;
             else
             {
-                var memberVM = currentItem as MemberViewModel;
+                var memberVM = currentItem as MemberOrTypeViewModelBase;
                 query = memberVM.DeclaringType.FullName;
 
                 var methodVM = memberVM as MethodViewModel;

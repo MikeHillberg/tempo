@@ -262,10 +262,10 @@ namespace Tempo
 
         public static void GoToItem(object item)
         {
-            App.Navigate(item as MemberViewModel);
+            App.Navigate(item as MemberOrTypeViewModelBase);
         }
 
-        MemberViewModel _selectedMember = null;
+        MemberOrTypeViewModelBase _selectedMember = null;
         private void _membersList_Navigated(TypeDetailViewMembersList sender, TypeNavigatedEventArgs args)
         {
             // In wide mode just update the second pane

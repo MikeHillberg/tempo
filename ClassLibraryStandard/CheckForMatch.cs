@@ -448,7 +448,7 @@ namespace Tempo
 
             matches = false;
 
-            var memberViewModel = MemberViewModel.FirstNotNull(propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo);
+            var memberViewModel = MemberOrTypeViewModelBase.FirstNotNull(propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo);
             Debug.Assert(memberViewModel != null);
             if (memberViewModel.Version.Contains(versionString))
             //||

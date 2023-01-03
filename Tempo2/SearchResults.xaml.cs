@@ -184,13 +184,13 @@ namespace Tempo
             DependencyProperty.Register("Heading", typeof(string), typeof(SearchResults), new PropertyMetadata(""));
 
 
-        public IList<MemberViewModel> Results
+        public IList<MemberOrTypeViewModelBase> Results
         {
-            get { return (IList<MemberViewModel>)GetValue(ResultsProperty); }
+            get { return (IList<MemberOrTypeViewModelBase>)GetValue(ResultsProperty); }
             set { SetValue(ResultsProperty, value); }
         }
         public static readonly DependencyProperty ResultsProperty =
-            DependencyProperty.Register("Results", typeof(IList<MemberViewModel>), typeof(SearchResults), new PropertyMetadata(null, (s, e) => (s as SearchResults).ResultsChanged()));
+            DependencyProperty.Register("Results", typeof(IList<MemberOrTypeViewModelBase>), typeof(SearchResults), new PropertyMetadata(null, (s, e) => (s as SearchResults).ResultsChanged()));
         public void ResultsChanged()
         {
             // After the Results property changes the ItemsSource property will change,
@@ -275,7 +275,7 @@ namespace Tempo
 
             var relativeScrollPosition = ListViewPersistenceHelper.GetRelativeScrollPosition(
                 _listView,
-                (item) => (item as MemberViewModel).FullName);
+                (item) => (item as MemberOrTypeViewModelBase).FullName);
 
             return new SearchResultsNavigationState()
             {
@@ -335,7 +335,7 @@ namespace Tempo
             // Can't x:Bind to statics in TH2
             Heading = "\"" + SearchString + "\" (" + Manager.MatchingStats.MatchingTotal + " matches)";
 
-            IList<MemberViewModel> newResults = null;
+            IList<MemberOrTypeViewModelBase> newResults = null;
             DateTime _startTime = DateTime.Now;
             _gettingMembersCount++;
             var searchTask = Task.Run(() =>
@@ -664,7 +664,7 @@ namespace Tempo
             // bugbug: how does this relate to virtualization?
             // bugbug: consolidate with desktop
 
-            MemberViewModel targetItem = null;
+            MemberOrTypeViewModelBase targetItem = null;
 
             if (App.SearchExpression.MemberRegex == null
                 || App.SearchExpression.TypeRegex == null)
@@ -681,13 +681,13 @@ namespace Tempo
 
                 // Pick a type at random, so every time you see something new
                 var index = Random.Shared.Next(items.Count-1);
-                targetItem = items[0] as MemberViewModel;
+                targetItem = items[0] as MemberOrTypeViewModelBase;
 
                 for (int i = index; i >= 0; i--)
                 {
                     if (_listView.Items[i] is TypeViewModel)
                     {
-                        targetItem = items[i] as MemberViewModel;
+                        targetItem = items[i] as MemberOrTypeViewModelBase;
                         break;
                     }
                 }
@@ -702,7 +702,7 @@ namespace Tempo
 
                 foreach (var item in _listView.Items)
                 {
-                    var member = item as MemberViewModel;
+                    var member = item as MemberOrTypeViewModelBase;
                     if (member == null)
                     {
                         continue;

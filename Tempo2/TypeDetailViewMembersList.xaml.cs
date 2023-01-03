@@ -94,7 +94,7 @@ namespace Tempo
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            Navigated?.Invoke(this, new TypeNavigatedEventArgs(_listView.SelectedIndex, e.ClickedItem as MemberViewModel));
+            Navigated?.Invoke(this, new TypeNavigatedEventArgs(_listView.SelectedIndex, e.ClickedItem as MemberOrTypeViewModelBase));
         }
 
         public event TypedEventHandler<TypeDetailViewMembersList, TypeNavigatedEventArgs> Navigated;
@@ -133,7 +133,7 @@ namespace Tempo
                         return (item as MemberList).Heading;
                     }
                     else
-                        return (item as MemberViewModel).FullName;
+                        return (item as MemberOrTypeViewModelBase).FullName;
 
                 });
         }

@@ -10,13 +10,13 @@ namespace Tempo
             _index = index;
         }
 
-        public TypeNavigatedEventArgs(int index, MemberViewModel memberViewModel) : this(index)
+        public TypeNavigatedEventArgs(int index, MemberOrTypeViewModelBase memberViewModel) : this(index)
         {
             MemberViewModel = memberViewModel;
         }
 
         public int Index {  get { return _index; } }
 
-        public MemberViewModel MemberViewModel { get; }
+        public MemberOrTypeViewModelBase MemberViewModel { get; }
     }
 }

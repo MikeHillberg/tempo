@@ -49,7 +49,7 @@
             </ListView.GroupStyle>
 
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:MemberViewModel">
+                <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
                     <Border BorderThickness="4,0,0,0" 
                                     local:SearchHighlighter.BorderForMember="{x:Bind}"
                                     Padding="3,0,0,0">

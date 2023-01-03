@@ -257,7 +257,7 @@ namespace Tempo
                 _validAqsKeys = (from i in propertyInfos select i.Name).ToList();
             }
 
-            key = MemberMemberViewModelBase.NormalizePropertyNameForQueries(key);
+            key = MemberViewModelBase.NormalizePropertyNameForQueries(key);
             return _validAqsKeys.Contains(key);
         }
 
@@ -568,7 +568,7 @@ namespace Tempo
 
     abstract public class WhereCondition
     {
-        public abstract bool Evaluate(MemberViewModel memberVM, bool caseSensitive,
+        public abstract bool Evaluate(MemberOrTypeViewModelBase memberVM, bool caseSensitive,
             SearchExpression filter,
             Func<string, object> getter);
 
@@ -617,7 +617,7 @@ namespace Tempo
         public string Value;
         public SearchConditionOperator Operator;
 
-        public override bool Evaluate(MemberViewModel memberVM, bool caseSensitive,
+        public override bool Evaluate(MemberOrTypeViewModelBase memberVM, bool caseSensitive,
             SearchExpression filter,
             Func<string, object> getter)
         {
@@ -701,7 +701,7 @@ namespace Tempo
 
         public CompoundSearchOperator Operator { get; set; }
 
-        public override bool Evaluate(MemberViewModel memberVM, bool caseSensitive,
+        public override bool Evaluate(MemberOrTypeViewModelBase memberVM, bool caseSensitive,
             SearchExpression filter,
             Func<string, object> getter)
         {

@@ -37,7 +37,7 @@ namespace Tempo
             return matchingTypes;
         }
 
-        static public IEnumerable<MemberViewModel> FindReturningMembers(TypeViewModel soughtType, AsyncCounter counter)
+        static public IEnumerable<MemberOrTypeViewModelBase> FindReturningMembers(TypeViewModel soughtType, AsyncCounter counter)
         {
             return AllMembersWhere(
                 counter,
@@ -46,7 +46,7 @@ namespace Tempo
         }
 
 
-        static public IEnumerable<MemberViewModel> AllMembersWhere(
+        static public IEnumerable<MemberOrTypeViewModelBase> AllMembersWhere(
             AsyncCounter counter,
             bool checkOutOnly, // Only check [out] parameters
             Func<TypeViewModel, bool> typeCheck,

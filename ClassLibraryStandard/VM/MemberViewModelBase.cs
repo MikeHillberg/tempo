@@ -160,9 +160,9 @@ namespace Tempo
     }
 
     /// <summary>
-    /// Base class for any of the VMs. Following .Net precedent, "Member" here includes types
+    /// Base class for TypeViewModel and any of the member ViewModels, but not e.g. ParameterViewModel
     /// </summary>
-    abstract public class MemberViewModel : BaseViewModel
+    abstract public class MemberOrTypeViewModelBase : BaseViewModel
     {
         bool _isDeprecated = false;
         bool _isDeprecatedChecked = false;
@@ -204,7 +204,7 @@ namespace Tempo
         }
 
 
-        static public bool IsDependencyPropertyFieldHelper(MemberViewModel member, TypeViewModel memberType)
+        static public bool IsDependencyPropertyFieldHelper(MemberOrTypeViewModelBase member, TypeViewModel memberType)
         {
             // Field in WPF, Property in Xaml
             if (member.MemberKind != MemberKind.Field && member.MemberKind != MemberKind.Property)
@@ -823,12 +823,12 @@ namespace Tempo
 
         public abstract TypeViewModel ReturnType { get; }
 
-        public static MemberViewModel FirstNotNull(
-            MemberViewModel propertyViewModel,
-            MemberViewModel eventViewModel,
-            MemberViewModel fieldViewModel,
-            MemberViewModel constructorViewModel,
-            MemberViewModel methodViewModel)
+        public static MemberOrTypeViewModelBase FirstNotNull(
+            MemberOrTypeViewModelBase propertyViewModel,
+            MemberOrTypeViewModelBase eventViewModel,
+            MemberOrTypeViewModelBase fieldViewModel,
+            MemberOrTypeViewModelBase constructorViewModel,
+            MemberOrTypeViewModelBase methodViewModel)
         {
             if (propertyViewModel != null)
                 return propertyViewModel;
@@ -1254,7 +1254,7 @@ namespace Tempo
 
             foreach (var iface in interfaces)
             {
-                IEnumerable<MemberViewModel> interfaceMembers = null;
+                IEnumerable<MemberOrTypeViewModelBase> interfaceMembers = null;
 
                 if (iface == null)
                     continue;
