@@ -22,7 +22,22 @@ namespace Tempo
         public FilterAppBarButtonMenu()
         {
             this.InitializeComponent();
+
+            Manager.Settings.PropertyChanged += (s, e) =>
+            {
+                UpdateCaseSensitive();
+            };
+
+            UpdateCaseSensitive();
         }
+
+        // Manually keep Settings.CaseSensitive in sync with the toggle button,
+        // since x:Bind isn't supported on a Flyout
+        void UpdateCaseSensitive()
+        {
+            _caseSensitive.IsChecked = Manager.Settings.CaseSensitive;
+        }
+
         private void TypeNamesOnly_Click(object sender, RoutedEventArgs e)
         {
             App.ToggleTypeFilter();
@@ -47,6 +62,11 @@ namespace Tempo
         }
 
         private void CaseSensitive_Click(object sender, RoutedEventArgs e)
+        {
+            App.ToggleCaseSensitive();
+        }
+
+        private void _caseSensitive_Click(object sender, RoutedEventArgs e)
         {
             App.ToggleCaseSensitive();
         }

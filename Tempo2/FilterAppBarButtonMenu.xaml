@@ -7,24 +7,28 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <!-- Only search types -->
     <MenuFlyoutItem Text="Types only" Click="TypeNamesOnly_Click"  >
         <MenuFlyoutItem.KeyboardAccelerators>
             <KeyboardAccelerator Modifiers="Control" Key="T"/>
         </MenuFlyoutItem.KeyboardAccelerators>
     </MenuFlyoutItem>
-    
+
+    <!-- Only search properties -->
     <MenuFlyoutItem Text="Properties only" Click="PropertyNamesOnly_Click"  >
         <MenuFlyoutItem.KeyboardAccelerators>
             <KeyboardAccelerator Modifiers="Control" Key="P"/>
         </MenuFlyoutItem.KeyboardAccelerators>
     </MenuFlyoutItem>
-    
+
+    <!-- Only search methods -->
     <MenuFlyoutItem Text="Methods only" Click="MethodNamesOnly_Click"  >
         <MenuFlyoutItem.KeyboardAccelerators>
             <KeyboardAccelerator Modifiers="Control" Key="H"/>
         </MenuFlyoutItem.KeyboardAccelerators>
     </MenuFlyoutItem>
-    
+
+    <!-- Only search events -->
     <MenuFlyoutItem Text="Events only" Click="EventNamesOnly_Click"  >
         <MenuFlyoutItem.KeyboardAccelerators>
             <KeyboardAccelerator Modifiers="Control" Key="N"/>
@@ -33,6 +37,17 @@
 
     <MenuFlyoutSeparator/>
 
+    <!-- Toggle on/off the case-sensitive mode -->
+    <ToggleMenuFlyoutItem x:Name="_caseSensitive" Text="Case sensitive"
+                          Click="_caseSensitive_Click">
+        <ToggleMenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Key="S" Modifiers="Control"/>
+        </ToggleMenuFlyoutItem.KeyboardAccelerators>
+    </ToggleMenuFlyoutItem>
+
+    <MenuFlyoutSeparator/>
+
+    <!-- Open the dialog with all search filters -->
     <MenuFlyoutItem Text="More filters ..." Click="AppBarButton_Click"  >
         <MenuFlyoutItem.KeyboardAccelerators>
             <KeyboardAccelerator Modifiers="Control" Key="F" />

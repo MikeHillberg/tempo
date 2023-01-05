@@ -680,7 +680,7 @@ namespace Tempo
                 }
 
                 // Pick a type at random, so every time you see something new
-                var index = Random.Shared.Next(items.Count-1);
+                var index = Random.Shared.Next(items.Count - 1);
                 targetItem = items[0] as MemberOrTypeViewModelBase;
 
                 for (int i = index; i >= 0; i--)
@@ -713,13 +713,13 @@ namespace Tempo
                     if (member is TypeViewModel)
                     {
                         var match = App.SearchExpression.TypeRegex.Match(member.Name);
-                        if(match != Match.Empty)
+                        if (match != Match.Empty)
                         {
-                            if(match.Value == member.Name)
+                            if (match.Value == member.Name)
                             {
                                 priority = MatchPriority.ExactMatchType;
                             }
-                            else if(member.Name.StartsWith(match.Value))
+                            else if (member.Name.StartsWith(match.Value))
                             {
                                 priority = MatchPriority.StartsWithType;
                             }
@@ -749,13 +749,13 @@ namespace Tempo
                         }
                     }
 
-                    if(priority > highestPriority)
+                    if (priority > highestPriority)
                     {
                         highestPriority = priority;
                         targetItem = member;
                     }
 
-                    if(priority == MatchPriority.Max)
+                    if (priority == MatchPriority.Max)
                     {
                         break;
                     }

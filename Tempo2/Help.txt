@@ -54,8 +54,9 @@ You can combine terms with AND, OR, and NOT, or equivalently "&&", "||", and "!"
 You can also wrap in parens.
 If you put two terms next to each other, AND is assumed.
 
-For example:
+For example these are equivalent:
 
 ```
-IsType:True && (Namespace:controls || Namespace:devices)
+IsType:True && Namespace:(controls || devices)
+IsType:True AND Namespace:(controls OR devices)
 ```
