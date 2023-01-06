@@ -118,5 +118,10 @@ namespace Tempo
         {
             App.Instance.ShowHelp();
         }
+
+        private void BrowseAll(object sender, RoutedEventArgs e)
+        {
+            App.GotoNamespaces("");
+        }
     }
 }

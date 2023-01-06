@@ -1078,6 +1078,21 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// Return the ABI name from any ViewModel. Only actually returns something for a Method,
+        /// but allow any type for ease of use.
+        /// </summary>
+        public static string CalculateAbiName(MemberOrTypeViewModelBase vm)
+        {
+            var methodVM = vm as MethodViewModel;
+            if (methodVM == null)
+            {
+                return null;
+            }
+
+            return methodVM.AbiName;
+        }
+
         public virtual bool IsExtensionMethod
         {
             get { return false; }

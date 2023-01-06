@@ -33,7 +33,5 @@ namespace Tempo
         }
         public static readonly DependencyProperty MemberVMProperty =
             DependencyProperty.Register("MemberVM", typeof(MemberOrTypeViewModelBase), typeof(MemberMore), new PropertyMetadata(null));
-
-
     }
 }

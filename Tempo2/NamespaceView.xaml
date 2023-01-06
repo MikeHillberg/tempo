@@ -12,22 +12,25 @@
         <CollectionViewSource x:Name="_cvs" Source="{x:Bind NamespacesAndTypes, Mode=Oneway}" IsSourceGrouped="True" />
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          Padding="{StaticResource ContentMargin2}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel>
+        <StackPanel Margin="0,0,0,20">
             <local:CommonCommandBar
                 UpButtonVisibility="{x:Bind UpButtonVisibility, Mode=OneWay}" 
                 UpButtonClick="DetailViewHeading_UpButtonClick"/>
-            
-            <local:HeadingBar Heading="{x:Bind SelectedNamespace, Mode=OneWay}" SubSubHeading="namespace" />
+
+            <local:HeadingBar Heading="{x:Bind SelectedNamespace, Mode=OneWay}" SubSubHeading="namespace"
+                              local:CollapseIfEmpty.IsEnabledFor="{x:Bind SelectedNamespace, Mode=OneWay}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
 
+            <!-- Skinny mode -->
             <!-- bugbug: deferral -->
             <ListView 
                   x:Name="_listView"
@@ -47,13 +50,14 @@
                 </ListView.GroupStyle>
 
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="local:ItemWrapper">
-                        <TextBlock Text="{x:Bind ItemAsString}" />
+                    <DataTemplate x:DataType="x:Object">
+                        <TextBlock Text="{x:Bind ToString()}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
 
             </ListView>
 
+            <!-- Wide mode -->
             <!-- bugbug: deferral -->
             <Grid Visibility="{x:Bind local:HomePage.AdaptiveSettings.IsWide, Mode=OneWay}" 
                   HorizontalAlignment="Left">
@@ -66,11 +70,13 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <ListViewHeaderItem Grid.Row="0" Grid.Column="0">Namespaces</ListViewHeaderItem>
+                <ListViewHeaderItem Grid.Row="0" Grid.Column="0">Child namespaces</ListViewHeaderItem>
                 <ListView Grid.Row="1" Grid.Column="0" ItemsSource="{x:Bind Namespaces}" 
                           IsItemClickEnabled="True" ItemClick="ListView_ItemClick" />
 
-                <ListViewHeaderItem Grid.Row="0" Grid.Column="1">Types</ListViewHeaderItem>
+                <ListViewHeaderItem Grid.Row="0" Grid.Column="1"
+                                    local:CollapseIfEmpty.IsEnabledFor="{x:Bind Types}">
+                    Types</ListViewHeaderItem>
                 <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{x:Bind Types}" 
                           IsItemClickEnabled="true" ItemClick="ListView_ItemClick"/>
 

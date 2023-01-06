@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System.Reflection.Metadata;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -32,22 +33,21 @@ namespace Tempo
 
         protected override void OnActivated(object parameter)
         {
-            if (string.IsNullOrEmpty(parameter as string))
-                return;
+            //if (string.IsNullOrEmpty(parameter as string))
+            //    return;
 
-            //Microsoft.HockeyApp.HockeyClient.Current.TrackEvent("Namespace view");
-
-            var ns = (parameter as string) + ".";
             var selectedNamespace = parameter as string;
 
-            Initialize(ns, selectedNamespace);
+            Initialize(selectedNamespace);
         }
 
 
         protected override object OnSuspending()
         {
             if (_listView.ItemsPanelRoot == null)
+            {
                 return null;
+            }
 
             var relativeScrollPosition
                 = ListViewPersistenceHelper.GetRelativeScrollPosition(
@@ -58,7 +58,7 @@ namespace Tempo
                     if (group != null)
                         return group.Key;
 
-                    return (item as ItemWrapper).ItemAsString;
+                    return item.ToString();
                 });
 
             return relativeScrollPosition;
@@ -67,13 +67,14 @@ namespace Tempo
 
         protected override void OnReactivated(object parameter, object state)
         {
-            var ns = (parameter as string) + ".";
             var selectedNamespace = parameter as string;
 
-            Initialize(ns, selectedNamespace);
+            Initialize(selectedNamespace);
 
             if (string.IsNullOrEmpty(state as string))
+            {
                 return;
+            }
 
             var t = ListViewPersistenceHelper.SetRelativeScrollPositionAsync(
                 _listView, (state as string),
@@ -120,17 +121,6 @@ namespace Tempo
 
 
 
-        //public IList<TypeViewModel> NamespaceTypes
-        //{
-        //    get { return (IList<TypeViewModel>)GetValue(NamespaceTypesProperty); }
-        //    set { SetValue(NamespaceTypesProperty, value); }
-        //}
-        //public static readonly DependencyProperty NamespaceTypesProperty =
-        //    DependencyProperty.Register("NamespaceTypes", typeof(IList<TypeViewModel>), typeof(NamespaceView), new PropertyMetadata(null));
-
-
-
-
         public List<object> NamespacesAndTypes
         {
             get { return (List<object>)GetValue(NamespacesAndTypesProperty); }
@@ -142,9 +132,9 @@ namespace Tempo
 
 
 
-        public List<ItemWrapper> Namespaces
+        public List<string> Namespaces
         {
-            get { return (List<ItemWrapper>)GetValue(NamespacesProperty); }
+            get { return (List<string>)GetValue(NamespacesProperty); }
             set { SetValue(NamespacesProperty, value); }
         }
         public static readonly DependencyProperty NamespacesProperty =
@@ -152,15 +142,13 @@ namespace Tempo
 
 
 
-        public List<ItemWrapper> Types
+        public List<TypeViewModel> Types
         {
-            get { return (List<ItemWrapper>)GetValue(TypesProperty); }
+            get { return (List<TypeViewModel>)GetValue(TypesProperty); }
             set { SetValue(TypesProperty, value); }
         }
         public static readonly DependencyProperty TypesProperty =
-            DependencyProperty.Register("Types", typeof(List<string>), typeof(NamespaceView), new PropertyMetadata(null));
-
-
+            DependencyProperty.Register("Types", typeof(List<TypeViewModel>), typeof(NamespaceView), new PropertyMetadata(null));
 
 
 
@@ -173,91 +161,110 @@ namespace Tempo
             DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(NamespaceView), new PropertyMetadata(null));
 
 
-        private void Initialize(string ns, string selectedNamespace) // bugbug: why twice?
+        private void Initialize(string selectedNamespace)
         {
+            // The namespace we're to show
             SelectedNamespace = selectedNamespace;
 
-            UpButtonVisibility = SelectedNamespace.Contains('.') ? Visibility.Visible : Visibility.Collapsed;
+            // The SelectedNamespace but with a dot added.
+            // This allows us to pick namespace Foo.Bar without getting confused by a namespace named Foo.Barbell
+            var selectedNamespaceDot = selectedNamespace + ".";
 
-            var selectedParts = SelectedNamespace.Split('.');
 
-            var groupedItems = new GroupedList();
+            var selectedNamespacePartCount = 0;
+            if (selectedNamespace != "")
+            {
+                selectedNamespacePartCount = selectedNamespaceDot.Split('.').Length - 1;
+            }
 
-            var basePartCount = ns.Split('.').Length - 1;
-
-            var childNamespaces = new List<string>();
+            UpButtonVisibility = SelectedNamespace == "" ? Visibility.Collapsed : Visibility.Visible;
 
             // bugbug: async
             // bugbug: Should combine this with desktop Types2Namespaces.  But moving NamespaceTreeNode into
             // Common breaks the build for NamespaceViewer.xaml; for some reason the Xaml compiler refuses to recognize
             // a type in that project.
-            var namespaces = Manager.CurrentTypeSet.FullNamespaces;
+            var fullNamespaces = Manager.CurrentTypeSet.FullNamespaces;
 
-            // bugbug: need an entry for the root, which has no typesS
-            namespaces.Insert(0, "Windows");
+            // bugbug: need an entry for the root, which has no types
+            fullNamespaces.Insert(0, "Windows");
 
-            foreach (var n in namespaces)
+            // Find the child namespaces of the selected namespace.
+            // For example, if we're looking for "Foo", find "Foo.Bar" and "Foo.Baz",
+            // but not "Foo.Bar.Bop"
+
+            Namespaces = new List<string>();
+            foreach (var fullNamespace in fullNamespaces)
             {
-                var str = n as string;
-                if (!str.StartsWith(ns))
-                    continue;
-
-                var parts = str.Split('.');
-                var childNamespace = parts[basePartCount];
-
-                if (!childNamespaces.Contains(childNamespace))
+                if (selectedNamespace != "" && !fullNamespace.StartsWith(selectedNamespaceDot))
                 {
-                    childNamespaces.Add(childNamespace);
+                    // This isn't in the descendency of the selected namespace
+                    continue;
+                }
+
+                // This is under the namespace we're looking for.
+                // Say we're looking for children of "Foo". This will find
+                // "Foo.Bar" and "Foo.Bar.Bop". Either way, we'll keep "Bar"
+                // in `childNamespaceNodes`
+                var parts = fullNamespace.Split('.');
+                var leafNamespaceNode = parts[selectedNamespacePartCount];
+
+                if (!Namespaces.Contains(leafNamespaceNode))
+                {
+                    Namespaces.Add(leafNamespaceNode);
                 }
 
             }
 
-            Namespaces = new List<ItemWrapper>();
-            foreach (var childNamespace in childNamespaces)
-            {
-                Namespaces.Add(new ItemWrapper() { Item = childNamespace, ItemAsString = childNamespace });
-            }
+            // Find the types in the selected namespace
+            Types = (from t in Manager.CurrentTypeSet.Types
+                     where t.Namespace == SelectedNamespace
+                     where t.IsPublic && !t.ShouldIgnore
+                     select t
+                     ).ToList();
 
-            var itemsGroup = new ItemsGroup(Namespaces.ToList())
+
+            // Make a list of items groups:
+            //    "Namespaces", namespace list
+            //    "Types", types list
+
+            var namespacesGroup = new ItemsGroup(Namespaces.ToList())
             {
                 Key = "Namespaces"
             };
-
-            // bugbug: more efficient
-            if (itemsGroup.Count != 0)
-                groupedItems.Add(itemsGroup);
-
-            Types = (from t in Manager.CurrentTypeSet.Types
-                    where t.Namespace == SelectedNamespace
-                    where t.IsPublic && !t.ShouldIgnore
-                    select new ItemWrapper
-                    {
-                        Item = t,
-                        ItemAsString = t.PrettyName
-                    }).ToList();
             var typesGroup = new ItemsGroup(Types)
             {
                 Key = "Types"
             };
+
+            var namespacesAndTypes = new List<object>();
+            if (namespacesGroup.Count != 0)
+            {
+                namespacesAndTypes.Add(namespacesGroup);
+            }
             if (typesGroup.Count != 0)
-                groupedItems.Add(typesGroup);
+            {
+                namespacesAndTypes.Add(typesGroup);
+            }
 
-            NamespacesAndTypes = groupedItems;
+            // Display the grouped items
+            NamespacesAndTypes = namespacesAndTypes;
         }
-
-        Stack<string> _savedState = new Stack<string>();
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            var itemWrapper = e.ClickedItem as ItemWrapper;
-            if (itemWrapper.Item is string)
+            if(e.ClickedItem is string)
             {
-                App.GotoNamespaces(SelectedNamespace + "." + itemWrapper.ItemAsString);
+                var childNamespace = e.ClickedItem as string;
+                if( SelectedNamespace != "")
+                {
+                    childNamespace = $"{SelectedNamespace}.{childNamespace}";
+                }
+                App.GotoNamespaces(childNamespace);
             }
             else
             {
-                Debug.Assert(itemWrapper.Item is TypeViewModel);
-                App.Navigate(itemWrapper.Item as TypeViewModel);
+                Debug.Assert(e.ClickedItem is TypeViewModel);
+                App.Navigate(e.ClickedItem as TypeViewModel);  
             }
 
         }

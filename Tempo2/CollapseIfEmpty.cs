@@ -101,6 +101,10 @@ namespace Tempo
             {
                 isEmpty = string.IsNullOrEmpty(value as string);
             }
+            else if(value is IList)
+            {
+                isEmpty = (value as IList).Count == 0;
+            }
             else if(value is ICanBeEmpty)
             {
                 canBeEmptyObject = value as ICanBeEmpty;

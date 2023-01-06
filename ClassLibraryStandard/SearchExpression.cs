@@ -232,6 +232,8 @@ namespace Tempo
             searchString = searchString.Replace("(", " ( ");
             searchString = searchString.Replace(")", " ) ");
             searchString = searchString.Replace("!", " ! ");
+            searchString = searchString.Replace("||", " || ");
+            searchString = searchString.Replace("&&", " && ");
 
             return AqsExpression.TryParse(searchString, Manager.Settings.CaseSensitive, AqsKeyValidator);
         }

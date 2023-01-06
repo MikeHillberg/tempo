@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Tempo
 {
-    public class GroupedList : List<object>
-    {
-    }
 
+    /// <summary>
+    /// A list with a key
+    /// </summary>
     public class ItemsGroup : List<object>
     {
         public ItemsGroup(IEnumerable<object> list) : base(list) { }
@@ -19,17 +19,6 @@ namespace Tempo
         public override string ToString()
         {
             return Key;
-        }
-    }
-
-    public class ItemWrapper
-    {
-        public object Item { get; set; }
-        public string ItemAsString { get; set; }
-
-        public override string ToString()
-        {
-            return ItemAsString;
         }
     }
 

@@ -13,12 +13,16 @@
         <StackPanel>
             <TextBlock local:CollapseIfEmpty.IsEnabledFor="{x:Bind _exclusiveTo}">ExclusiveTo</TextBlock>
             <TextBlock>Declaring type</TextBlock>
+            <TextBlock local:CollapseIfEmpty.IsEnabledFor="{x:Bind _abiName}">ABI name</TextBlock>
         </StackPanel>
 
         <StackPanel Margin="10,0,0,0">
             <TextBlock Text="{x:Bind MemberVM.ExclusiveToInterface, Mode=OneWay}" IsTextSelectionEnabled="True" x:Name="_exclusiveTo"
                        local:CollapseIfEmpty.IsEnabledFor="{x:Bind _exclusiveTo}"/>
             <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind MemberVM.DeclaringType, Mode=OneWay}" />
+            <TextBlock x:Name="_abiName"
+                       Text="{x:Bind local:MethodViewModel.CalculateAbiName(MemberVM), Mode=OneWay}"
+                       local:CollapseIfEmpty.IsEnabled="True"/>
         </StackPanel>
 
     </StackPanel>

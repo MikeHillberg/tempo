@@ -27,7 +27,8 @@
                 <SymbolIcon Symbol="Home" />
             </AppBarButton>
 
-            <AppBarButton Click="UpButton_Click"
+            <AppBarButton Label="Up"
+                Click="UpButton_Click"
                 Grid.Column="2"
                 Visibility="{x:Bind UpButtonVisibility, Mode=OneWay}"
                 Background="Transparent" >
