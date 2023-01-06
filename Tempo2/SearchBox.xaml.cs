@@ -66,7 +66,7 @@ namespace Tempo
 
         private void ShowAll(object sender, RoutedEventArgs e)
         {
-            App.Instance.GotoSearch(null);
+            App.Instance.GotoSearch("");
         }
 
         public bool IsAllVisible

@@ -1178,9 +1178,9 @@ namespace Tempo
         /// <summary>
         /// Go to the SearchResults page (if not already there) and put focus on the search box
         /// </summary>
-        public void GotoSearch(string text = "")
+        public void GotoSearch(string text = null)
         {
-            if (text == "")
+            if (text == null)
             {
                 text = App.Instance.SearchText;
             }
