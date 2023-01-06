@@ -533,6 +533,10 @@ namespace Tempo
 
         static public int MatchGeneration = 0;
 
+        /// <summary>
+        /// Check if a type matches the regex filter. This is mostly about the type name,
+        /// but also looks at DLL name, IID, namespaces, etc, and base classes
+        /// </summary>
         public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
         {
             if (!filterOnName || (filter == null || filter.ToString().Trim() == ""))
@@ -540,10 +544,11 @@ namespace Tempo
                 return true;
             }
 
-            if (type.ShouldIgnore) // (Type2Ancestors.ShouldIgnoreType(type))
+            if (type.ShouldIgnore)
+            {
                 return false;
+            }
 
-            var types = filterOnBaseTypes ? GetTypeAndAncestorsVolatile(type) : new TypeViewModel[] { type };
 
             if (settings != null && settings.FilterOnFullName)
             {
@@ -561,10 +566,21 @@ namespace Tempo
                 }
             }
 
+            if(!string.IsNullOrEmpty(type.Guid))
+            {
+                if (MatchesFilter(filter, type.Guid, settings, ref abort, ref meaningfulMatch))
+                {
+                    return true;
+                }
+            }
+
+            var types = filterOnBaseTypes ? GetTypeAndAncestorsVolatile(type) : new TypeViewModel[] { type };
             foreach (var t in types)
             {
-                if (t.ShouldIgnore)// (Type2Ancestors.ShouldIgnoreType(t))
+                if (t.ShouldIgnore)
+                {
                     continue;
+                }
 
                 if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), settings, ref abort, ref meaningfulMatch))
                 {

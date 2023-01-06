@@ -99,10 +99,12 @@
 
                             <StackPanel>
                                 <!-- bugbug: this xBind should not be this hard -->
-                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" GroupName="Test"
+                                <RadioButton Margin="0,10,0,0"       
+                                             IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" 
+                                             GroupName="Test"
                                              AccessKey="W">
                                     <StackPanel>
-                                        <TextBlock>Windows</TextBlock>
+                                        <TextBlock><Underline>W</Underline>indows</TextBlock>
                                         <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" >
                                         Search the Windows WinRT APIs installed on this machine
                                         </TextBlock>
@@ -110,10 +112,12 @@
 
                                 </RadioButton>
 
-                                <RadioButton Margin="0,10,0,0"       IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" GroupName="Test"
+                                <RadioButton Margin="0,10,0,0"       
+                                             IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" 
+                                             GroupName="Test"
                                              AccessKey="K">
                                     <StackPanel>
-                                        <TextBlock >Windows App SDK</TextBlock>
+                                        <TextBlock >Windows App SD<Underline>K</Underline></TextBlock>
                                         <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                         Search the Windows App SDK, downloading it from nuget.org
                                         </TextBlock>
@@ -132,7 +136,7 @@
                                              AllowDrop="True" DragOver="HandleDragOver" Drop="CustomScope_Drop"
                                              DragEnter="CustomScope_DragEnter" DragLeave="CustomScope_DragLeave">
                                         <StackPanel>
-                                            <TextBlock x:Name="_customFileLabel">Custom file</TextBlock>
+                                            <TextBlock x:Name="_customFileLabel"><Underline>C</Underline>ustom file</TextBlock>
                                             <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                                 Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file over this window.
                                             </TextBlock>
