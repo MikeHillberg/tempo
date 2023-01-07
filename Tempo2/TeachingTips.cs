@@ -114,12 +114,46 @@ namespace Tempo
             parent.Children.Add(tip);
             tip.Closed += (_, __) => parent.Children.Remove(tip);
 
+            // Set up the tip so that if the target is unloaded, such as when we navigate away the page, we close the tip
+            var unloader = new TargetUnloader(tip);
+            target.Unloaded += unloader.Target_Unloaded;            
+
+            // Show the tip
             tip.IsOpen = true;
 
             // Remember that we showed this so we don't show it again
             SaveTipShown(id);
         }
-    }
+
+        /// <summary>
+        /// Helper to close a teaching tip when the target is unloaded
+        /// </summary>
+        class TargetUnloader
+        {
+            TeachingTip _tip;
+            public TargetUnloader(TeachingTip tip) 
+            {
+                _tip = tip;
+            }
+            public void Target_Unloaded(object sender, RoutedEventArgs e)
+            {
+                if(_tip == null)
+                {
+                    // Shouldn't happen
+                    return;
+                }
+
+                _tip.IsOpen = false;
+                _tip = null; // Shouldn't be necessary but play it safe
+
+                var target = sender as FrameworkElement;
+                target.Unloaded -= Target_Unloaded;
+            }
+        }
+
+
+    }  
+
 
 
     [Flags]
