@@ -17,15 +17,17 @@ namespace Tempo
                 var sb = new StringBuilder();
                 var ta = new AttributeTypeInfo();
 
-                ta.TypeName = a.Name;// (a as CustomAttributeData).Constructor.DeclaringType.Name;
+                ta.TypeName = a.Name;
 
                 if (ta.TypeName == "ComImportAttribute"
                     || ta.TypeName == "StaticAttribute"
-                    || ta.TypeName == "DeprecatedAttribute"
                     || ta.TypeName == "ActivatableAttribute"
                     || ta.TypeName == "ContractVersionAttribute"
                     || ta.TypeName == "ComposableAttribute")
+                {
+                    // Skip WinRT implementation details attributes
                     continue;
+                }
 
                 if (ta.TypeName == "GuidAttribute")
                 {

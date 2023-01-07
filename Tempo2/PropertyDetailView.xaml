@@ -29,9 +29,18 @@
                         IsSubheading="{x:Bind IsNested, Mode=OneWay}" />
 
                 <TextBlock Visibility="{x:Bind PropertyVM.IsExperimental, Mode=OneWay}"
-                       Margin="{StaticResource BottomVerticalMargin}"
+                       Margin="{StaticResource VerticalMargin}"
                        Foreground="Red"
                        >(Experimental)</TextBlock>
+
+
+                <TextBlock 
+                    Margin="{StaticResource VerticalMargin}"
+                    Visibility="{x:Bind PropertyVM.IsDeprecated,Mode=OneWay}">
+                    <Run Foreground="Red">[Deprecated]</Run>
+                    <LineBreak/>
+                    <Run Text="{x:Bind PropertyVM.Deprecation, Mode=OneWay}"/>
+                </TextBlock>
 
                 <TextBlock Text="{x:Bind PropertyVM.ApiDescriptionAsync, Mode=OneWay}" 
                            Margin="{StaticResource VerticalMargin}"

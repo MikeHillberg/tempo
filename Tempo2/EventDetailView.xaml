@@ -30,9 +30,17 @@
                                      />
 
                 <TextBlock Visibility="{x:Bind EventVM.IsExperimental, Mode=OneWay}"
-                       Margin="{StaticResource BottomVerticalMargin}"
+                       Margin="{StaticResource VerticalMargin}"
                        Foreground="Red"
                        >(Experimental)</TextBlock>
+
+                <TextBlock 
+                    Margin="{StaticResource VerticalMargin}"
+                    Visibility="{x:Bind EventVM.IsDeprecated,Mode=OneWay}">
+                    <Run Foreground="Red">[Deprecated]</Run>
+                    <LineBreak/>
+                    <Run Text="{x:Bind EventVM.Deprecation, Mode=OneWay}"/>
+                </TextBlock>
 
                 <TextBlock Margin="{StaticResource VerticalMargin}"
                            local:CollapseIfEmpty.IsEnabled="True"

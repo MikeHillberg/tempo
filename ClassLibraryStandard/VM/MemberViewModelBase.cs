@@ -1174,7 +1174,13 @@ namespace Tempo
 
         public string Deprecation
         {
-            get { return _deprecationString; }
+            get 
+            {
+                // Ensure the string
+                _ = IsDeprecated;
+
+                return _deprecationString; 
+            }
         }
 
 

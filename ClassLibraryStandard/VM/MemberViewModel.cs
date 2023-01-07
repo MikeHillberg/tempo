@@ -228,7 +228,6 @@ namespace Tempo
         {
             "ComImportAttribute",
             "StaticAttribute",
-            "DeprecatedAttribute",
             "ActivatableAttribute",
             "ContractVersionAttribute",
             "ComposableAttribute",

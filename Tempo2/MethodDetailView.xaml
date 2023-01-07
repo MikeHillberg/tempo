@@ -31,10 +31,18 @@
                                   IsSubheading="{x:Bind IsNested, Mode=OneWay}"   />
 
                 <TextBlock Visibility="{x:Bind MethodVM.IsExperimental, Mode=OneWay}"
-                       Margin="{StaticResource BottomVerticalMargin}"
+                       Margin="{StaticResource VerticalMargin}"
                        Foreground="Red"
                        >(Experimental)</TextBlock>
 
+                <TextBlock 
+                    Margin="{StaticResource VerticalMargin}"
+                    Visibility="{x:Bind MethodVM.IsDeprecated,Mode=OneWay}">
+                    <Run Foreground="Red">[Deprecated]</Run>
+                    <LineBreak/>
+                    <Run Text="{x:Bind MethodVM.Deprecation, Mode=OneWay}"/>
+                </TextBlock>
+                
                 <TextBlock Margin="{StaticResource VerticalMargin}"
                            local:CollapseIfEmpty.IsEnabled="True"
                            Text="{x:Bind MethodVM.ApiDescriptionAsync, Mode=OneWay}" TextWrapping="Wrap" />

@@ -27,9 +27,17 @@
                         />
 
                 <TextBlock Visibility="{x:Bind ConstructorVM.IsExperimental, Mode=OneWay}"
-                       Margin="{StaticResource BottomVerticalMargin}"
+                       Margin="{StaticResource VerticalMargin}"
                        Foreground="Red"
                        >(Experimental)</TextBlock>
+
+                <TextBlock 
+                    Margin="{StaticResource VerticalMargin}"
+                    Visibility="{x:Bind ConstructorVM.IsDeprecated,Mode=OneWay}">
+                    <Run Foreground="Red">[Deprecated]</Run>
+                    <LineBreak/>
+                    <Run Text="{x:Bind ConstructorVM.Deprecation, Mode=OneWay}"/>
+                </TextBlock>
 
                 <TextBlock Margin="{StaticResource ContentMargin}"
                            local:CollapseIfEmpty.IsEnabled="True"

@@ -30,9 +30,17 @@
                                      />
 
                 <TextBlock Visibility="{x:Bind FieldVM.IsExperimental, Mode=OneWay}"
-                       Margin="{StaticResource BottomVerticalMargin}"
+                       Margin="{StaticResource VerticalMargin}"
                        Foreground="Red"
                        >(Experimental)</TextBlock>
+
+                <TextBlock 
+                    Margin="{StaticResource VerticalMargin}"
+                    Visibility="{x:Bind FieldVM.IsDeprecated,Mode=OneWay}">
+                    <Run Foreground="Red">[Deprecated]</Run>
+                    <LineBreak/>
+                    <Run Text="{x:Bind FieldVM.Deprecation, Mode=OneWay}"/>
+                </TextBlock>
 
 
                 <TextBlock Margin="{StaticResource VerticalMargin}"
