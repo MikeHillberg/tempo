@@ -323,6 +323,8 @@ namespace Tempo
                 return;
             }
 
+            DebugLog.Append($"Searching: {_searchString}");
+
             SearchString = _searchString;
 
             // Do the search
@@ -833,6 +835,10 @@ namespace Tempo
             Debug.WriteLine("");
         }
 
+        private void ShowDebugLog_Click(object sender, RoutedEventArgs e)
+        {
+            DebugLogViewer.Show();
+        }
     }
 
     public enum ActivePane { Left, Right }

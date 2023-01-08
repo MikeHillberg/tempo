@@ -153,6 +153,9 @@
         <StackPanel Background="{StaticResource ApplicationPageBackgroundThemeBrush}" Grid.Row="2">
             <Rectangle Height="1" Fill="DarkGray" />
             <Grid >
+                
+                <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
+                     in the content. -->
                 <TextBlock Name="_statusTextBlock" 
                            HorizontalAlignment="Left"
                            Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
@@ -166,7 +169,8 @@
                        /> fields, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingConstructors, Mode=OneWay}" 
                        /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" 
                        /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
-                       />ms</TextBlock>
+                       />ms, <Hyperlink Click="ShowDebugLog_Click" ToolTipService.ToolTip="Show debug log (Control+Shift+D)"
+                       >debug log</Hyperlink></TextBlock>
 
                 <!-- Blur out the status bar while a search is in progress -->
                 <local:SmokeLayer 

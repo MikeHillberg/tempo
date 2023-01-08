@@ -237,6 +237,7 @@ namespace Tempo
 
             // Butbug: why are these accelerators doing key input rather than KeyboardAccelerator?
             // Is it because accelerators cause too many tooltips?
+            // Update: No, it's because the handlers need to mark the args as Handled
             RootFrame.KeyDown += (s, e2) =>
             {
                 if (e2.Handled)
@@ -285,6 +286,19 @@ namespace Tempo
             //    Manager.Settings.CaseSensitive = !Manager.Settings.CaseSensitive;
             //});
 
+            // Set up accelerator for opening the debug log
+            // Hook this to the root to ensure that it always works, no matter what page we're on
+            var accel = new KeyboardAccelerator()
+            { 
+                Key = VirtualKey.D, 
+                Modifiers = (VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control) 
+            };
+            accel.Invoked += (_, e) =>
+            {
+                e.Handled = true;
+                DebugLogViewer.Show();
+            };
+            RootFrame.KeyboardAccelerators.Add(accel);
 
             RootFrame.NavigationFailed += OnNavigationFailed;
 
