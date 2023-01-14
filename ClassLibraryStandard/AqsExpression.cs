@@ -22,18 +22,24 @@ namespace Tempo
 
         List<AqsToken> _expression = new List<AqsToken>();
         bool _caseSensitive;
+        bool _isWildcardSyntax;
 
-        private AqsExpression(bool caseSensitive)
+        private AqsExpression(bool caseSensitive, bool isWildcardSyntax)
         {
             _caseSensitive = caseSensitive;
+            _isWildcardSyntax = isWildcardSyntax;
         }
 
         /// <summary>
         /// Parse an AQS string. Returns null if invalid
         /// </summary>
-        internal static AqsExpression TryParse(string s, bool caseSensitive, Func<string,bool> keyValidator)
+        internal static AqsExpression TryParse(
+            string s, 
+            bool caseSensitive, 
+            bool isWildcardSyntax,
+            Func<string,bool> keyValidator)
         {
-            var expression = new AqsExpression(caseSensitive);
+            var expression = new AqsExpression(caseSensitive, isWildcardSyntax);
             int i = 0;
             if (expression.TryParse(s.Split(' '), ref i, keyValidator))
             {
@@ -247,13 +253,31 @@ namespace Tempo
         }
 
         /// <summary>
-        /// Helper to create a Regex, catching argument exceptions
+        /// Helper to create a Regex, catching argument exceptions and converted from wildcard syntax
         /// </summary>
         Regex CreateRegex(string value)
         {
+            return CreateRegex(value, _caseSensitive, _isWildcardSyntax);
+        }
+
+        /// <summary>
+        /// Helper to create a Regex, catching argument exceptions and converted from wildcard syntax
+        /// </summary>
+        public static Regex CreateRegex(string value, bool caseSensitive, bool isWildcardSyntax)
+        {
+            if(isWildcardSyntax)
+            {
+                // Convert wildcard syntax to regex syntax
+
+                value = value.Replace(".", @"\.");
+                value = value.Replace("*", ".*");
+                value = value.Replace("?", ".");
+                value = $"^{value}$";
+            }
+
             try
             {
-                return new Regex(value, _caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
+                return new Regex(value, caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
             }
             catch (System.ArgumentException)
             {

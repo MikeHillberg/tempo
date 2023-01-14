@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Windows.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
@@ -20,12 +17,14 @@ namespace Tempo
         static Thickness Indent1 = new Thickness(20, 0, 0, 0);
         static Thickness Indent2 = new Thickness(40, 0, 0, 0);
 
+        static SolidColorBrush _blueBrush = new SolidColorBrush(Colors.Blue); // bugbug: put into app or resources?
+
+        // CsSyntaxGenerator.Member attached property
         // bugbug:  should type this as RTB, but that breaks x:Bind
         public static MemberOrTypeViewModelBase GetMember(DependencyObject obj)
         {
             return (MemberOrTypeViewModelBase)obj.GetValue(MemberProperty);
         }
-
         public static void SetMember(DependencyObject obj, MemberOrTypeViewModelBase value)
         {
             obj.SetValue(MemberProperty, value);
@@ -34,8 +33,6 @@ namespace Tempo
             DependencyProperty.RegisterAttached("Member", typeof(MemberOrTypeViewModelBase), typeof(CsSyntaxGenerator),
                 new PropertyMetadata(null, (s, e) => MemberChanged(s as RichTextBlock)));
 
-
-        static SolidColorBrush _blueBrush = new SolidColorBrush(Colors.Blue); // bugbug: put into app or resources?
 
         private static void MemberChanged(RichTextBlock textBlock)
         {
@@ -272,11 +269,11 @@ namespace Tempo
 
 
 
+        // CsSyntaxGenerator.TypeDeclaration attached property
         public static TypeViewModel GetTypeDeclaration(DependencyObject obj)
         {
             return (TypeViewModel)obj.GetValue(TypeDeclarationProperty);
         }
-
         public static void SetTypeDeclaration(DependencyObject obj, TypeViewModel value)
         {
             obj.SetValue(TypeDeclarationProperty, value);
@@ -352,11 +349,11 @@ namespace Tempo
             SearchHighlighter.HighlightMatches(textBlock, App.SearchExpression?.MemberRegex);
         }
 
+        // CsSyntaxGenerator.MemberName attached property
         public static MemberOrTypeViewModelBase GetMemberName(DependencyObject obj)
         {
             return (MemberOrTypeViewModelBase)obj.GetValue(MemberNameProperty);
         }
-
         public static void SetMemberName(DependencyObject obj, MemberOrTypeViewModelBase value)
         {
             obj.SetValue(MemberNameProperty, value);
@@ -377,7 +374,6 @@ namespace Tempo
             GenerateMemberName(memberName, textBlock.Inlines);
         }
 
-        // bugbug: consolidate with desktop
         static void GenerateMemberName(
             MemberOrTypeViewModelBase member,
             InlineCollection inlines,
@@ -404,12 +400,11 @@ namespace Tempo
         }
 
 
-
+        // CsSyntaxGenerator.TypeName attached property
         public static TypeViewModel GetTypeName(DependencyObject obj)
         {
             return (TypeViewModel)obj.GetValue(TypeNameProperty);
         }
-
         public static void SetTypeName(DependencyObject obj, TypeViewModel value)
         {
             obj.SetValue(TypeNameProperty, value);
@@ -430,11 +425,13 @@ namespace Tempo
 
             textBlock.Text = String.Empty;
             GenerateTypeName(type, textBlock.Inlines);
+
+            // Highlight everything that matches the search string
+            SearchHighlighter.HighlightMatches(textBlock, App.SearchExpression?.TypeRegex);
         }
 
 
 
-        // bugbug: consolidate with desktop
         static void GenerateTypeName(
             TypeViewModel type,
             InlineCollection inlines,
@@ -442,15 +439,10 @@ namespace Tempo
             bool highlightMatch = false,
             bool firstArgument = true)
         {
-
             if (type == null)
+            {
                 return;
-
-            //if (withHyperlink 
-            //    && (!type.IsWinMD || type.IsGenericParameter))
-            //{
-            //    withHyperlink = false;
-            //}
+            }
 
             if(!type.IsInCurrentTypeSet)
             {
@@ -465,9 +457,13 @@ namespace Tempo
                 targetType = type.GetGenericTypeDefinition();
             }
             else if (!string.IsNullOrEmpty(type.CSharpName))
+            {
                 typeNameBase = type.CSharpName;
+            }
             else
+            {
                 typeNameBase = type.Name;
+            }
 
             var ampIndex = typeNameBase.LastIndexOf('&');
             if (ampIndex != -1)
@@ -477,7 +473,9 @@ namespace Tempo
             }
 
             if (!firstArgument)
+            {
                 inlines.Add(", ");
+            }
 
             if (withHyperlink && type.IsMatch && highlightMatch)
             {

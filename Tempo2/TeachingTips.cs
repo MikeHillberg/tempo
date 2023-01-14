@@ -66,29 +66,39 @@ namespace Tempo
         /// Try showing a teaching tip. If it's not shown, the tip won't be created.
         /// Returns false if we shouldn't continue to even try anyore (we've already shown enough)
         /// Target is passed as a parameter so we can validate it's not collapsed first
+        /// The optional `force` parameter forces it to show even if it's been shown before.
         /// </summary>
-        internal static bool TryShow(TeachingTipIds id, Panel parent, FrameworkElement target, Func<TeachingTip> action)
+        internal static bool TryShow(
+            TeachingTipIds id, 
+            Panel parent, 
+            FrameworkElement target, 
+            Func<TeachingTip> action,
+            bool force = false)
         {
             EnsureShownTipIdsLoaded();
 
-            // Only show one tip per run of the app
-            if (_aTipHasBeenShown)
+            if (!force)
             {
-                return false;
-            }
+                // Only show one tip per run of the app
+                if (_aTipHasBeenShown)
+                {
+                    return false;
+                }
 
-            // If we've already shown this tip, don't show it again, but
-            // return true indicating that the caller should try other tips
-            if (_shownTips.HasFlag(id))
-            {
-                return true;
-            }
+                // If we've already shown this tip, don't show it again, but
+                // return true indicating that the caller should try other tips
+                if (_shownTips.HasFlag(id))
+                {
+                    return true;
+                }
 
-            // If the target is collapsed, try moving on to the next tip
-            if(target.ActualWidth == 0)
-            {
-                return true;
-            }            
+
+                // If the target is collapsed, try moving on to the next tip
+                if (target.ActualWidth == 0)
+                {
+                    return true;
+                }
+            }
 
             // Show a tip
             DoShow(id, parent, target, action);
@@ -103,10 +113,6 @@ namespace Tempo
         /// </summary>
         static async void DoShow(TeachingTipIds id, Panel parent, FrameworkElement target, Func<TeachingTip> action)
         {
-            // Tips don't animate in, and so I don't think draw attention
-            // So delay a bit before showing
-            await Task.Delay(1000);
-
             var tip = action();
             tip.Target = target;
 
@@ -116,7 +122,10 @@ namespace Tempo
 
             // Set up the tip so that if the target is unloaded, such as when we navigate away the page, we close the tip
             var unloader = new TargetUnloader(tip);
-            target.Unloaded += unloader.Target_Unloaded;            
+            target.Unloaded += unloader.Target_Unloaded;
+
+            // bugbug: without this delay, the tip opens, but won't close
+            await Task.Delay(100);
 
             // Show the tip
             tip.IsOpen = true;
@@ -163,6 +172,7 @@ namespace Tempo
         CustomFiles = 1,
         Filters = 2,
         ApiScopeSwitcher = 4,
-        CommandPrompt = 8
+        CommandPrompt = 8,
+        SearchSyntax = 16,
     }
 }

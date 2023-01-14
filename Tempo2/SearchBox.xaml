@@ -10,20 +10,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     >
 
-    <Grid >
+    <Grid x:Name="_root">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
             <!-- "Search" label, text box, and search button -->
+            <RowDefinition Height="Auto"/>
+
             <RowDefinition Height="Auto"/>
 
             <!-- Error bar if a search expression error -->
@@ -36,20 +39,29 @@
         <TextBlock Grid.Row="0" Grid.Column="0"
                    Margin="0,5,10,0"
             HorizontalAlignment="Right"
-            Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Search:</TextBlock>
+            Visibility="{x:Bind IsAllVisible, Mode=OneWay}"
+          >Search:</TextBlock>
 
         <TextBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
                  KeyDown="_searchBox_KeyDown"
+                 VerticalAlignment="Top"
+                 Padding="5"
                  InputScope="Search" IsSpellCheckEnabled="False"
                  Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
                  PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"/>
 
-        <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
-            <Button Click="Search_Click" >
+
+        <controls:UniformGrid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" 
+              Rows="1" Columns="2">
+
+            <Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
+                Click="Search_Click" >
                 <SymbolIcon Symbol="Find"  />
             </Button>
 
-            <Button Click="ShowFilters" 
+            <Button Grid.Row="0" Grid.Column="1" 
+                    HorizontalAlignment="Stretch"
+                Click="ShowFilters" 
                     Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
                 Filters
                 <Button.KeyboardAccelerators>
@@ -59,34 +71,57 @@
                     <KeyboardAccelerator Modifiers="Control,Shift" Key="F" Invoked="ShowOldFilters" />
                 </Button.KeyboardAccelerators>
             </Button>
-        </StackPanel>
+        </controls:UniformGrid>
 
-        <Border Grid.Row="1" Grid.Column="1"
+
+        <SplitButton x:Name="_syntaxButton" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                    Visibility="{x:Bind IsAllVisible, Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
+                         Content="{x:Bind local:App.Instance.SearchSyntaxName, Mode=OneWay}">
+            <SplitButton.Flyout>
+                <MenuFlyout>
+                    <MenuFlyoutSeparator/>
+                    <ToggleMenuFlyoutItem 
+                            Text="Allow Regex" Click="RegexMenuItem_Click" 
+                            IsChecked="{x:Bind local:Utils.Not(local:Manager.Settings.IsWildcardSyntax), Mode=OneWay}"/>
+                    <ToggleMenuFlyoutItem 
+                            Text="Allow wildcards" Click="WildcardMenuItem_Click_1"
+                            IsChecked="{x:Bind local:Manager.Settings.IsWildcardSyntax, Mode=OneWay}" />
+                </MenuFlyout>
+            </SplitButton.Flyout>
+        </SplitButton>
+
+
+        <Border Grid.Row="2" Grid.Column="1"
                 Visibility="{x:Bind HasSearchExpressionError, Mode=OneWay}"
                 Background="LightYellow" >
             <TextBlock>Search expression error</TextBlock>
         </Border>
 
-        <TextBlock Grid.Row="2" Grid.Column="0"
-                   Margin="0,17,20,0"
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Margin="0,7,20,0"
                    HorizontalAlignment="Right"
                    Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Or:</TextBlock>
 
-        <Grid Grid.Row="2"  Grid.Column="1" ColumnDefinitions="Auto,Auto,Auto"
-              Margin="0,10,0,0"
-              Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
-            
-            <Button Click="ShowAll" >Show everything</Button>
+        <controls:UniformGrid Grid.Row="3"  Grid.Column="1" 
+                              Columns="3"
+              Margin="0,0,0,0"
+              Visibility="{x:Bind IsAllVisible, Mode=OneWay}"
+              HorizontalAlignment="Left"
+              RowDefinitions="Auto,Auto">
 
-            <Button Click="BrowseAll" Grid.Column="1" Margin="10,0,0,0">Browse everything</Button>
-            
-            <Button Grid.Column="2" Margin="10,0,0,0" Click="ShowHelp">
+
+            <Button Click="ShowAll" HorizontalAlignment="Stretch">Show everything</Button>
+
+            <Button Grid.Column="1" Click="BrowseAll" Margin="10,0,0,0" HorizontalAlignment="Stretch">Browse everything</Button>
+
+            <Button Grid.Column="2" Click="ShowHelp" Margin="10,0,0,0" HorizontalAlignment="Stretch">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="F1"/>
                 </Button.KeyboardAccelerators>
                 Show help
             </Button>
-        </Grid>
+        </controls:UniformGrid>
     </Grid>
 
 </UserControl>

@@ -74,9 +74,12 @@ namespace Tempo
 
                 // Ignore these properties when checking if settings are default or not;
                 // they don't affect search
+                // (IsWildcardSyntax affects search, but we still don't need to run the detailed checkers.)
                 if (prop.Name == nameof(IsDefault) 
                     || prop.Name == nameof(IsPreview)
-                    || prop.Name.StartsWith("Language"))
+                    || prop.Name.StartsWith("Language")
+                    || prop.Name == nameof(IsWildcardSyntax)
+                    )
                 {
                     continue;
                 }
@@ -124,17 +127,17 @@ namespace Tempo
             DebugLog.Append($"Settings change ({isReset}, {name})");
             _isDefault = isReset ? (bool?)true : null;
 
+            var args = new PropertyChangedEventArgs(name);
+
             // Instance changed event (for x:Bind)
             if (PropertyChanged != null)
             {
-                var args = new PropertyChangedEventArgs(name);
                 PropertyChanged.Invoke(this, args);
             }
 
             // Static changed event (because there's only one instance of Settings)
             if (Changed != null)
             {
-                var args = new PropertyChangedEventArgs(name);
                 Changed.Invoke(this, args);
             }
 
@@ -343,6 +346,18 @@ namespace Tempo
         {
             get { return _caseSensitive; }
             set { Set(ref _caseSensitive, value); }
+        }
+
+        static bool _isWildcardSyntaxDefault = false;
+        bool _isWildcardSyntax = _isWildcardSyntaxDefault;
+        public bool IsWildcardSyntax
+        {
+            get { return _isWildcardSyntax; }
+            set 
+            {
+                _isWildcardSyntaxDefault = value;
+                Set(ref _isWildcardSyntax, value); 
+            }
         }
 
         // Update a property and raise a notification, if it changed

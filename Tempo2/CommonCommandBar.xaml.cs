@@ -308,5 +308,15 @@ namespace Tempo
         {
             App.Instance.ShowHelp();
         }
+
+        //private void RegexMenuItem_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Manager.Settings.IsWildcardSyntax = false;
+        //}
+
+        //private void WildcardMenuItem_Click_1(object sender, RoutedEventArgs e)
+        //{
+        //    Manager.Settings.IsWildcardSyntax = true;
+        //}
     }
 }

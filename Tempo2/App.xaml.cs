@@ -55,6 +55,16 @@ namespace Tempo
             LoadCustomFilenamesFromSettings();
 
             UnhandledException += App_UnhandledException;
+
+            Settings.Changed += (_, e) =>
+            {
+                // SearchSyntaxName is a function of a Settings property
+                if (string.IsNullOrEmpty(e.PropertyName)
+                    || e.PropertyName == nameof(Settings.IsWildcardSyntax))
+                {
+                    RaisePropertyChange(nameof(SearchSyntaxName));
+                }
+            };
         }
 
         /// <summary>
@@ -168,6 +178,8 @@ namespace Tempo
                 RootFrame.Navigate(typeof(HomePage), e.Arguments);
             }
 
+            ConfigureSavedSettings();
+
             Window.Activate();
             WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Window);
 
@@ -175,6 +187,29 @@ namespace Tempo
 
         }
 
+        /// <summary>
+        /// Restore saved settings and track changes to save updates
+        /// </summary>
+        void ConfigureSavedSettings()
+        {
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+
+            // Probably a way to avoid some redundancy here if this grows to many more
+
+            var wildcardKeyName = nameof(Settings.IsWildcardSyntax);
+            if(localSettings.Values.Keys.Contains(wildcardKeyName))
+            {
+                Manager.Settings.IsWildcardSyntax = (bool) localSettings.Values[wildcardKeyName];
+            }
+
+            Settings.Changed += (_, e) =>
+            {
+                if (e.PropertyName == wildcardKeyName)
+                {
+                    localSettings.Values[wildcardKeyName] = Manager.Settings.IsWildcardSyntax;
+                }
+            };
+        }
 
         /// <summary>
         /// This is called when a launch has been redirected to this process
@@ -290,8 +325,8 @@ namespace Tempo
             // Hook this to the root to ensure that it always works, no matter what page we're on
             var accel = new KeyboardAccelerator()
             { 
-                Key = VirtualKey.D, 
-                Modifiers = (VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control) 
+                Key = VirtualKey.G, 
+                Modifiers = (VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control)
             };
             accel.Invoked += (_, e) =>
             {
@@ -299,6 +334,12 @@ namespace Tempo
                 DebugLogViewer.Show();
             };
             RootFrame.KeyboardAccelerators.Add(accel);
+
+            // With the keyboard accelerator on the root, the tool tip for it will
+            // always appear on every pixel of every page. So shut it off.
+            // The normal affordance for it is a hyperlink on the search results page,
+            // so it's not a secret. I just can't think of a good place to put it on the home page.
+            RootFrame.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
 
             RootFrame.NavigationFailed += OnNavigationFailed;
 
@@ -505,6 +546,25 @@ namespace Tempo
                 RaisePropertyChange(nameof(ApiScopeName));
             }
         }
+
+        /// <summary>
+        /// Either "Wildcard" or "Regex"
+        /// </summary>
+        public string SearchSyntaxName
+        {
+            get
+            {
+                if(Manager.Settings.IsWildcardSyntax)
+                {
+                    return "Allow wildcards";
+                }
+                else
+                {
+                    return "Allow Regex";
+                }
+            }
+        }
+
 
         /// <summary>
         /// Name of the API scope ("Windows", "WinAppSDK", "Custom")

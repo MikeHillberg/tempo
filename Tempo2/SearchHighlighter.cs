@@ -1,19 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Windows.UI;
-using Windows.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 using Microsoft.UI.Text;
-using System.Reflection;
 
 namespace Tempo
 {
@@ -21,7 +15,6 @@ namespace Tempo
     {
 
         // IsEnabled attached property
-
         public static bool GetIsEnabled(DependencyObject obj)
         {
             return (bool)obj.GetValue(IsEnabledProperty);
@@ -134,17 +127,22 @@ namespace Tempo
         {
             // bugbug: fix this when multi-threaded
             if (_updatingText)
+            {
                 return;
+            }
 
             if (App.SearchExpression == null)
+            {
                 return;
+            }
 
             HighlightMatches(textBlock, App.SearchExpression.MemberRegex);
 
         }
 
-        // Bugbug: wait, what happened to the highlighting in this?
-        static public void InsertSearchHighlightedString(InlineCollection inlines, string str,
+        static public void InsertSearchHighlightedString(
+            InlineCollection inlines,
+            string str,
             TypeViewModel hyperlinkTarget = null)
         {
             if (hyperlinkTarget != null && !hyperlinkTarget.IsDotNetType)
@@ -174,9 +172,6 @@ namespace Tempo
             TypeDetailView.GoToItem(GetTypeTarget(sender));
         }
 
-
-
-
         public static TypeViewModel GetTypeTarget(Hyperlink obj)
         {
             return (TypeViewModel)obj.GetValue(TypeTargetProperty);
@@ -190,24 +185,6 @@ namespace Tempo
             DependencyProperty.RegisterAttached("TypeTarget", typeof(TypeViewModel), typeof(SearchHighlighter), new PropertyMetadata(null));
 
 
-
-
-        public static void InsertStringPieces(InlineCollection inlines, List<string> pieces)
-        {
-            var pieceIndex = 0;
-            while (pieceIndex < pieces.Count - 1)
-            {
-                inlines.Add(pieces[pieceIndex++]);
-                inlines.Add(new Run()
-                {
-                    // mikehill_ua: missing using for FontWeights
-                    Foreground = new SolidColorBrush() { Color = Colors.Red }, // bugbug
-                    FontWeight = FontWeights.Bold,
-                    Text = pieces[pieceIndex++]
-                });
-            }
-            inlines.Add(pieces[pieceIndex]);
-        }
 
         // Highlight search string matches in a TextBlock
         public static void HighlightMatches(TextBlock textBlock, Regex regex)
@@ -225,18 +202,18 @@ namespace Tempo
             var index = 0;
 
             // Walk the paragraphs
-            foreach(var block in rtb.Blocks)
+            foreach (var block in rtb.Blocks)
             {
                 // Highlight the runs and hyperlinks in this paragraph
                 var paragraph = block as Paragraph;
-                foreach(var inline in paragraph.Inlines)
+                foreach (var inline in paragraph.Inlines)
                 {
                     var run = inline as Run;
-                    if(run != null)
+                    if (run != null)
                     {
                         index += HighlightMatchesCommon(textHighlighters, run.Text, regex, index);
                     }
-                    else if(inline is Hyperlink)
+                    else if (inline is Hyperlink)
                     {
                         var hyperlink = inline as Hyperlink;
                         index += HighlightInlines(hyperlink.Inlines, textHighlighters, regex, index);

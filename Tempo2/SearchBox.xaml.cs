@@ -19,6 +19,11 @@ namespace Tempo
             IsAllVisibleChanged();
 
             SearchExpression.SearchExpressionError += (s, e) => HasSearchExpressionError = true;
+
+            this.Loaded += (_, __) =>
+            {
+                ShowTeachingTips();
+            };
         }
 
         private void Search_Click(object sender, RoutedEventArgs e)
@@ -75,24 +80,24 @@ namespace Tempo
             set { SetValue(IsAllVisibleProperty, value); }
         }
         public static readonly DependencyProperty IsAllVisibleProperty =
-                    DependencyProperty.Register("IsAllVisible", typeof(bool), typeof(SearchBox), 
-                        new PropertyMetadata(false, (d,dp) => (d as SearchBox).IsAllVisibleChanged()));
+                    DependencyProperty.Register("IsAllVisible", typeof(bool), typeof(SearchBox),
+                        new PropertyMetadata(false, (d, dp) => (d as SearchBox).IsAllVisibleChanged()));
 
         void IsAllVisibleChanged()
         {
-            if(IsAllVisible)
+            if (IsAllVisible)
             {
-                PlaceholderText = "Name of anything, simple or regex, can include Property:Value (Control+E)";
+                PlaceholderText = "Name of anything, simple or regex, can include Property:Value (Ctrl+E)";
             }
             else
             {
-                PlaceholderText = "Search for name (Control+E)";
+                PlaceholderText = "Search for name (Ctrl+E)";
             }
         }
 
         private void ShowFilters(object sender, RoutedEventArgs e)
         {
-            App.GotoFilters(showOld:false);
+            App.GotoFilters(showOld: false);
         }
 
         /// <summary>
@@ -122,6 +127,46 @@ namespace Tempo
         private void BrowseAll(object sender, RoutedEventArgs e)
         {
             App.GotoNamespaces("");
+        }
+
+        private void SearchHelp_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            App.Instance.ShowHelp();
+        }
+
+        void ShowTeachingTips()
+        {
+            var shouldContinue = ShowSearchSyntaxTip(force: false);
+            if (!shouldContinue)
+                return;
+        }
+
+        bool ShowSearchSyntaxTip(bool force)
+        {
+            return TeachingTips.TryShow(
+                TeachingTipIds.SearchSyntax, _root, _syntaxButton,
+                () => new TeachingTip()
+                {
+                    Title = "Choose your search syntax",
+                    Subtitle = "You can search for a simple string, but you can also use either Regex syntax or Wildcard syntax",
+                },
+                force);
+
+        }
+
+        private void OptionsHelp_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            // Force this tip to show even if e.g. it's already been shown
+            ShowSearchSyntaxTip(force: true);
+        }
+        private void RegexMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Manager.Settings.IsWildcardSyntax = false;
+        }
+
+        private void WildcardMenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            Manager.Settings.IsWildcardSyntax = true;
         }
     }
 }

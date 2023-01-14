@@ -156,6 +156,8 @@
                 
                 <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
                      in the content. -->
+                <!-- The hard-coded accelerator tooltip on the hyperlink is because Hyperlink doesn't 
+                     have built-in support for keyboard accelerators -->
                 <TextBlock Name="_statusTextBlock" 
                            HorizontalAlignment="Left"
                            Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
@@ -169,7 +171,7 @@
                        /> fields, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingConstructors, Mode=OneWay}" 
                        /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" 
                        /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
-                       />ms, <Hyperlink Click="ShowDebugLog_Click" ToolTipService.ToolTip="Show debug log (Control+Shift+D)"
+                       />ms, <Hyperlink Click="ShowDebugLog_Click" ToolTipService.ToolTip="Show debug log (Ctrl+Shift+G)"
                        >debug log</Hyperlink></TextBlock>
 
                 <!-- Blur out the status bar while a search is in progress -->

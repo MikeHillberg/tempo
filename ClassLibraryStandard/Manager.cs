@@ -682,7 +682,9 @@ namespace Tempo
             ResetMatchCounts();
 
             if (CurrentTypeSet == null)
+            {
                 yield break;
+            }
 
             // Optimized case: no filters or anything else is set, don't need to check anything except the search string
 
@@ -700,10 +702,11 @@ namespace Tempo
                         TypesChecked = typesChecked;
                     }
                     else
+                    {
                         yield break;
+                    }
 
 
-                    //if (!type.IsPublic && !Settings.InternalInterfaces)
                     if (!TypeIsPublicVolatile(type))
                     {
                         continue;

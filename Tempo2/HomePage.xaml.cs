@@ -365,13 +365,13 @@ namespace Tempo
         /// <summary>
         /// Useless teaching tip just to show a demo of what a teaching tip looks like
         /// </summary>
-        
-        private void TeachingTipDemo_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+
+        private async void TeachingTipDemo_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             // The normal teaching tip behavior is to only show once. This is here just to be able to 
             // demo at any time by doing a Control+Shift+MouseClick
 
-            if(e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control|VirtualKeyModifiers.Shift))
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift))
             {
                 var tip = new TeachingTip()
                 {
@@ -382,6 +382,10 @@ namespace Tempo
 
                 _root.Children.Add(tip);
                 tip.Closed += (_, __) => _root.Children.Remove(tip);
+
+                // bugbug: without this delay, the tip opens, but won't close
+                await Task.Delay(100);
+
                 tip.IsOpen = true;
             }
         }
@@ -492,7 +496,7 @@ namespace Tempo
                         return;
                     }
 
-                    App.Instance.OpenBaseline(new string[] { storageFile.Path});
+                    App.Instance.OpenBaseline(new string[] { storageFile.Path });
                 }
             }
             finally

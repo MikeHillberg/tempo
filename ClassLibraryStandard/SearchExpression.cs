@@ -235,7 +235,11 @@ namespace Tempo
             searchString = searchString.Replace("||", " || ");
             searchString = searchString.Replace("&&", " && ");
 
-            return AqsExpression.TryParse(searchString, Manager.Settings.CaseSensitive, AqsKeyValidator);
+            return AqsExpression.TryParse(
+                searchString, 
+                Manager.Settings.CaseSensitive, 
+                Manager.Settings.IsWildcardSyntax,
+                AqsKeyValidator);
         }
 
         IList<string> _validAqsKeys = null;
@@ -516,16 +520,12 @@ namespace Tempo
         /// </summary>
         static internal Regex CreateRegex(string value)
         {
-            try
-            {
-                return new Regex(value, Manager.Settings.CaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
-            }
-            catch (System.ArgumentException)
-            {
-                // Ignore invalid regex expression (might still be typing)
-                return null;
-            }
+            return AqsExpression.CreateRegex(
+                value, 
+                Manager.Settings.CaseSensitive,
+                Manager.Settings.IsWildcardSyntax);
         }
+
 
         private static string SplitFilterHelper(string newQuery, string[] split, StringBuilder sb, string bracket)
         {

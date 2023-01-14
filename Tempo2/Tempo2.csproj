@@ -107,7 +107,7 @@
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
