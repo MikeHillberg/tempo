@@ -7,205 +7,252 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid Background="Transparent" Padding="60" 
+    <ScrollViewer  >
+        <Grid x:Name="_root" Background="Transparent" Padding="60" 
           PointerPressed="TeachingTipDemo_PointerPressed">
 
-        <Grid VerticalAlignment="Center"
-              HorizontalAlignment="Center"
-              Background="White"
-              Padding="40"
-              CornerRadius="5">
-            <Grid.RowDefinitions>
-                <!-- Search box -->
-                <RowDefinition Height="Auto" />
-
-                <!-- Info pane and API scope pane -->
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <local:SearchBox x:Name="_searchBox"  Grid.Row="0"
-                             IsAllVisible="True"
-                             MaxWidth="800"  />
-
-            <Grid x:Name="_root" Grid.Row="1" Margin="50,50,50,0"  >
+            <Grid ColumnDefinitions="Auto,*"
+                  VerticalAlignment="Center" HorizontalAlignment="Left"
+                  Background="White"
+                  Padding="40"
+                  CornerRadius="5"
+                  ColumnSpacing="50" RowSpacing="40">
                 <Grid.RowDefinitions>
+                    <!-- Search box -->
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+
+                    <!-- Browse -->
+                    <RowDefinition Height="Auto"/>
+
+                    <!-- API scope -->
+                    <RowDefinition Height="Auto" />
+
+                    <!-- How to -->
+                    <RowDefinition Height="Auto" />
+
+                    <!-- Illustrations -->
+                    <RowDefinition Height="Auto"/>
+
+                    <!-- Baseline -->
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <ScrollViewer Grid.Row="1" Padding="0,0,10,0">
-                    <Grid Margin="0,12,0,0" MaxWidth="1024" 
-                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                          ColumnDefinitions="3*,2*" >
+                <!-- Search box row -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="Search"
+                           HorizontalAlignment="Left"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Margin="0,6,0,0"/>
 
+                <local:SearchBox x:Name="_searchBox"  Grid.Row="0" Grid.Column="1"
+                                 HorizontalAlignment="Stretch"
+                                 IsAllVisible="True"
+                                 PlaceholderText = "{x:Bind GetPlaceholderText(local:Manager.Settings.IsWildcardSyntax), Mode=OneWay}" />
+
+                <!-- Browse row -->
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="Browse"
+                           HorizontalAlignment="Left"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+
+                <StackPanel Grid.Row="1" Grid.Column="1" 
+                            Margin="0,7,0,0"
+                            Spacing="0"
+                            HorizontalAlignment="Left">
+
+                    <TextBlock>
+                        <Hyperlink Click="ShowAll" >Show everything</Hyperlink>
+                    </TextBlock>
+
+                    <TextBlock Margin="{StaticResource VerticalMargin}">
+                        <Hyperlink Click="BrowseAll" >Browse by namespace</Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- API scope row -->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           HorizontalAlignment="Left"
+                           >API Scope</TextBlock>
+
+                <StackPanel Grid.Row="2" Grid.Column="1"
+                            Spacing="20"
+                        Orientation="Vertical">
+
+                    <!-- bugbug: this xBind should not be this hard -->
+                    <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" 
+                                 VerticalAlignment="Top"
+                                 GroupName="Test"
+                                 AccessKey="W">
                         <StackPanel>
-                            <!-- bugbug:  nbsp is #160? -->
-                            <TextBlock HorizontalAlignment="Left" FontWeight="Bold" TextWrapping="Wrap" >Types, Events, Methods &amp; Properties (Oh&#160;my)</TextBlock>
-
-                            <TextBlock Margin="0,12,0,0" TextWrapping="Wrap">Use the search box above to search the APIs you select on the right</TextBlock>
-
-                            <TextBlock Margin="0,12,0,0">Example search strings:</TextBlock>
-                            <StackPanel Margin="15,5,0,0">
-                                <TextBlock>button</TextBlock>
-                                <TextBlock>button.*args</TextBlock>
-                                <TextBlock>^button</TextBlock>
-                                <TextBlock>button$</TextBlock>
-                                <TextBlock>but::cli</TextBlock>
-                                <TextBlock>button Namespace:controls</TextBlock>
-                                <!--<TextBlock xml:space="preserve">check     box</TextBlock>-->
-                                <TextBlock>iasync&lt;storagefile</TextBlock>
-                            </StackPanel>
-
-                            <!--<TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search text can be simple text or a regular expression.  Spaces are compressed out, so for example "check box" (two words) is the same as "checkbox" (one word).</TextBlock>-->
-
-                            <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search string is checked against type/property/method/event/field names.  It's also checked against parameter names and their types, against ancestors of a class, against implemented interfaces on a class, and anything else on an API that can be found.</TextBlock>
-
-                            <StackPanel Margin="0,15,0,0" x:Name="_commandPromptText">
-                                <TextBlock TextWrapping="Wrap" >You can launch the app from the command prompt too, optionally passing in filenames. You can also launch as a hyperlink. For example:</TextBlock>
-                                <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo</TextBlock>
-                                <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo MyComponent.dll</TextBlock>
-                                <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; start "tempo:Button"</TextBlock>
-                            </StackPanel>
-
-                            <StackPanel Margin="0,20,0,0">
-                                <TextBlock FontWeight="Bold">Illustrations</TextBlock>
-
-                                <StackPanel Margin="{StaticResource VerticalMargin}">
-                                    <TextBlock>
-                                <Hyperlink Click="TextRamp_Click">Type ramp</Hyperlink><LineBreak/>
-                                <Run Text="{x:Bind local:TypeRampIllustration.Description}"/>
-                                    </TextBlock>
-                                </StackPanel>
-
-                                <StackPanel Margin="{StaticResource VerticalMargin}">
-                                    <TextBlock>
-                                <Hyperlink Click="ColorSamples_Click">Colors</Hyperlink><LineBreak/>
-                                <Run Text="{x:Bind local:ColorsIllustration.Description}"/>
-                                    </TextBlock>
-                                </StackPanel>
-
-                                <StackPanel Margin="{StaticResource VerticalMargin}">
-                                    <TextBlock>
-                                <Hyperlink Click="SymbolsSamples_Click">Symbols</Hyperlink><LineBreak/>
-                                <Run Text="{x:Bind local:SymbolsIllustration.Description}"/>
-                                    </TextBlock>
-                                </StackPanel>
-                            </StackPanel>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="50,0,0,0">
-                            <TextBlock FontWeight="Bold">API Scope</TextBlock>
-
-                            <StackPanel>
-                                <!-- bugbug: this xBind should not be this hard -->
-                                <RadioButton Margin="0,10,0,0"       
-                                             IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" 
-                                             GroupName="Test"
-                                             AccessKey="W">
-                                    <StackPanel>
-                                        <TextBlock><Underline>W</Underline>indows</TextBlock>
-                                        <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" >
+                            <TextBlock><Underline>W</Underline>indows</TextBlock>
+                            <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" >
                                         Search the Windows WinRT APIs installed on this machine
-                                        </TextBlock>
-                                    </StackPanel>
+                            </TextBlock>
+                        </StackPanel>
+                    </RadioButton>
 
-                                </RadioButton>
-
-                                <RadioButton Margin="0,10,0,0"       
-                                             IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" 
-                                             GroupName="Test"
-                                             AccessKey="K">
-                                    <StackPanel>
-                                        <TextBlock >Windows App SD<Underline>K</Underline></TextBlock>
-                                        <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                    <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" 
+                                 VerticalAlignment="Top"
+                                 GroupName="Test"
+                                 AccessKey="K">
+                        <StackPanel>
+                            <TextBlock>Windows App SD<Underline>K</Underline></TextBlock>
+                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                         Search the Windows App SDK, downloading it from nuget.org
-                                        </TextBlock>
-                                    </StackPanel>
+                            </TextBlock>
+                        </StackPanel>
+                    </RadioButton>
 
-                                </RadioButton>
-
-                                <!-- Custom API scope -->
-                                <Grid Margin="0,10,0,0"
-                                      AccessKey="C">
-                                    <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                    <!-- Custom API scope -->
+                    <Grid VerticalAlignment="Top">
+                        <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                                             Margin="-10"
                                             Visibility="{x:Bind IsDraggingOverCustom, Mode=OneWay}"/>
-                                    
-                                    <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsCustomApiScope, Mode=TwoWay}" GroupName="Test"
-                                             AllowDrop="True" DragOver="HandleDragOver" Drop="CustomScope_Drop"
-                                             DragEnter="CustomScope_DragEnter" DragLeave="CustomScope_DragLeave">
-                                        <StackPanel>
-                                            <TextBlock x:Name="_customFileLabel"><Underline>C</Underline>ustom file</TextBlock>
-                                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
-                                                Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file over this window.
-                                            </TextBlock>
 
-                                            <TextBlock Margin="0,10,0,0" VerticalAlignment="Center"
-                                                   TextWrapping="Wrap" >(Click Open or drop a file)</TextBlock>
+                        <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsCustomApiScope, Mode=TwoWay}"
+                                     GroupName="Test"
+                                     AccessKey="C"
+                                     AllowDrop="True" 
+                                     DragOver="HandleDragOver" Drop="CustomScope_Drop"
+                                     DragEnter="CustomScope_DragEnter" DragLeave="CustomScope_DragLeave">
+                            <StackPanel>
+                                <TextBlock x:Name="_customFileLabel"><Underline>C</Underline>ustom file</TextBlock>
+                                <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                    Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file here.
+                                </TextBlock>
 
-                                            <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                                                <Button Click="OpenCustomClick">Open</Button>
-                                                <Button Click="CloseCustomClick"
-                                                        IsEnabled="{x:Bind local:App.Instance.IsCustomApiScope, Mode=OneWay}"
-                                                        >Close</Button>
-                                            </StackPanel>
+                                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                    <Button Click="OpenCustomClick">Open</Button>
+                                    <Button Content="Close" 
+                                            Click="CloseCustomClick"
+                                            IsEnabled="{x:Bind local:App.Instance.IsCustomApiScope, Mode=OneWay}" />
+                                </StackPanel>
 
-                                            <!-- Show loaded custom filenames -->
-                                            <StackPanel Margin="0,5,0,0"
+                                <!-- Show loaded custom filenames -->
+                                <StackPanel Margin="0,5,0,0"
                                                     local:CollapseIfEmpty.IsEnabledFor="{x:Bind _customFilenamesText}">
-                                                <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                                <TextBlock x:Name="_customFilenamesText"
+                                    <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="_customFilenamesText"
                                                        Text="{x:Bind FilenamesToText(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}"
                                                        TextWrapping="Wrap"
                                                        Margin="5,0,0,0"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </RadioButton>
-                                </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                    </Grid>
 
-                                <!-- Baseline APIs -->
-                                <local:StackListHeaderItem />
-                                <Grid>
-                                    <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                </StackPanel>
+
+                <!-- How to row -->
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           HorizontalAlignment="Left"
+                           Margin="0">How to</TextBlock>
+
+
+                <StackPanel Grid.Row="3" Grid.Column="1"
+                            VerticalAlignment="Top" HorizontalAlignment="Left"
+                            MaxWidth="600"
+                            Margin="0,6,0,0" >
+
+                    <TextBlock TextWrapping="Wrap">Use the search box above to search the APIs you select on the right</TextBlock>
+
+                    <TextBlock Margin="0,12,0,0">Example search strings:</TextBlock>
+                    <StackPanel Margin="15,5,0,0">
+                        <TextBlock>button</TextBlock>
+                        <TextBlock>button.*args</TextBlock>
+                        <TextBlock>^button</TextBlock>
+                        <TextBlock>button$</TextBlock>
+                        <TextBlock>but::cli</TextBlock>
+                        <TextBlock>button Namespace:controls</TextBlock>
+                        <TextBlock>iasync&lt;storagefile</TextBlock>
+                    </StackPanel>
+
+                    <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">The search string is checked against type/property/method/event/field names.  It's also checked against parameter names and their types, against ancestors of a class, against implemented interfaces on a class, and anything else on an API that can be found.</TextBlock>
+
+                    <StackPanel Margin="0,15,0,0" x:Name="_commandPromptText">
+                        <TextBlock TextWrapping="Wrap" >You can launch the app from the command prompt too, optionally passing in filenames. You can also launch as a hyperlink. For example:</TextBlock>
+                        <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo</TextBlock>
+                        <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo MyComponent.dll</TextBlock>
+                        <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; start "tempo:Button"</TextBlock>
+                    </StackPanel>
+
+                </StackPanel>
+
+                <!-- Illustrations row -->
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           HorizontalAlignment="Left"
+                           >Illustrations</TextBlock>
+
+                <StackPanel Grid.Row="4" Grid.Column="1"
+                            Margin="0,5,0,0" >
+                    <StackPanel >
+                        <TextBlock>
+                                <Hyperlink Click="TextRamp_Click">Type ramp</Hyperlink><LineBreak/>
+                                <Run Text="{x:Bind local:TypeRampIllustration.Description}"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Margin="{StaticResource VerticalMargin}">
+                        <TextBlock>
+                                <Hyperlink Click="ColorSamples_Click">Colors</Hyperlink><LineBreak/>
+                                <Run Text="{x:Bind local:ColorsIllustration.Description}"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Margin="{StaticResource VerticalMargin}">
+                        <TextBlock>
+                                <Hyperlink Click="SymbolsSamples_Click">Symbols</Hyperlink><LineBreak/>
+                                <Run Text="{x:Bind local:SymbolsIllustration.Description}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Baseline row -->
+                <TextBlock Grid.Row="5" Grid.Column="0"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Margin="0,5,0,0"
+                           HorizontalAlignment="Left"
+                           >Baseline</TextBlock>
+
+                <Grid Grid.Row="5" Grid.Column="1">
+                    <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                                             Margin="-10"
                                             Visibility="{x:Bind IsDraggingOverBaseline, Mode=OneWay}"/>
-     
-                                    <!-- Set the Background to transparent so that the drag/drop hit-testing always works -->
-                                    <StackPanel
-                                             AllowDrop="True" DragOver="HandleDragOver" Drop="Baseline_Drop"
-                                             DragEnter="Baseline_DragEnter" DragLeave="Baseline_DragLeave"
-                                             Background="Transparent">
 
-                                        <TextBlock FontWeight="Bold">Baseline</TextBlock>
-                                        <TextBlock Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline</TextBlock>
-                                        <CheckBox IsThreeState="False" IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
-                                              Content="Show only new compared to baseline"
-                                              IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
+                    <!-- Set the Background to transparent so that the drag/drop hit-testing always works -->
+                    <StackPanel AllowDrop="True" DragOver="HandleDragOver" Drop="Baseline_Drop"
+                                DragEnter="Baseline_DragEnter" DragLeave="Baseline_DragLeave"
+                                Background="Transparent">
 
-                                        <!-- Open/Close buttons -->
-                                        <StackPanel Orientation="Horizontal" Margin="0,5">
-                                            <Button Click="OpenBaseline">Open</Button>
-                                            <Button Click="CloseBaseline"
-                                                IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
-                                        </StackPanel>
+                        <!--<TextBlock FontWeight="Bold">Baseline</TextBlock>-->
+                        <TextBlock Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline. Use the open button or drag a file here</TextBlock>
+                        <CheckBox IsThreeState="False" 
+                                  IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
+                                  Content="Show only new compared to baseline"
+                                  IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
 
-                                        <!-- Show loaded filenames -->
-                                        <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
-                                            <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                            <TextBlock x:Name="_baselineFilenamesText"
-                                            Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
-                                            TextWrapping="Wrap"
-                                            Margin="5,0,0,0"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
+                        <!-- Open/Close buttons -->
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Button Click="OpenBaseline">Open</Button>
+                            <Button Click="CloseBaseline"
+                                    IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
                         </StackPanel>
-                    </Grid>
-                </ScrollViewer>
 
+                        <!-- Show loaded filenames -->
+                        <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
+                            <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="_baselineFilenamesText"
+                                       Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
+                                       TextWrapping="Wrap"
+                                       Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Grid>
-    </Grid>
+    </ScrollViewer>
+
 </local:MySerializableControl>

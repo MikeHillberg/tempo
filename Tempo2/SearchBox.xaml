@@ -14,7 +14,7 @@
     mc:Ignorable="d"
     >
 
-    <Grid x:Name="_root">
+    <Grid x:Name="_root" HorizontalAlignment="Stretch">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -24,104 +24,83 @@
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
-            <!-- "Search" label, text box, and search button -->
+            <!-- Text box and buttons -->
             <RowDefinition Height="Auto"/>
 
+            <!-- Filters and syntax button (optional) -->
             <RowDefinition Height="Auto"/>
 
             <!-- Error bar if a search expression error -->
             <RowDefinition Height="Auto"/>
-
-            <!-- "Or" label, show all button -->
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Grid.Column="0"
-                   Margin="0,5,10,0"
-            HorizontalAlignment="Right"
-            Visibility="{x:Bind IsAllVisible, Mode=OneWay}"
-          >Search:</TextBlock>
 
+        <!-- Row 0 --> 
         <TextBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
                  KeyDown="_searchBox_KeyDown"
                  VerticalAlignment="Top"
-                 Padding="5"
+                 Padding="10"
                  InputScope="Search" IsSpellCheckEnabled="False"
                  Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
                  PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"/>
 
-
-        <controls:UniformGrid Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" 
-              Rows="1" Columns="2">
-
-            <Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
+        <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
                 Click="Search_Click" >
-                <SymbolIcon Symbol="Find"  />
-            </Button>
+            <SymbolIcon Symbol="Find"  />
+        </Button>
 
-            <Button Grid.Row="0" Grid.Column="1" 
-                    HorizontalAlignment="Stretch"
-                Click="ShowFilters" 
+        <Button Grid.Row="0"  Grid.Column="3" 
+                Click="ShowHelp" 
+                Margin="0,0,0,0" 
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                Visibility="{x:Bind IsAllVisible,Mode=Oneway}" >
+            <Button.KeyboardAccelerators>
+                <KeyboardAccelerator Key="F1"/>
+            </Button.KeyboardAccelerators>
+            <SymbolIcon>Help</SymbolIcon>
+        </Button>
+
+        <!-- Row 1 -->
+        <StackPanel Grid.Row="1" Grid.Column="1"
+                    Orientation="Horizontal"
+                    Grid.ColumnSpan="2"
                     Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
-                Filters
+
+            <Button Content="Filters"
+                    HorizontalAlignment="Stretch"
+                    Click="ShowFilters" >
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="F"/>
-
-                    <!-- Keeping the old one around to see how it looks -->
+                    
+                    <!--Keeping the old one around to see how it looks-->
                     <KeyboardAccelerator Modifiers="Control,Shift" Key="F" Invoked="ShowOldFilters" />
                 </Button.KeyboardAccelerators>
             </Button>
-        </controls:UniformGrid>
 
-
-        <SplitButton x:Name="_syntaxButton" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                    Visibility="{x:Bind IsAllVisible, Mode=OneWay}"
-                    HorizontalAlignment="Stretch"
-                         Content="{x:Bind local:App.Instance.SearchSyntaxName, Mode=OneWay}">
-            <SplitButton.Flyout>
-                <MenuFlyout>
-                    <MenuFlyoutSeparator/>
-                    <ToggleMenuFlyoutItem 
+            <DropDownButton x:Name="_syntaxButton" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                            Content="{x:Bind local:App.Instance.SearchSyntaxName, Mode=OneWay}"
+                            HorizontalAlignment="Stretch" >
+                
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <ToggleMenuFlyoutItem 
                             Text="Allow Regex" Click="RegexMenuItem_Click" 
                             IsChecked="{x:Bind local:Utils.Not(local:Manager.Settings.IsWildcardSyntax), Mode=OneWay}"/>
-                    <ToggleMenuFlyoutItem 
+                        <ToggleMenuFlyoutItem 
                             Text="Allow wildcards" Click="WildcardMenuItem_Click_1"
                             IsChecked="{x:Bind local:Manager.Settings.IsWildcardSyntax, Mode=OneWay}" />
-                </MenuFlyout>
-            </SplitButton.Flyout>
-        </SplitButton>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </DropDownButton>
+        </StackPanel>
 
-
+        <!-- Row 2 -->
         <Border Grid.Row="2" Grid.Column="1"
                 Visibility="{x:Bind HasSearchExpressionError, Mode=OneWay}"
                 Background="LightYellow" >
             <TextBlock>Search expression error</TextBlock>
         </Border>
-
-        <TextBlock Grid.Row="3" Grid.Column="0"
-                   Margin="0,7,20,0"
-                   HorizontalAlignment="Right"
-                   Visibility="{x:Bind IsAllVisible, Mode=OneWay}">Or:</TextBlock>
-
-        <controls:UniformGrid Grid.Row="3"  Grid.Column="1" 
-                              Columns="3"
-              Margin="0,0,0,0"
-              Visibility="{x:Bind IsAllVisible, Mode=OneWay}"
-              HorizontalAlignment="Left"
-              RowDefinitions="Auto,Auto">
-
-
-            <Button Click="ShowAll" HorizontalAlignment="Stretch">Show everything</Button>
-
-            <Button Grid.Column="1" Click="BrowseAll" Margin="10,0,0,0" HorizontalAlignment="Stretch">Browse everything</Button>
-
-            <Button Grid.Column="2" Click="ShowHelp" Margin="10,0,0,0" HorizontalAlignment="Stretch">
-                <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="F1"/>
-                </Button.KeyboardAccelerators>
-                Show help
-            </Button>
-        </controls:UniformGrid>
     </Grid>
 
 </UserControl>

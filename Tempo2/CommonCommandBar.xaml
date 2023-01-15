@@ -96,28 +96,39 @@
             </AppBarButton>
 
             <!-- Button to choose the ApiScope -->
-            <AppBarButton Label="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}" 
+            <AppBarButton x:Name="_apiScopeButton"
                           Visibility="{x:Bind IsScopeVisible, Mode=OneWay}"
-                          x:Name="_apiScopeButton"
                           ToolTipService.ToolTip="Choose an API scope">
-                <SymbolIcon Symbol="Library"/>
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="Library"/>
+
+                    <TextBlock Text="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"
+                               Margin="10,0,0,0"/>
+
+                    <!-- There's no app bar drop down button, so pretend by adding a chevron -->
+                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                              FontSize="12"
+                              Glyph="&#xE96E;"
+                              Margin="10,0,0,0"
+                              IsTextScaleFactorEnabled="False"/>
+                </StackPanel>
 
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <ToggleMenuFlyoutItem Text="Windows" Click="SelectWindowsApis" 
+                        <ToggleMenuFlyoutItem Text="Windows APIs" Click="SelectWindowsApis" 
                                               IsChecked="{x:Bind local:App.Instance.IsWinPlatformScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="W" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
-                        <ToggleMenuFlyoutItem Text="WinAppSDK" Click="SelectWinAppSdkApis"
+                        <ToggleMenuFlyoutItem Text="WinAppSDK APIs" Click="SelectWinAppSdkApis"
                                               IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="K" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
-                        <ToggleMenuFlyoutItem Text="Custom" Click="SelectCustomApiScope"
+                        <ToggleMenuFlyoutItem Text="Custom APIs" Click="SelectCustomApiScope"
                                               IsChecked="{x:Bind local:App.Instance.IsCustomApiScope, Mode=OneWay}"/>
                     </MenuFlyout>
                 </AppBarButton.Flyout>

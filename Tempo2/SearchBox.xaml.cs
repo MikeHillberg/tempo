@@ -69,10 +69,6 @@ namespace Tempo
             _searchBox.SelectionLength = _searchBox.Text.Length;
         }
 
-        private void ShowAll(object sender, RoutedEventArgs e)
-        {
-            App.Instance.GotoSearch("");
-        }
 
         public bool IsAllVisible
         {
@@ -85,14 +81,6 @@ namespace Tempo
 
         void IsAllVisibleChanged()
         {
-            if (IsAllVisible)
-            {
-                PlaceholderText = "Name of anything, simple or regex, can include Property:Value (Ctrl+E)";
-            }
-            else
-            {
-                PlaceholderText = "Search for name (Ctrl+E)";
-            }
         }
 
         private void ShowFilters(object sender, RoutedEventArgs e)
@@ -124,10 +112,6 @@ namespace Tempo
             App.Instance.ShowHelp();
         }
 
-        private void BrowseAll(object sender, RoutedEventArgs e)
-        {
-            App.GotoNamespaces("");
-        }
 
         private void SearchHelp_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {

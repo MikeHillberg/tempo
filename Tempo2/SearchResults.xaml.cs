@@ -86,19 +86,25 @@ namespace Tempo
 
         private void OnUnloaded()
         {
-            Settings.Changed -= OnResetting;
+            Settings.Changed -= OnSettingsResetting;
         }
 
         private void OnLoaded()
         {
-            Settings.Changed += OnResetting;
+            Settings.Changed += OnSettingsResetting;
 
             _searchBox.Focus();
         }
 
-        private void OnResetting(object sender, EventArgs e)
+        private void OnSettingsResetting(object sender, EventArgs e)
         {
-            DoSearch();
+            // Re-run search when Settings changes, because it might change the search results.
+            // Skip though if we're headed to the home page, where search results won't show anyway.
+
+            if (!App.HeadedHome)
+            {
+                DoSearch();
+            }
         }
 
         public bool IsWide

@@ -575,15 +575,15 @@ namespace Tempo
             {
                 if(IsWinPlatformScope)
                 {
-                    return "Windows";
+                    return "Windows APIs";
                 }
                 else if(IsWinAppScope)
                 {
-                    return "WASDK";
+                    return "WASDK APIs";
                 }
                 else if(IsCustomApiScope)
                 {
-                    return "Custom";
+                    return "Custom APIs";
                 }
 
                 // Shouldn't ever get here, but it happens during bootstrapping
@@ -1509,9 +1509,26 @@ namespace Tempo
             Manager.Settings.CaseSensitive = !Manager.Settings.CaseSensitive;
         }
 
+        /// <summary>
+        /// True if we're in the process of navigating to Home
+        /// </summary>
+        static public bool HeadedHome = false;
         internal static void ResetAndGoHome()
         {
-            Manager.Settings = new Settings();
+            // This tells us, when Settings changeds below, that we don't need
+            // to respond to it with a new search
+            HeadedHome = true;
+
+            // Try shouldn't be necessary, but defenese in depth
+            try
+            {
+                Manager.Settings = new Settings();
+            }
+            finally
+            {
+                HeadedHome = false;
+            }
+
             Instance.SearchText = "";
             MoveToMainAndFocusToSearch();
         }

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
+using System.Text.RegularExpressions;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -503,6 +504,30 @@ namespace Tempo
             {
                 deferral.Complete();
             }
+        }
+
+        /// <summary>
+        /// Placeholder text for the search box
+        /// </summary>
+        string GetPlaceholderText(bool isWildcardSyntax)
+        {
+            var s = isWildcardSyntax ? "with wildcards" : "regex";
+            return $"Search for anything, simple or {s}, can include Property:Value (Ctrl+E)";
+        }
+
+        private void ShowHelp(object sender, RoutedEventArgs e)
+        {
+            App.Instance.ShowHelp();
+        }
+
+        private void BrowseAll(object sender, RoutedEventArgs e)
+        {
+            App.GotoNamespaces("");
+        }
+
+        private void ShowAll(object sender, RoutedEventArgs e)
+        {
+            App.Instance.GotoSearch("");
         }
     }
 }

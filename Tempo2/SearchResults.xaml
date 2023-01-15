@@ -68,7 +68,8 @@
                 <local:SearchBox 
                     Margin="10,15,10,20"
                     x:Name="_searchBox"
-                    Grid.Row="1"/>
+                    Grid.Row="1"
+                    PlaceholderText = "Search for anything (Ctrl+E)"/>
 
                 <!-- No Background here so that Mica can be seen -->
                 <ListView x:Name="_listView" Grid.Row="2"
