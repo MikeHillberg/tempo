@@ -69,6 +69,11 @@
                         AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(FieldVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
                 </StackPanel>
 
+                <StackPanel Margin="{StaticResource VerticalMargin}">
+                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                    <local:MemberMore MemberVM="{x:Bind FieldVM, Mode=Oneway}"/>
+                </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
 
