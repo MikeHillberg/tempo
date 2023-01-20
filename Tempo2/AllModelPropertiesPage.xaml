@@ -1,0 +1,24 @@
+
+<UserControl
+    x:Class="Tempo.AllModelPropertiesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid RowDefinitions="Auto,Auto,*"  Padding="30" HorizontalAlignment="Center">
+
+        <TextBlock TextWrapping="Wrap">Below are all model properties for <Run FontWeight="Bold" Text="{x:Bind VM.MemberPrettyName, Mode=OneWay}"/></TextBlock>
+
+        <TextBlock Grid.Row="1" Margin="{StaticResource VerticalMargin}" TextWrapping="Wrap">
+            For example, you can search for "button Namespace:Controls"
+        </TextBlock>
+
+        <ScrollViewer Grid.Row="2" Margin="0,20,0,0" >
+            <local:AllModelProperties VM="{x:Bind VM, Mode=OneWay}"/>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

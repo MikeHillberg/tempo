@@ -81,8 +81,8 @@ namespace Tempo
             // E.g. in `a OR b` we need to remember the `OR` while we're waiting for the `b`
             Stack<AqsOperator> operatorStack = new Stack<AqsOperator>();
 
-            // When we're expecting an operator, if we don't get one, implicitly add an AND
-            var expectingOperator = false;
+            // When we're expecting an AND or an OR, if we don't get one, implicitly add an AND
+            var expectingAndor = false;
 
             for (; tokenIndex < tokenStrings.Length; tokenIndex++)
             {
@@ -117,7 +117,7 @@ namespace Tempo
                             _expression.Add(new AqsToken(matches));
 
                             // Set this to indicate that if the next thing isn't an operator, to add an implicit AND
-                            expectingOperator = true;
+                            expectingAndor = true;
                         }
                         else
                         {
@@ -129,14 +129,14 @@ namespace Tempo
                                 return false;
                             }
 
-                            if (expectingOperator)
+                            if (expectingAndor)
                             {
                                 // The last thing we saw was an operand, so there should have seen an operator
                                 // before this current operand. So add an And as if we saw one (to the operator stack)
                                 // This causes e.g. `a:Foo b:Bar` to become `a:Foo AND b:Bar`
 
-                                operatorStack.Push(AqsOperator.And);
-                                expectingOperator = false;
+                                PushOperator(operatorStack, AqsOperator.And);
+                                expectingAndor = false;
                             }
 
                             // Add the LHS to the expression
@@ -165,7 +165,14 @@ namespace Tempo
                 else
                 {
                     // This token is some kind of operator
-                    expectingOperator = false;
+                    
+                    // If this is a NOT or open paren, we still need to inject an AND
+                    if(expectingAndor 
+                        && (op == AqsOperator.Not || op == AqsOperator.OpenParen))
+                    {
+                        PushOperator(operatorStack, AqsOperator.And);
+                    }
+                    expectingAndor = false;
 
                     // If it's an "(", then parse inside the parens recursively
                     if (op == AqsOperator.OpenParen)
@@ -204,6 +211,9 @@ namespace Tempo
                         {
                             return false;
                         }
+
+                        // After completing a nested expression, we expect an AND or OR next
+                        expectingAndor = true;
                     }
 
                     else if (op == AqsOperator.CloseParen)
@@ -214,26 +224,7 @@ namespace Tempo
                     else
                     {
                         // It's an operator, but not a paren
-
-                        // Compare the current operator with those on the operator stack.
-                        // If what's on the stack is higher precedent than the current operator, pop off the stack
-                        // and add to the final expression.
-                        while (operatorStack.Count != 0)
-                        {
-                            var topOp = operatorStack.Peek();
-                            if ((int)topOp > (int)op)
-                            {
-                                _expression.Add(new AqsToken(operatorStack.Pop()));
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-
-                        // Push this current operator on the stack.
-                        // (All operators depend on operands that are later in the string expression)
-                        operatorStack.Push(op);
+                        PushOperator(operatorStack, op);
                     }
 
                 }
@@ -250,6 +241,29 @@ namespace Tempo
             }
 
             return true;
+        }
+
+        private void PushOperator(Stack<AqsOperator> operatorStack, AqsOperator op)
+        {
+            // Compare the current operator with those on the operator stack.
+            // If what's on the stack is higher precedent than the current operator, pop off the stack
+            // and add to the final expression.
+            while (operatorStack.Count != 0)
+            {
+                var topOp = operatorStack.Peek();
+                if ((int)topOp > (int)op)
+                {
+                    _expression.Add(new AqsToken(operatorStack.Pop()));
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // Push this current operator on the stack.
+            // (All operators depend on operands that are later in the string expression)
+            operatorStack.Push(op);
         }
 
         /// <summary>
@@ -344,16 +358,42 @@ namespace Tempo
                     }
 
 
-                    if (token.Operator == AqsOperator.And)
+                    if (token.Operator == AqsOperator.And
+                        || token.Operator == AqsOperator.Or)
                     {
-                        var result = (operand1.Boolean == true) && (operand2.Boolean == true);
+                        // For an AND/OR we have special handling for null values
+
+                        bool? result = null;
+
+                        var bool1 = operand1.Boolean;
+                        var bool2 = operand2.Boolean;
+
+                        if (bool1 == null || bool2 == null)
+                        {
+                            // One of the values is unknown. We handle that by ignoring it, but how to ignore depends on the context.
+                            // For example if U is unknown, then
+                            // A || U and A && U should be A
+                            // A && U || B should be A || B
+                            // A || U && B should be A && B
+
+                            // If bool1 is null, then the result is bool2, which could be null
+                            // If bool2 is null, then the result is bool1 (which, if null, see previous line)
+                            result = bool1 == null ? bool2 : bool1;
+                        }
+
+                        else if(token.Operator == AqsOperator.And)
+                        {
+                            result = (bool1 == true) && (bool2 == true);
+                        }
+
+                        else
+                        {
+                            result = (bool1 == true) || (bool2 == true);
+                        }
+
                         calculation.Push(new AqsToken(result));
                     }
-                    else if (token.Operator == AqsOperator.Or)
-                    {
-                        var result = (operand1.Boolean == true) || (operand2.Boolean == true);
-                        calculation.Push(new AqsToken(result));
-                    }
+
                     else if (token.Operator == AqsOperator.Matches)
                     {
                         // Use the callback to get the value
@@ -366,7 +406,7 @@ namespace Tempo
                         else
                         {
                             // Unrecognized key. Assume that whatever it's matching against, the answer is false
-                            calculation.Push(new AqsToken(false));
+                            calculation.Push(new AqsToken((bool?)null));
                         }
                     }
                 }
@@ -379,7 +419,15 @@ namespace Tempo
             }
             else
             {
-                return calculation.Pop().Boolean == true;
+                // Verbose code to enable easier breakpoints
+                if(calculation.Pop().Boolean == true)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -458,15 +506,15 @@ namespace Tempo
                 Operator = op;
             }
 
-            public AqsToken(bool value)
+            public AqsToken(bool? value)
             {
                 Boolean = value;
             }
 
 
             public bool IsOperand { get { return Lhs != null || Rhs != null; } }
-            public bool IsOperator => !IsOperand && Boolean == null;
-            public bool IsBoolean => Boolean != null;
+            public bool IsOperator => Operator != AqsOperator.None;
+            public bool IsBoolean => !IsOperand && !IsOperator;
 
             public override string ToString()
             {

@@ -33,5 +33,11 @@ namespace Tempo
         }
         public static readonly DependencyProperty MemberVMProperty =
             DependencyProperty.Register("MemberVM", typeof(MemberOrTypeViewModelBase), typeof(MemberMore), new PropertyMetadata(null));
+
+        private void ShowAllModelProperties_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            AllModelPropertiesPage.ShowWindow(MemberVM);
+
+        }
     }
 }

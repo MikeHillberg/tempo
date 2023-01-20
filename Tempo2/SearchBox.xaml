@@ -62,10 +62,11 @@
         </Button>
 
         <!-- Row 1 -->
-        <StackPanel Grid.Row="1" Grid.Column="1"
-                    Orientation="Horizontal"
-                    Grid.ColumnSpan="2"
-                    Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
+        <!-- Use UniformGrid so that the buttons have the same width -->
+        <controls:UniformGrid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                              Columns="2"
+                              HorizontalAlignment="Left"
+                              Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
 
             <Button Content="Filters"
                     HorizontalAlignment="Stretch"
@@ -78,7 +79,7 @@
                 </Button.KeyboardAccelerators>
             </Button>
 
-            <DropDownButton x:Name="_syntaxButton" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+            <DropDownButton x:Name="_syntaxButton" Grid.Column="1"
                             Content="{x:Bind local:App.Instance.SearchSyntaxName, Mode=OneWay}"
                             HorizontalAlignment="Stretch" >
                 
@@ -93,7 +94,7 @@
                     </MenuFlyout>
                 </Button.Flyout>
             </DropDownButton>
-        </StackPanel>
+        </controls:UniformGrid>
 
         <!-- Row 2 -->
         <Border Grid.Row="2" Grid.Column="1"

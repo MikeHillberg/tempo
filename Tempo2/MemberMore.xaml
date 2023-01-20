@@ -1,5 +1,5 @@
 ﻿<!-- Show member data for any MemberViewModel  -->
-    
+
 <UserControl
     x:Class="Tempo.MemberMore"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,21 +9,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal">
-        <StackPanel>
-            <TextBlock local:CollapseIfEmpty.IsEnabledFor="{x:Bind _exclusiveTo}">ExclusiveTo</TextBlock>
-            <TextBlock>Declaring type</TextBlock>
-            <TextBlock local:CollapseIfEmpty.IsEnabledFor="{x:Bind _abiName}">ABI name</TextBlock>
-        </StackPanel>
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <StackPanel>
+                <TextBlock local:CollapseIfEmpty.IsEnabledFor="{x:Bind _exclusiveTo}">ExclusiveTo</TextBlock>
+                <TextBlock>Declaring type</TextBlock>
+                <TextBlock local:CollapseIfEmpty.IsEnabledFor="{x:Bind _abiName}">ABI name</TextBlock>
+            </StackPanel>
 
-        <StackPanel Margin="10,0,0,0">
-            <TextBlock Text="{x:Bind MemberVM.ExclusiveToInterface, Mode=OneWay}" IsTextSelectionEnabled="True" x:Name="_exclusiveTo"
+            <StackPanel Margin="10,0,0,0">
+                <TextBlock Text="{x:Bind MemberVM.ExclusiveToInterface, Mode=OneWay}" IsTextSelectionEnabled="True" x:Name="_exclusiveTo"
                        local:CollapseIfEmpty.IsEnabledFor="{x:Bind _exclusiveTo}"/>
-            <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind MemberVM.DeclaringType, Mode=OneWay}" />
-            <TextBlock x:Name="_abiName"
+                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind MemberVM.DeclaringType, Mode=OneWay}" />
+                <TextBlock x:Name="_abiName"
                        Text="{x:Bind local:MethodViewModel.CalculateAbiName(MemberVM), Mode=OneWay}"
                        local:CollapseIfEmpty.IsEnabled="True"/>
+
+            </StackPanel>
         </StackPanel>
+        
+        <TextBlock Margin="{StaticResource VerticalMargin}"><Hyperlink Click="ShowAllModelProperties_Click"
+                              >All model properties</Hyperlink></TextBlock>
 
     </StackPanel>
 </UserControl>

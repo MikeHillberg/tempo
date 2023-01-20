@@ -1,5 +1,9 @@
 
 
+How to use Tempo
+===
+
+
 # How to search for an API
 
 Type all or part of an API name into the search box,
@@ -13,9 +17,16 @@ The search is case insensitive by default, and looks at:
 * Attributes on types or members
 * Other type info, such as the base type or the name of the DLL
 
-## Using Regex
+# Using Regex or Wildcard Syntax
 
-Regex syntax in the search is OK. Most useful tend to be:
+You don't need to use either, but you can use either Regex or wildcard syntax in a search string.
+Choose which on the home page below the search box:
+
+![screenshot of regex or wildcard syntax menu](Assets/help-syntax.jpg)
+
+## Regex info
+
+Some useful Regex tools:
 
 * `.*` finds any number of any character
 * `foo$` finds anything that _ends_ in "foo"
@@ -28,14 +39,23 @@ Regex examples:
 * `button$` finds AppBarButton and Button, but not ButtonBase (because it doesn't end with "button")
 * `button.*peer` finds ButtonAutomationPeer 
 
-## Type::Member search syntax
+## Wildcard info
+
+In wildcard syntax "." means any character, and "*" means any number of any character.
+
+Note that search strings aren't substrings ("contains").
+So for example `button` finds Button but not ButtonBase or ToggleButton.
+To find all three, search for `*button*`.
+
+
+# Type::Member search syntax
 
 You can search for a member of a type using "::".
 For example
 
 `button::click` finds the ButtonBase.Click event.
 
-## Searching with Advanced Query Syntax
+# Searching with Advanced Query Syntax
 
 You can also use AQS to restrict searches, which are in the form of "Property:Value".
 
@@ -60,3 +80,9 @@ For example these are equivalent:
 IsType:True && Namespace:(controls || devices)
 IsType:True AND Namespace:(controls OR devices)
 ```
+
+To see all properties available, look at a type or member and click on
+the "All model properties" link.
+That will show you an example for that item of all the properties and values.
+
+![screenshot of link to all model properties list](Assets/all-model-properties-link.jpg)

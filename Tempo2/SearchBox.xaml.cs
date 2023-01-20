@@ -132,7 +132,7 @@ namespace Tempo
                 () => new TeachingTip()
                 {
                     Title = "Choose your search syntax",
-                    Subtitle = "You can search for a simple string, but you can also use either Regex syntax or Wildcard syntax",
+                    Subtitle = "You can search for a simple string, but you can also use either Regex syntax or Wildcard syntax. See help (F1) for more information",
                 },
                 force);
 

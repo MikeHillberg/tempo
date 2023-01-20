@@ -117,6 +117,8 @@
     <Compile Remove="App.xaml.old.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="AllModelProperties.xaml" />
+    <None Remove="AllModelPropertiesPage.xaml" />
     <None Remove="AttributesView2.xaml" />
     <None Remove="CommonCommandBar.xaml" />
     <None Remove="DebugLog.xaml" />
@@ -130,6 +132,12 @@
     <None Remove="TimedTextBox.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="AllModelProperties.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="AllModelPropertiesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="Assemblies\System.Private.CoreLib.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

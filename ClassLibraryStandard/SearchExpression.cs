@@ -595,13 +595,17 @@ namespace Tempo
                 var list = value as IEnumerable;
                 var sb = new StringBuilder();
 
-                sb.Append("{");
+                var first = true;
                 foreach (var item in list)
                 {
+                    if(!first)
+                    {
+                        sb.Append(", ");
+                    }
+                    first = false;
+
                     sb.Append(ToWhereString(item));
-                    sb.Append(" \n");
                 }
-                sb.Append("}");
 
                 return sb.ToString();
             }

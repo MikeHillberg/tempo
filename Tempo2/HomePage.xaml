@@ -12,7 +12,7 @@
           PointerPressed="TeachingTipDemo_PointerPressed">
 
             <Grid ColumnDefinitions="Auto,*"
-                  VerticalAlignment="Center" HorizontalAlignment="Left"
+                  VerticalAlignment="Center" HorizontalAlignment="Center"
                   Background="White"
                   Padding="40"
                   CornerRadius="5"
@@ -67,6 +67,7 @@
                     <TextBlock Margin="{StaticResource VerticalMargin}">
                         <Hyperlink Click="BrowseAll" >Browse by namespace</Hyperlink>
                     </TextBlock>
+
                 </StackPanel>
 
                 <!-- API scope row -->

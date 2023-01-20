@@ -926,7 +926,7 @@ namespace Tempo
                         var aqsResult = EvaluateAqsExpression(searchExpression, member);
 
                         // True means it matched, null means it didn't not match (maybe there was no AQS),
-                        // false means it was rejected
+                        // false means it was rejected.
                         if(aqsResult == true)
                         {
                             meaningfulMatch = true;
@@ -938,7 +938,6 @@ namespace Tempo
                             // Move on to the next member
                             continue;
                         }
-
                     }
 
                     // If this member was rejected by anything we'd have done a continue above.
@@ -1047,7 +1046,16 @@ namespace Tempo
 
                         // Remember that something was able to evaluate
                         keyUsed = true;
-                        return value?.ToString();
+
+                        // String-ize the result
+                        if (value == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return WhereCondition.ToWhereString(value);
+                        }
                     });
             }
             catch(Exception e)

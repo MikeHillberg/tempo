@@ -74,5 +74,9 @@ namespace Tempo
             return ToFileOrDirectory(path, toFile: false);
         }
 
+        private void ShowAllModelProperties_Click(object sender, RoutedEventArgs e)
+        {
+            AllModelPropertiesPage.ShowWindow(TypeVM);
+        }
     }
 }
