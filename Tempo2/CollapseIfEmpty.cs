@@ -148,18 +148,21 @@ namespace Tempo
             return isEmpty;
         }
 
-        public static object GetIsEnabledFor(DependencyObject obj)
+
+
+        public static object GetIsEnabledFor(FrameworkElement obj)
         {
             return obj.GetValue(IsEnabledForProperty);
         }
-
-        public static void SetIsEnabledFor(DependencyObject obj, Object value)
+        public static void SetIsEnabledFor(FrameworkElement obj, Object value)
         {
             obj.SetValue(IsEnabledForProperty, value);
         }
+
+        // Set the default value to a sentinal value so that any value for the property will trigger the changed callback
         public static readonly DependencyProperty IsEnabledForProperty =
             DependencyProperty.RegisterAttached("IsEnabledFor", typeof(Object), typeof(CollapseIfEmpty), 
-                new PropertyMetadata(null, (s,e) => IsEnabledForChanged(s as FrameworkElement)));
+                new PropertyMetadata("7de85e61-f596-4bf8-bf87-6fc24d0be418", (s,e) => IsEnabledForChanged(s as FrameworkElement)));
 
         private static void IsEnabledForChanged(FrameworkElement frameworkElement, bool isUpdate = false)
         {

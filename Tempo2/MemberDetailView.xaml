@@ -1,0 +1,94 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.MemberDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+
+    <Grid Background="{x:Bind RootBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ScrollViewer >
+            <StackPanel  >
+                <local:CommonCommandBar 
+                    Margin="{StaticResource BottomVerticalMargin}"
+                    Visibility="{x:Bind IsRoot, Mode=OneWay}"
+                    IsBackEnabled="True"
+                    HorizontalAlignment="Left" />
+
+                <StackPanel Padding="12,0,0,0" >
+                    <local:HeadingBar 
+                        Heading="{x:Bind MemberVM.FlexibleName, Mode=OneWay}"
+                        SubHeading="{x:Bind MemberVM.DeclaringType.PrettyName, Mode=OneWay}"
+                        SubSubHeading="{x:Bind MemberKindString, Mode=OneWay}"
+                        IsSubheading="{x:Bind IsSubcontent, Mode=OneWay}" />
+
+                    <TextBlock Visibility="{x:Bind MemberVM.IsExperimental, Mode=OneWay}"
+                       Margin="{StaticResource VerticalMargin}"
+                       Foreground="Red"
+                       >(Experimental)</TextBlock>
+
+
+                    <TextBlock 
+                        Margin="{StaticResource VerticalMargin}"
+                        Visibility="{x:Bind MemberVM.IsDeprecated,Mode=OneWay}">
+                        <Run Foreground="Red">[Deprecated]</Run>
+                        <LineBreak/>
+                        <Run Text="{x:Bind MemberVM.Deprecation, Mode=OneWay}"/>
+                    </TextBlock>
+
+                    <TextBlock Text="{x:Bind MemberVM.ApiDescriptionAsync, Mode=OneWay}" 
+                           Margin="{StaticResource VerticalMargin}"
+                           local:CollapseIfEmpty.IsEnabled="True"
+                           TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+
+                    <!-- Horizontal line -->
+                    <local:StackListHeaderItem/>
+
+                    <!-- Bugbug: had to put it all in code -->
+                    <RichTextBlock  
+                        Style="{StaticResource SampleCodeStyleRTB}"
+                        local:CsSyntaxGenerator.Member="{x:Bind MemberVM, Mode=OneWay}"
+                        TextWrapping="Wrap"/>
+
+                    <StackPanel Margin="{StaticResource VerticalMargin}"          
+                                local:CollapseIfEmpty.IsEnabledFor="{x:Bind EventVM, Mode=OneWay}">
+                        <local:StackListHeaderItem>Sender</local:StackListHeaderItem>
+                        <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.SenderType, Mode=OneWay}" />
+
+                        <local:StackListHeaderItem>Args</local:StackListHeaderItem>
+                        <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.ArgsType, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <!-- Version -->
+                    <StackPanel Margin="{StaticResource VerticalMargin}">
+                        <local:StackListHeaderItem>Version</local:StackListHeaderItem>
+                        <local:BuildNumberText MemberVM="{x:Bind MemberVM, Mode=OneWay }" />
+                        <TextBlock Text="{x:Bind MemberVM.Contract, Mode=OneWay}" />
+                    </StackPanel>
+
+                    <!-- Custom atributes -->
+                    <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}" x:Name="_testSP2">
+                        <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                        <local:AttributesView2 
+                        x:Name="_attributesView"
+                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(MemberVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="{StaticResource VerticalMargin}">
+                        <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                        <local:MemberMore MemberVM="{x:Bind MemberVM, Mode=Oneway}"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </StackPanel>
+
+        </ScrollViewer>
+    </Grid>
+</local:MySerializableControl>

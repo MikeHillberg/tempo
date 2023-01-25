@@ -1344,40 +1344,27 @@ namespace Tempo
         public static Type GetViewTypeFor(MemberOrTypeViewModelBase memberVM)
         {
             if (memberVM is TypeViewModel)
+            {
                 return typeof(TypeDetailView);
-            else if (memberVM is PropertyViewModel)
-                return typeof(PropertyDetailView);
-            else if (memberVM is MethodViewModel)
-                return typeof(MethodDetailView);
-            else if (memberVM is EventViewModel)
-                return typeof(EventDetailView);
-            else if (memberVM is ConstructorViewModel)
-                return typeof(ConstructorDetailView);
-            else if (memberVM is FieldViewModel)
-                return typeof(FieldDetailView);
+            }
+            else
+            {
+                return typeof(MemberDetailView);
+            }
 
-            // mikehill_ua: Missing using for Debug
-            Debug.Assert(false);
-            return null;
         }
 
         public static MySerializableControl GetViewFor(MemberOrTypeViewModelBase memberVM)
         {
             if (memberVM is TypeViewModel)
+            {
                 return new TypeDetailView();
-            else if (memberVM is PropertyViewModel)
-                return new PropertyDetailView();
-            else if (memberVM is MethodViewModel)
-                return new MethodDetailView();
-            else if (memberVM is EventViewModel)
-                return new EventDetailView();
-            else if (memberVM is ConstructorViewModel)
-                return new ConstructorDetailView();
-            else if (memberVM is FieldViewModel)
-                return new FieldDetailView();
+            }
+            else
+            {
+                return new MemberDetailView();
+            }
 
-            Debug.Assert(false);
-            return null;
         }
         // bugbug: make this IEnumerable<string>
         static public IList<object> Namespaces { get; private set; }

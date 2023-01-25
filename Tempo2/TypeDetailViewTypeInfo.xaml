@@ -12,7 +12,7 @@
 
     <!-- bugbug:  UserControl.Background doesn't work -->
 
-    <ScrollViewer Padding="15"   Background="#f0f0f0">
+    <ScrollViewer Padding="15"   >
         <StackPanel >
 
             <TextBlock Visibility="{x:Bind TypeVM.IsExperimental, Mode=OneWay}"

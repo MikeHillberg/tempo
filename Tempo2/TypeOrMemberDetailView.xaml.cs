@@ -56,47 +56,11 @@ namespace Tempo
             {
                 _typeDetail.DoActivate(item as TypeViewModel);
                 _typeDetail.Visibility = Visibility.Visible;
-                //_detailsGrid.Children.Remove(_typeDetail);
-                //_detailsGrid.Children.Add(_typeDetail);
-            }
-            else if (item is PropertyViewModel)
-            {
-                //_detailsGrid.Children.Remove(_propertyDetail);
-                //_detailsGrid.Children.Add(_propertyDetail);
-                _propertyDetail.Visibility = Visibility.Visible;
-                _propertyDetail.DoActivate(item as PropertyViewModel);
-            }
-            else if (item is MethodViewModel)
-            {
-                _methodDetail.DoActivate(item as MethodViewModel);
-                _methodDetail.Visibility = Visibility.Visible;
-                //_detailsGrid.Children.Remove(_methodDetail);
-                //_detailsGrid.Children.Add(_methodDetail);
-            }
-            else if (item is EventViewModel)
-            {
-                _eventDetail.DoActivate(item as EventViewModel);
-                _eventDetail.Visibility = Visibility.Visible;
-                //_detailsGrid.Children.Remove(_eventDetail);
-                //_detailsGrid.Children.Add(_eventDetail);
-            }
-            else if (item is ConstructorViewModel)
-            {
-                _constructorDetail.DoActivate(item as ConstructorViewModel);
-                _constructorDetail.Visibility = Visibility.Visible;
-                //_detailsGrid.Children.Remove(_constructorDetail);
-                //_detailsGrid.Children.Add(_constructorDetail);
-            }
-            else if (item is FieldViewModel)
-            {
-                _fieldDetail.DoActivate(item as FieldViewModel);
-                _fieldDetail.Visibility = Visibility.Visible;
-                //_detailsGrid.Children.Remove(_fieldDetail);
-                //_detailsGrid.Children.Add(_fieldDetail);
             }
             else
             {
-                Debug.Assert(false);
+                _memberDetail.DoActivate(item as MemberViewModelBase);
+                _memberDetail.Visibility = Visibility.Visible;
             }
 
         }

@@ -401,11 +401,12 @@ namespace Tempo
                         if (actualValue != null)
                         {
                             var match = operand1.Rhs.Match(actualValue);
-                            calculation.Push(new AqsToken(match != Match.Empty));
+                            var isMatch = match != Match.Empty;
+                            calculation.Push(new AqsToken(isMatch));
                         }
                         else
                         {
-                            // Unrecognized key. Assume that whatever it's matching against, the answer is false
+                            // Unrecognized key. That gets represented as null
                             calculation.Push(new AqsToken((bool?)null));
                         }
                     }

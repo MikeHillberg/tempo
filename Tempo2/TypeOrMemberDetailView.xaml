@@ -7,14 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="White"  x:Name="_detailsGrid"
+    <Grid x:Name="_detailsGrid"
           CornerRadius="5,0,0,0"
+          Background="White"
+          Padding="10"
           >
-        <local:TypeDetailView  Background="White" x:Name="_typeDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
-        <local:MethodDetailView Background="White" x:Name="_methodDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
-        <local:EventDetailView Background="White" x:Name="_eventDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
-        <local:ConstructorDetailView Background="White" x:Name="_constructorDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
-        <local:FieldDetailView Background="White" x:Name="_fieldDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}"/>
-        <local:PropertyDetailView Background="White" x:Name="_propertyDetail" IsTopLevel="{x:Bind IsTopLevel, Mode=OneWay}" />
+        <local:TypeDetailView  x:Name="_typeDetail" IsFullSearchContent="True" />
+        <local:MemberDetailView x:Name="_memberDetail" IsFullSearchContent="True"/>
     </Grid>
 </Page>

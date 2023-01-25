@@ -20,7 +20,7 @@
                 x:Name="_listView"
                 IsItemClickEnabled="True"
                 SelectionMode="None"
-                Margin="-12,0,0,0"
+                Margin="0"
                 ItemContainerStyle="{StaticResource MouseListViewItemStyle}"
                   >
 

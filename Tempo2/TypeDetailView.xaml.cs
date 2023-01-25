@@ -67,7 +67,7 @@ namespace Tempo
                 if (_selectedMember != null)
                 {
                     var view = App.GetViewFor(_selectedMember);
-                    view.IsNested = true;
+                    view.IsSecondSearchPane = true;
                     view.DoActivate(_selectedMember);
 
                     _wideModeCol1.Child = view;
@@ -164,8 +164,6 @@ namespace Tempo
         {
             TypeVM = parameter as TypeViewModel;
         }
-
-
 
         public Orientation HeadingOrientation
         {

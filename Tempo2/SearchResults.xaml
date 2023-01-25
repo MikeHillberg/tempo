@@ -23,6 +23,7 @@
         </Grid.RowDefinitions>
 
         <local:CommonCommandBar 
+                    Visibility="{x:Bind IsRoot, Mode=OneWay}"
                     Grid.ColumnSpan="2" HorizontalAlignment="Left"
                     FilterVisibility="Visible"
                     MsdnVisibility="Visible"
@@ -105,9 +106,10 @@
                  "The name 'obj' does not exist in the current context"
                  Visibility="{x:Bind local:Utils.Not(NothingFound), Mode=OneWay}"  -->
 
+                <!-- Note that there's no background on this grid, so the Padding is just for spacing -->
                 <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}"
-                      Padding="15">
-                        <local:TypeOrMemberDetailView  x:Name="_detailsView" />
+                      Padding="0,16,0,0">
+                        <local:TypeOrMemberDetailView  x:Name="_detailsView" IsTopLevel="{x:Bind IsWide, Mode=OneWay}" />
                 </Grid>
 
                 <local:SmokeLayer Grid.Row="2" 

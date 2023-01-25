@@ -38,17 +38,16 @@
             <AppBarButton Visibility="{x:Bind FilterVisibility, Mode=Oneway}" 
                     x:Name="_filterButton"
                     ToolTipService.ToolTip="Filter results"
-                    Label="Filter"
-                    Background="{x:Bind local:HomePage.AdaptiveSettings.FilterBackground, Mode=OneWay}"
-                    >
-                <SymbolIcon Symbol="Filter" />
+                    Background="{x:Bind local:HomePage.AdaptiveSettings.FilterBackground, Mode=OneWay}" >
+                <local:DropDownAppBarButtonContent Symbol="Filter" Label="Filter"/>
+                
                 <Button.Flyout>
                     <local:FilterAppBarButtonMenu/>
                 </Button.Flyout>
             </AppBarButton>
 
-            <AppBarButton Label="Docs" Visibility="{x:Bind MsdnVisibility, Mode=OneWay}">
-                <SymbolIcon Symbol="Document" />
+            <AppBarButton Visibility="{x:Bind MsdnVisibility, Mode=OneWay}">
+                <local:DropDownAppBarButtonContent Symbol="Document" Label="Docs"/>
 
                 <AppBarButton.Flyout>
                     <MenuFlyout>
@@ -77,9 +76,8 @@
             </AppBarButton>
 
             <!-- Export options (clipboard, Excel) -->
-            <AppBarButton Label="Copy"
-                          Visibility="{x:Bind IsExportVisible, Mode=OneWay}">
-                <SymbolIcon Symbol="Copy"/>
+            <AppBarButton Visibility="{x:Bind IsExportVisible, Mode=OneWay}">
+                <local:DropDownAppBarButtonContent Symbol="Copy" Label="Copy" />
                 <AppBarButton.Flyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Copy results to clipboard" Click="CopyToClipboardAsNameNamespace"/>
@@ -99,19 +97,8 @@
             <AppBarButton x:Name="_apiScopeButton"
                           Visibility="{x:Bind IsScopeVisible, Mode=OneWay}"
                           ToolTipService.ToolTip="Choose an API scope">
-                <StackPanel Orientation="Horizontal">
-                    <SymbolIcon Symbol="Library"/>
-
-                    <TextBlock Text="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"
-                               Margin="10,0,0,0"/>
-
-                    <!-- There's no app bar drop down button, so pretend by adding a chevron -->
-                    <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                              FontSize="12"
-                              Glyph="&#xE96E;"
-                              Margin="10,0,0,0"
-                              IsTextScaleFactorEnabled="False"/>
-                </StackPanel>
+                <local:DropDownAppBarButtonContent Symbol="Library" 
+                                                   Label="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"/>
 
                 <AppBarButton.Flyout>
                     <MenuFlyout>

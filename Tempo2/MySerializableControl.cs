@@ -45,7 +45,6 @@ namespace Tempo
         {
             _activated = true;
 
-            IsRoot = Frame != null;
 
             OnActivated(parameter);
         }
@@ -58,7 +57,7 @@ namespace Tempo
 
         public void DoResume(object parameter)
         {
-            IsRoot = Frame != null;
+            IsRoot = true;
             _activated = true;
             OnReactivated(parameter, App.NavigationStateStack.Pop());
         }
@@ -69,7 +68,10 @@ namespace Tempo
             base.OnNavigatedTo(e);
 
             if (e.NavigationMode == NavigationMode.New)
+            {
                 DoActivate(e.Parameter);
+                IsRoot = true;
+            }
             else
             {
                 Debug.Assert(e.NavigationMode == NavigationMode.Back);
@@ -95,33 +97,41 @@ namespace Tempo
 
 
         /// <summary>
-        /// Indicates that this control is the content of the root Frame
+        /// Indicates that this is at the root of the content
         /// </summary>
+        /// (Is this a dupe of this.Frame != null?)
         public bool IsRoot
         {
             get { return (bool)GetValue(IsRootProperty); }
             set { SetValue(IsRootProperty, value); }
         }
         public static readonly DependencyProperty IsRootProperty =
-            DependencyProperty.Register("IsRoot", 
-                typeof(bool), typeof(MySerializableControl), 
-                new PropertyMetadata(false));
-
-
-
-        public bool IsTopLevel
-        {
-            get { return (bool)GetValue(IsTopLevelProperty); }
-            set { SetValue(IsTopLevelProperty, value); }
-        }
-        public static readonly DependencyProperty IsTopLevelProperty =
-            DependencyProperty.Register("IsTopLevel", typeof(bool), typeof(MySerializableControl), 
-                new PropertyMetadata(false));
+            DependencyProperty.Register("IsRoot", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(false));
 
         /// <summary>
-        /// Indicates a sub-level (a sub-heading)
+        /// Indicates that this is the full content area (both panes) of SearchResults
         /// </summary>
-        public bool IsNested { get; internal set; } = false;
+        public bool IsFullSearchContent
+        {
+            get { return (bool)GetValue(IsFullSearchContentProperty); }
+            set { SetValue(IsFullSearchContentProperty, value); }
+        }
+        public static readonly DependencyProperty IsFullSearchContentProperty =
+            DependencyProperty.Register("IsFullSearchContent", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(false));
+
+
+        /// <summary>
+        /// Indicates that this is the second pane of the SearchResults content area
+        /// </summary>
+        public bool IsSecondSearchPane
+        {
+            get { return (bool)GetValue(IsSecondSearchPaneProperty); }
+            set { SetValue(IsSecondSearchPaneProperty, value); }
+        }
+        public static readonly DependencyProperty IsSecondSearchPaneProperty =
+            DependencyProperty.Register("IsSecondSearchPane", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(false));
+
+
 
     }
 
