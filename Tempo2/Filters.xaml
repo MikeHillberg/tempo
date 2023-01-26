@@ -13,18 +13,6 @@
         <StackPanel.Resources>
             <Thickness x:Key="GapMargin">0,15,0,0</Thickness>
 
-            <!--<local:List x:Name="listT">
-                <local:GroupT League="American">
-                    <local:Team Name="Detroit"/>
-                    <local:Team Name="Seattle"/>
-                </local:GroupT>
-
-                <local:GroupT League="National">
-                    <local:Team Name="New York"/>
-                    <local:Team Name="Chicago"/>
-                </local:GroupT>
-            </local:List>-->
-
             <local:List x:Name="optionsList">
                 <local:MyRibbonGroup Section="Common">
                     <CheckBox IsChecked="{x:Bind Settings.CaseSensitive, Mode=TwoWay}">

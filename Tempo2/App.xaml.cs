@@ -1496,6 +1496,11 @@ namespace Tempo
             Manager.Settings.CaseSensitive = !Manager.Settings.CaseSensitive;
         }
 
+        public static void ToggleInternals()
+        {
+            Manager.Settings.InternalInterfaces = !Manager.Settings.InternalInterfaces;
+        }
+
         /// <summary>
         /// True if we're in the process of navigating to Home
         /// </summary>

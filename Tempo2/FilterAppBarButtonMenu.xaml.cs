@@ -70,5 +70,10 @@ namespace Tempo
         {
             App.ToggleCaseSensitive();
         }
+
+        private void _internals_Click(object sender, RoutedEventArgs e)
+        {
+            App.ToggleInternals();
+        }
     }
 }

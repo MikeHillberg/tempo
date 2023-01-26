@@ -29,6 +29,12 @@
                                     Label="Case sensitive"  
                                     Description="Match string case"/>
                         <local:BooleanSettingView 
+                                    Setting="{x:Bind Settings.InternalInterfaces, Mode=TwoWay}" 
+                                    IsThreeState="False"
+                                    GroupName="Common"
+                                    Label="Internal APIs"  
+                                    Description="Search internal APIs too"/>
+                        <local:BooleanSettingView 
                                     Setting="{x:Bind Settings.OnlyShowTypes, Mode=OneWay}" 
                                     IsThreeState="False"
                                     GroupName="Common"

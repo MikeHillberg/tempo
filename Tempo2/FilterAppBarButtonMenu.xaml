@@ -45,6 +45,14 @@
         </ToggleMenuFlyoutItem.KeyboardAccelerators>
     </ToggleMenuFlyoutItem>
 
+    <!-- Toggle on/off looking at internals -->
+    <ToggleMenuFlyoutItem x:Name="_internals" Text="Internal APIs"
+                          Click="_internals_Click">
+        <ToggleMenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Key="I" Modifiers="Control"/>
+        </ToggleMenuFlyoutItem.KeyboardAccelerators>
+    </ToggleMenuFlyoutItem>
+
     <MenuFlyoutSeparator/>
 
     <!-- Open the dialog with all search filters -->
