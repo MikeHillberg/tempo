@@ -13,7 +13,7 @@
         <!-- NameValuePanel will set the Grid Column, Row, and ColumnDefinitions -->
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-                <local:NameValuePanel ColumnSpacing="20" >
+                <local:NameValuePanel  VerticalAlignment="Top">
                     
                     <!-- For the first column, make bold and set a margin -->
                     <local:NameValuePanel.FirstStyle>
@@ -31,7 +31,9 @@
             <DataTemplate x:DataType="x:String">
                 <TextBlock IsTextSelectionEnabled="True" 
                            TextWrapping="Wrap"
-                           Text="{x:Bind}" />
+                           Text="{x:Bind}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,30,0"/>
             </DataTemplate>
         </ItemsControl.ItemTemplate>
 

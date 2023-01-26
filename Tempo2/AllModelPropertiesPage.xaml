@@ -1,4 +1,3 @@
-
 <UserControl
     x:Class="Tempo.AllModelPropertiesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid RowDefinitions="Auto,Auto,*"  Padding="30" HorizontalAlignment="Center">
+    <Grid RowDefinitions="Auto,Auto,Auto,*"  Padding="30" HorizontalAlignment="Stretch" MaxWidth="800">
 
         <TextBlock TextWrapping="Wrap">Below are all model properties for <Run FontWeight="Bold" Text="{x:Bind VM.MemberPrettyName, Mode=OneWay}"/></TextBlock>
 
@@ -16,8 +15,14 @@
             For example, you can search for "button Namespace:Controls"
         </TextBlock>
 
-        <ScrollViewer Grid.Row="2" Margin="0,20,0,0" >
-            <local:AllModelProperties VM="{x:Bind VM, Mode=OneWay}"/>
+        <TextBox x:Name="_filter" Grid.Row="2" 
+                 HorizontalAlignment="Stretch"
+                 PlaceholderText="Filter"
+                 Margin="0,15,0,0"  />
+
+        <ScrollViewer Grid.Row="3" Margin="0,20,0,0" >
+            <local:AllModelProperties VM="{x:Bind VM, Mode=OneWay}"
+                                      Filter="{x:Bind _filter.Text, Mode=OneWay}"/>
         </ScrollViewer>
 
     </Grid>

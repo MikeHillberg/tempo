@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,11 +59,12 @@ namespace Tempo
                 }
 
                 // Get all the properties and values, as strings, and put into a flat list
-                var strings = new List<string>();
                 var properties = _vm.GetType().GetProperties().OrderBy(p => p.Name);
+                _propertyValues = new List<string>();
+                _propertyNames = new List<string>();
                 foreach (var property in properties)
                 {
-                    strings.Add(property.Name);
+                    _propertyNames.Add(property.Name);
                     var val = property.GetValue(_vm);
                     if (val == null)
                     {
@@ -70,11 +72,53 @@ namespace Tempo
                     }
 
                     // Convert the value into a presentable string (better than what ToString provides)
-                    strings.Add(WhereCondition.ToWhereString(val));
+                    _propertyValues.Add(WhereCondition.ToWhereString(val));
                 }
 
-                Strings = strings;
+                // Set the Strings property
+                UpdateStrings();
+
             }
         }
+
+        IList<string> _propertyValues;
+        IList<string> _propertyNames;
+
+        /// <summary>
+        /// Calculate the Strings property, taking Filters into account
+        /// </summary>
+        void UpdateStrings()
+        {
+            var filter = Filter;
+            var strings = new List<string>();
+            for(int i = 0; i < _propertyNames.Count; i++)
+            {
+                var name = _propertyNames[i];
+                var val = _propertyValues[i];
+
+                if(string.IsNullOrEmpty(filter) 
+                    || name.Contains(filter, StringComparison.OrdinalIgnoreCase) 
+                    || val.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                {
+                    strings.Add(_propertyNames[i]);
+                    strings.Add(_propertyValues[i]);
+                }
+            }
+
+            Strings = strings;
+        }
+
+
+        /// <summary>
+        /// Filter to be applied to Strings (to search the list)
+        /// </summary>
+        public string Filter
+        {
+            get { return (string)GetValue(FilterProperty); }
+            set { SetValue(FilterProperty, value); }
+        }
+        public static readonly DependencyProperty FilterProperty =
+            DependencyProperty.Register("Filter", typeof(string), typeof(AllModelProperties), 
+                new PropertyMetadata(null, (d,_) => (d as AllModelProperties).UpdateStrings()));
     }
 }
