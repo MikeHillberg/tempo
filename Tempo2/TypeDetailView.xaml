@@ -52,7 +52,7 @@
             </controls:LayoutTransformControl.Transform>
 
             <Grid Grid.Row="1" x:Name="_wideMode" 
-              Visibility="Collapsed">
+                  Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"   />
                     <ColumnDefinition Width="*" />
@@ -61,10 +61,10 @@
                 <Border x:Name="_wideModeCol0" Padding="0">
                     <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol0 -->
                     <local:TypeDetailViewMembersList 
-                    Navigated="_membersList_Navigated"
-                    x:Name="_membersList" 
-                    TypeVM="{x:Bind TypeVM, Mode=OneWay}" 
-                    IsSummaryDisabled="{x:Bind IsWide, Mode=OneWay}" />
+                        Navigated="_membersList_Navigated"
+                        x:Name="_membersList" 
+                        TypeVM="{x:Bind TypeVM, Mode=OneWay}" 
+                        IsSummaryDisabled="{x:Bind IsWide, Mode=OneWay}" />
                 </Border>
 
                 <Border x:Name="_wideModeCol1" Grid.Column="1" 

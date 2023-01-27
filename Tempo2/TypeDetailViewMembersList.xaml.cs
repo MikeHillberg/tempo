@@ -113,6 +113,14 @@ namespace Tempo
         }
 
 
+        /// <summary>
+        /// Invert a scale, e.g. convert 2.0 to 0.5
+        /// </summary>
+        double Descale(double d)
+        {
+            return 1 / d;
+        }
+
 
         protected override object OnSuspending()
         {
