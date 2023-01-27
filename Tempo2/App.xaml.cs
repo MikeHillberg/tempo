@@ -294,10 +294,7 @@ namespace Tempo
                         MoveToMainAndFocusToSearch();
                     }
                 }
-                else if (e2.Key == VirtualKey.F3 && _keyModifiers == KeyModifiers.None)
-                {
-                    ResetAndGoHome();
-                }
+
                 else if (e2.Key == VirtualKey.Back
                             && _keyModifiers == KeyModifiers.None
                             && !(e2.OriginalSource is TextBox)) // bugbug!
@@ -379,6 +376,17 @@ namespace Tempo
                 (VirtualKey)189,
                 VirtualKeyModifiers.Control,
                 () => ContentScalingPercent = Math.Max(ContentScalingPercent - 10, 100));
+
+            // Reset is Alt+Home to match Edge, or F3 to match something else that I don't remember what
+            SetupAccelerator(
+                VirtualKey.Home,
+                VirtualKeyModifiers.Menu,
+                () => App.ResetAndGoHome());
+            SetupAccelerator(
+                VirtualKey.F3,
+                VirtualKeyModifiers.None,
+                () => App.ResetAndGoHome());
+
         }
 
         /// <summary>

@@ -187,7 +187,7 @@ namespace Tempo
                 () => new TeachingTip()
                 {
                     Title = "Filter your search",
-                    Subtitle = "Reduce results by filtering what you search. For example only search properties, or ignore base types. The Home button (F3) resets everything.",
+                    Subtitle = "Reduce results by filtering what you search. For example only search properties, or ignore base types. The Home button (Alt+Home) resets everything.",
                 });
             if (!shouldContinue)
                 return;

@@ -23,7 +23,7 @@
 
             <AppBarButton Click="AppBarButton_Home" Label="Home"  
                           Visibility="{x:Bind ShowHome, Mode=OneWay}"
-                          ToolTipService.ToolTip="Reset filters and go back to Home page (F3)">
+                          ToolTipService.ToolTip="Reset filters and go back to Home page (Alt+Home)">
                 <SymbolIcon Symbol="Home" />
             </AppBarButton>
 
