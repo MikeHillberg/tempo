@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <Grid Background="White" PointerPressed="Grid_PointerPressed" >
@@ -12,7 +13,7 @@
         <Grid.RowDefinitions>
             <!-- Command bar and heading -->
             <RowDefinition Height="Auto" />
-            
+
             <!-- Content -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -20,7 +21,7 @@
         <!-- Command bar and heading -->
         <Border BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="0" >
             <StackPanel>
-                
+
                 <!-- Show the command bar if we're the content of the Frame, or if "top level" meaning the primary content -->
                 <local:CommonCommandBar 
                         IsBackEnabled="{x:Bind IsRoot, Mode=OneWay}"
@@ -40,40 +41,48 @@
                 </Border>
             </StackPanel>
         </Border>
-        
+
         <!-- Either wide or skinny mode displays at a time -->
         <!-- Wide mode shows two panes -->
-        <Grid Grid.Row="1" x:Name="_wideMode" 
-              Visibility="Collapsed">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"   />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
 
-            <Border x:Name="_wideModeCol0" Padding="0">
-                <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol0 -->
-                <local:TypeDetailViewMembersList 
+        <controls:LayoutTransformControl Grid.Row="1">
+            <controls:LayoutTransformControl.Transform>
+                <ScaleTransform ScaleX="{x:Bind local:App.Instance.ContentScaling, Mode=OneWay}"
+                                ScaleY="{x:Bind local:App.Instance.ContentScaling, Mode=OneWay}"/>
+            </controls:LayoutTransformControl.Transform>
+
+            <Grid Grid.Row="1" x:Name="_wideMode" 
+              Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"   />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border x:Name="_wideModeCol0" Padding="0">
+                    <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol0 -->
+                    <local:TypeDetailViewMembersList 
                     Navigated="_membersList_Navigated"
                     x:Name="_membersList" 
                     TypeVM="{x:Bind TypeVM, Mode=OneWay}" 
                     IsSummaryDisabled="{x:Bind IsWide, Mode=OneWay}" />
-            </Border>
+                </Border>
 
-            <Border x:Name="_wideModeCol1" Grid.Column="1" 
+                <Border x:Name="_wideModeCol1" Grid.Column="1" 
                     CornerRadius="0,5,5,0"
                     Padding="10"
                     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-                <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
-                <local:TypeDetailViewTypeInfo x:Name="_typeInfo"  TypeVM="{x:Bind TypeVM, Mode=OneWay}"  />
-            </Border>
-        </Grid>
+                    <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
+                    <local:TypeDetailViewTypeInfo x:Name="_typeInfo"  TypeVM="{x:Bind TypeVM, Mode=OneWay}"  />
+                </Border>
+            </Grid>
+        </controls:LayoutTransformControl>
 
         <!-- Either wide or skinny mode displays at a time -->
         <!-- Skinny mode shows two tabs in a pivot -->
         <Pivot Grid.Row="1" x:Name="_skinnyMode" 
                SelectedIndex="{x:Bind SelectedPivot, Mode=TwoWay}"  >
             <PivotItem x:Name="_skinnyModeCol0"  Header="Members" >
-                
+
             </PivotItem>
 
             <PivotItem x:Name="_skinnyModeCol1" Header="Info" >

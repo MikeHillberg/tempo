@@ -315,31 +315,7 @@ namespace Tempo
             RootFrame.AddHandler(Frame.KeyDownEvent, new KeyEventHandler(RootFrame_KeyDown), true);
             RootFrame.AddHandler(Frame.KeyUpEvent, new KeyEventHandler(RootFrame_KeyUp), true);
 
-            // bugbug: the handler always gets called twice (not very useful for a toggle accelerator)
-            //AddAccelerator(VirtualKey.S, VirtualKeyModifiers.Control, () =>
-            //{
-            //    Manager.Settings.CaseSensitive = !Manager.Settings.CaseSensitive;
-            //});
-
-            // Set up accelerator for opening the debug log
-            // Hook this to the root to ensure that it always works, no matter what page we're on
-            var accel = new KeyboardAccelerator()
-            { 
-                Key = VirtualKey.G, 
-                Modifiers = (VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control)
-            };
-            accel.Invoked += (_, e) =>
-            {
-                e.Handled = true;
-                DebugLogViewer.Show();
-            };
-            RootFrame.KeyboardAccelerators.Add(accel);
-
-            // With the keyboard accelerator on the root, the tool tip for it will
-            // always appear on every pixel of every page. So shut it off.
-            // The normal affordance for it is a hyperlink on the search results page,
-            // so it's not a secret. I just can't think of a good place to put it on the home page.
-            RootFrame.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
+            SetupGlobalAccelerators();
 
             RootFrame.NavigationFailed += OnNavigationFailed;
 
@@ -370,6 +346,59 @@ namespace Tempo
             //{
             //    Thread.Sleep(TimeSpan.FromSeconds(1));
             //}
+        }
+
+        /// <summary>
+        /// Hook up some accelerators to the root to ensure that it always works, no matter what page we're on
+        /// </summary>
+        void SetupGlobalAccelerators()
+        {
+            // With the keyboard accelerator on the root, the tool tip for it will
+            // always appear on every pixel of every page. So shut it off.
+            // The normal affordance for it is a hyperlink on the search results page,
+            // so it's not a secret. I just can't think of a good place to put it on the home page.
+            RootFrame.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
+
+
+            // Set up accelerator for opening the debug log
+            SetupAccelerator(
+                VirtualKey.G, 
+                VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control,
+                () => DebugLogViewer.Show());
+
+            // Accelerators for scaling content up and down
+            SetupAccelerator(
+                VirtualKey.Number0,
+                VirtualKeyModifiers.Control,
+                () => ContentScalingPercent = 100);
+            SetupAccelerator(
+                (VirtualKey)187,
+                VirtualKeyModifiers.Control,
+                () => ContentScalingPercent = Math.Min(ContentScalingPercent + 10, 200));
+            SetupAccelerator(
+                (VirtualKey)189,
+                VirtualKeyModifiers.Control,
+                () => ContentScalingPercent = Math.Max(ContentScalingPercent - 10, 100));
+        }
+
+        /// <summary>
+        /// Set up a single root accelerators
+        /// </summary>
+        void SetupAccelerator(VirtualKey key, VirtualKeyModifiers modifiers, Action action)
+        {
+            var accel = new KeyboardAccelerator()
+            {
+                Key = key,
+                Modifiers = modifiers
+            };
+            accel.Invoked += (_, e) =>
+            {
+                // Mark handled or the invoke will raise twice
+                e.Handled = true;
+
+                action();
+            };
+            RootFrame.KeyboardAccelerators.Add(accel);
         }
 
         /// <summary>
@@ -1260,6 +1289,23 @@ namespace Tempo
             }
 
             InternalNavigate(typeof(SearchResults), text);
+        }
+
+        double _contentScaling = 1.0;
+        public int ContentScalingPercent
+        {
+            get {  return (int)(_contentScaling * 100); }
+            set
+            {
+                _contentScaling = (float)value / 100.0;
+                RaisePropertyChange();
+                RaisePropertyChange(nameof(ContentScaling));
+            }
+        }
+
+        public double ContentScaling
+        {
+            get { return _contentScaling; }
         }
 
         /// <summary>

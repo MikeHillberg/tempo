@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
 
@@ -51,40 +52,50 @@
                     <!-- Horizontal line -->
                     <local:StackListHeaderItem/>
 
-                    <!-- Bugbug: had to put it all in code -->
-                    <RichTextBlock  
-                        Style="{StaticResource SampleCodeStyleRTB}"
-                        local:CsSyntaxGenerator.Member="{x:Bind MemberVM, Mode=OneWay}"
-                        TextWrapping="Wrap"/>
+                    <controls:LayoutTransformControl Grid.Row="1">
+                        <controls:LayoutTransformControl.Transform>
+                            <ScaleTransform ScaleX="{x:Bind local:App.Instance.ContentScaling, Mode=OneWay}"
+                            ScaleY="{x:Bind local:App.Instance.ContentScaling, Mode=OneWay}"/>
+                        </controls:LayoutTransformControl.Transform>
+                        
+                        <StackPanel>
+                            <!-- Bugbug: had to put it all in code -->
+                            <RichTextBlock  
+                                Style="{StaticResource SampleCodeStyleRTB}"
+                                local:CsSyntaxGenerator.Member="{x:Bind MemberVM, Mode=OneWay}"
+                                TextWrapping="Wrap"/>
 
-                    <StackPanel Margin="{StaticResource VerticalMargin}"          
+                            <StackPanel Margin="{StaticResource VerticalMargin}"          
                                 local:CollapseIfEmpty.IsEnabledFor="{x:Bind EventVM, Mode=OneWay}">
-                        <local:StackListHeaderItem>Sender</local:StackListHeaderItem>
-                        <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.SenderType, Mode=OneWay}" />
+                                <local:StackListHeaderItem>Sender</local:StackListHeaderItem>
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.SenderType, Mode=OneWay}" />
 
-                        <local:StackListHeaderItem>Args</local:StackListHeaderItem>
-                        <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.ArgsType, Mode=OneWay}" />
-                    </StackPanel>
+                                <local:StackListHeaderItem>Args</local:StackListHeaderItem>
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.ArgsType, Mode=OneWay}" />
+                            </StackPanel>
 
-                    <!-- Version -->
-                    <StackPanel Margin="{StaticResource VerticalMargin}">
-                        <local:StackListHeaderItem>Version</local:StackListHeaderItem>
-                        <local:BuildNumberText MemberVM="{x:Bind MemberVM, Mode=OneWay }" />
-                        <TextBlock Text="{x:Bind MemberVM.Contract, Mode=OneWay}" />
-                    </StackPanel>
+                            <!-- Version -->
+                            <StackPanel Margin="{StaticResource VerticalMargin}">
+                                <local:StackListHeaderItem>Version</local:StackListHeaderItem>
+                                <local:BuildNumberText MemberVM="{x:Bind MemberVM, Mode=OneWay }" />
+                                <TextBlock Text="{x:Bind MemberVM.Contract, Mode=OneWay}" />
+                            </StackPanel>
 
-                    <!-- Custom atributes -->
-                    <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}" x:Name="_testSP2">
-                        <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
-                        <local:AttributesView2 
-                        x:Name="_attributesView"
-                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(MemberVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
-                    </StackPanel>
+                            <!-- Custom atributes -->
+                            <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView}" x:Name="_testSP2">
+                                <local:StackListHeaderItem >Attributes</local:StackListHeaderItem>
+                                <local:AttributesView2 
+                                        x:Name="_attributesView"
+                                        AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(MemberVM.NonWinmdCustomAttributes), Mode=OneWay}"/>
+                            </StackPanel>
 
-                    <StackPanel Margin="{StaticResource VerticalMargin}">
-                        <local:StackListHeaderItem >More</local:StackListHeaderItem>
-                        <local:MemberMore MemberVM="{x:Bind MemberVM, Mode=Oneway}"/>
-                    </StackPanel>
+                            <StackPanel Margin="{StaticResource VerticalMargin}">
+                                <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                                <local:MemberMore MemberVM="{x:Bind MemberVM, Mode=Oneway}"/>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </controls:LayoutTransformControl>
 
                 </StackPanel>
             </StackPanel>

@@ -155,7 +155,7 @@
         <!-- Status bar -->
         <StackPanel Background="{StaticResource ApplicationPageBackgroundThemeBrush}" Grid.Row="2">
             <Rectangle Height="1" Fill="DarkGray" />
-            <Grid >
+            <Grid ColumnDefinitions="*,Auto">
                 
                 <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
                      in the content. -->
@@ -177,8 +177,17 @@
                        />ms, <Hyperlink Click="ShowDebugLog_Click" ToolTipService.ToolTip="Show debug log (Ctrl+Shift+G)"
                        >debug log</Hyperlink></TextBlock>
 
+                <!-- Slider to scale up/down content -->
+                <Slider Grid.Column="2"
+                        Margin="0,0,12,0"
+                        Minimum="100" Maximum="200" Width="100" 
+                        Value="{x:Bind local:App.Instance.ContentScalingPercent, Mode=TwoWay}"
+                        ToolTipService.ToolTip="Scale (Control+Plus, Control+Minus, Control+0)"
+                        />
+
+
                 <!-- Blur out the status bar while a search is in progress -->
-                <local:SmokeLayer 
+                <local:SmokeLayer Grid.ColumnSpan="2"
                       Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
             </Grid>
         </StackPanel>
