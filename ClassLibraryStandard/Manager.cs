@@ -402,11 +402,8 @@ namespace Tempo
         // System32 metadata using .Net reflection
         static public TypeSet WinmdTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
 
-        // System32 metadata using MR, C++ mode
-        static public TypeSet WindowsTypeSetCpp { get { return GetTypeSet(); } set { SetTypeSet(value); } }
-
-        // System32 metadata using MR, C# mode
-        static public TypeSet WindowsTypeSetCS { get { return GetTypeSet(); } set { SetTypeSet(value); } }
+        // System32 metadata
+        static public TypeSet WindowsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
 
         // Custom type set, using .Net reflection
         static public TypeSet CustomTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }

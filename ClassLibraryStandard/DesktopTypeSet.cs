@@ -16,7 +16,9 @@ namespace Tempo
 
     public class DesktopTypeSet : TypeSet
     {
-        public DesktopTypeSet(string name) : base(name)
+        public DesktopTypeSet(string name) : base(name, usesWinRTProjections: false)
+        { }
+        public DesktopTypeSet(string name, bool usesWinRTProjections) : base(name, usesWinRTProjections)
         { }
         protected virtual string GetXmlFileName(Assembly a)
         {
@@ -145,7 +147,7 @@ namespace Tempo
     public class WinUI2TypeSet : MRTypeSet
     {
         public static string StaticName = "WinUI2";
-        public WinUI2TypeSet() : base(StaticName) { }
+        public WinUI2TypeSet() : base(StaticName, true) { }
 
         protected override string GetXmlFileName(Assembly a)
         {
@@ -156,7 +158,7 @@ namespace Tempo
     public class WindowsAppTypeSet : MRTypeSet
     {
         public static string StaticName = "WindowsAppSDK";
-        public WindowsAppTypeSet() : base(StaticName) { }
+        public WindowsAppTypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
         protected override string GetXmlFileName(Assembly a)
         {

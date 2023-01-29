@@ -64,8 +64,7 @@ namespace Tempo
         async static public Task LoadWindowsTypesWithMRAsync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
         {
             // Early out if already loaded
-            if (Manager.WindowsTypeSetCpp?.Types != null && !useWinRTProjections
-                || Manager.WindowsTypeSetCS?.Types != null && useWinRTProjections)
+            if (Manager.WindowsTypeSet?.Types != null && useWinRTProjections)
             {
                 return;
             }
@@ -78,20 +77,11 @@ namespace Tempo
             loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
             TypeSet typeSet = null;
-            if (useWinRTProjections)
             {
-                typeSet = Manager.WindowsTypeSetCS;
+                typeSet = Manager.WindowsTypeSet;
                 if(typeSet == null)
                 {
-                    Manager.WindowsTypeSetCS = typeSet = new MRTypeSet(MRTypeSet.WindowsCSName);
-                }
-            }
-            else
-            {
-                typeSet = Manager.WindowsTypeSetCpp;
-                if (typeSet == null)
-                {
-                    Manager.WindowsTypeSetCpp = typeSet = new MRTypeSet(MRTypeSet.WindowsCppName);
+                    Manager.WindowsTypeSet = typeSet = new MRTypeSet(MRTypeSet.WindowsCSName, useWinRTProjections);
                 }
             }
 
@@ -262,9 +252,8 @@ namespace Tempo
         // Sync helper for the async version
         static public void LoadWindowsTypesWithMRSync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winuiWinMDFilename = null)
         {
-            if (Manager.WindowsTypeSetCpp?.Types != null && !useWinRTProjections
-                ||
-                Manager.WindowsTypeSetCS?.Types != null && useWinRTProjections)
+            if (Manager.WindowsTypeSet?.Types != null 
+                && Manager.WindowsTypeSet.UsesWinRTProjections == useWinRTProjections)
             {
                 return;
             }
@@ -774,7 +763,7 @@ namespace Tempo
             try
             {
                 // Load the winmd files
-                var typeSet = new WindowsAppTypeSet();
+                var typeSet = new WindowsAppTypeSet(useWinrtProjections);
                 DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename }, useWinrtProjections);
 
                 if (typeSet.Types != null)

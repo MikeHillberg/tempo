@@ -67,7 +67,10 @@ namespace Tempo
             dataPackage.SetText(text);
             Clipboard.SetContent(dataPackage);
         }
+
+        static public string IfThenElse(bool i, string t, string e)
+        {
+            return i ? t : e;
+        }
     }
-
-
 }

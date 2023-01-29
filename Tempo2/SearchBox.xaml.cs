@@ -120,8 +120,10 @@ namespace Tempo
 
         void ShowTeachingTips()
         {
-            var shouldContinue = ShowSearchSyntaxTip(force: false);
-            if (!shouldContinue)
+            if(!ShowSearchSyntaxTip(force: false))
+                return;
+
+            if (!ShowProjectionsTip(force: false))
                 return;
         }
 
@@ -133,6 +135,19 @@ namespace Tempo
                 {
                     Title = "Choose your search syntax",
                     Subtitle = "You can search for a simple string, but you can also use either Regex syntax or Wildcard syntax. See help (F1) for more information",
+                },
+                force);
+
+        }
+
+        bool ShowProjectionsTip(bool force)
+        {
+            return TeachingTips.TryShow(
+                TeachingTipIds.CppProjection, _root, _cppProjectionButton,
+                () => new TeachingTip()
+                {
+                    Title = "Use C# or C++ projections",
+                    Subtitle = "There are a few differences in the C# and C++ projections, for example IList<T> vs IVector<T>",
                 },
                 force);
 
@@ -151,6 +166,18 @@ namespace Tempo
         private void WildcardMenuItem_Click_1(object sender, RoutedEventArgs e)
         {
             Manager.Settings.IsWildcardSyntax = true;
+        }
+
+        private void CppProjections_Click(object sender, RoutedEventArgs e)
+        {
+            App.Instance.UsingCppProjections = true;
+            App.Instance.ReloadCurrentApiScope();
+        }
+
+        private void CsProjections_Click(object sender, RoutedEventArgs e)
+        {
+            App.Instance.UsingCppProjections = false;
+            App.Instance.ReloadCurrentApiScope();
         }
     }
 }

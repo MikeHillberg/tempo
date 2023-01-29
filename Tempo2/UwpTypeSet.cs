@@ -9,7 +9,7 @@ namespace Tempo
 {
     public class UwpTypeSet : TypeSet
     {
-        public UwpTypeSet() : base(StaticName) { }
+        public UwpTypeSet() : base(StaticName, false) { }
         public static string StaticName = "UWP";
         public override bool IsWinmd => true;
     }

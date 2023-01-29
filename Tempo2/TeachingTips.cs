@@ -174,5 +174,6 @@ namespace Tempo
         ApiScopeSwitcher = 4,
         CommandPrompt = 8,
         SearchSyntax = 16,
+        CppProjection = 32
     }
 }

@@ -1198,14 +1198,8 @@ namespace Tempo
                         _isWindows = true;
                     }
 
-                    // See if it's in the MR System32 type set (for C++)
-                    else if (Manager.WindowsTypeSetCpp != null && Manager.WindowsTypeSetCpp.Types != null && Manager.WindowsTypeSetCpp.Types.Contains(this))
-                    {
-                        _isWindows = true;
-                    }
-
-                    // See if it's in the MR System32 type set (for C#)
-                    else if (Manager.WindowsTypeSetCS != null && Manager.WindowsTypeSetCS.Types != null && Manager.WindowsTypeSetCS.Types.Contains(this))
+                    // See if it's in the MR System32 type set
+                    else if (Manager.WindowsTypeSet != null && Manager.WindowsTypeSet.Types != null && Manager.WindowsTypeSet.Types.Contains(this))
                     {
                         _isWindows = true;
                     }
@@ -1271,35 +1265,8 @@ namespace Tempo
             }
         }
 
-        bool? _isMR = null;
-        public bool IsMR
-        {
-            get
-            {
-                if (_isMR == null)
-                {
-                    if (Manager.WindowsTypeSetCpp != null
-                        && Manager.WindowsTypeSetCpp.Types != null
-                        && Manager.WindowsTypeSetCpp.Types.Contains(this))
-                    {
-                        _isMR = true;
-                    }
-                    else if (Manager.WindowsTypeSetCS != null
-                        && Manager.WindowsTypeSetCS.Types != null
-                        && Manager.WindowsTypeSetCS.Types.Contains(this))
-                    {
-                        _isMR = true;
-                    }
-                    else
-                    {
-                        _isMR = false;
-                    }
-                }
 
-                return _isMR == true;
 
-            }
-        }
 
 
 

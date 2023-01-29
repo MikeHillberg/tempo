@@ -10,7 +10,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     >
 
@@ -35,7 +36,7 @@
         </Grid.RowDefinitions>
 
 
-        <!-- Row 0 --> 
+        <!-- Row 0 -->
         <TextBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
                  KeyDown="_searchBox_KeyDown"
                  VerticalAlignment="Top"
@@ -64,25 +65,27 @@
         <!-- Row 1 -->
         <!-- Use UniformGrid so that the buttons have the same width -->
         <controls:UniformGrid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
-                              Columns="2"
+                              Columns="3"
                               HorizontalAlignment="Left"
                               Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
 
+            <!-- Button to open the filters dialog -->
             <Button Content="Filters"
                     HorizontalAlignment="Stretch"
                     Click="ShowFilters" >
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="F"/>
-                    
+
                     <!--Keeping the old one around to see how it looks-->
                     <KeyboardAccelerator Modifiers="Control,Shift" Key="F" Invoked="ShowOldFilters" />
                 </Button.KeyboardAccelerators>
             </Button>
 
+            <!-- Button to pick between Regex and wildcard syntax -->
             <DropDownButton x:Name="_syntaxButton" Grid.Column="1"
                             Content="{x:Bind local:App.Instance.SearchSyntaxName, Mode=OneWay}"
                             HorizontalAlignment="Stretch" >
-                
+
                 <Button.Flyout>
                     <MenuFlyout>
                         <ToggleMenuFlyoutItem 
@@ -94,6 +97,31 @@
                     </MenuFlyout>
                 </Button.Flyout>
             </DropDownButton>
+
+            <!-- Button to pick between C++ and C# projections (e.g. IVector vs IList) -->
+            <DropDownButton 
+                x:Name="_cppProjectionButton" Grid.Column="2"
+                Content="{x:Bind local:Utils.IfThenElse(local:App.Instance.UsingCppProjections,'C++','C#'), Mode=OneWay}"
+                HorizontalAlignment="Stretch" >
+
+                <!--<DropDownButton.Content>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{x:Bind local:Utils.IfThenElse(local:App.Instance.UsingCppProjections,'C++','C#'), Mode=OneWay}" />
+                    </StackPanel>
+                </DropDownButton.Content>-->
+
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <ToggleMenuFlyoutItem 
+                            Text="C# projections" Click="CsProjections_Click" 
+                            IsChecked="{x:Bind local:Utils.Not(local:App.Instance.UsingCppProjections), Mode=OneWay}"/>
+                        <ToggleMenuFlyoutItem 
+                            Text="C++ projections" Click="CppProjections_Click" 
+                            IsChecked="{x:Bind local:App.Instance.UsingCppProjections, Mode=OneWay}"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </DropDownButton>
+
         </controls:UniformGrid>
 
         <!-- Row 2 -->

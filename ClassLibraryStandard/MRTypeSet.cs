@@ -18,7 +18,7 @@ namespace Tempo
 
         static public string CustomMRName = "Custom (MR)";
 
-        public MRTypeSet(string name) : base(name) { }
+        public MRTypeSet(string name, bool usesWinRTProjections) : base(name, usesWinRTProjections) { }
 
         protected override string GetXmlFileName(Assembly a)
         {

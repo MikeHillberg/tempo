@@ -11,9 +11,17 @@ namespace Tempo
 {
     public class TypeSet : INotifyPropertyChanged
     {
-        public TypeSet(string name)
+        public TypeSet(string name, bool usesWinRTProjections)
         {
             Name = name;
+            _usesWinRTProjections = usesWinRTProjections;
+        }
+
+        bool _usesWinRTProjections = false;
+        public bool UsesWinRTProjections
+        {
+            get { return _usesWinRTProjections; }
+            private set { _usesWinRTProjections = value; }
         }
 
         public string Version;
@@ -143,7 +151,7 @@ namespace Tempo
                 var namespaces = (from t in Types select t.Namespace).Distinct();
                 var namespaceList = new List<string>();
 
-                foreach(var ns in namespaces)
+                foreach (var ns in namespaces)
                 {
                     var ns2 = ns;
 
