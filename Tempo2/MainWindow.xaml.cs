@@ -2,6 +2,12 @@ using Microsoft.UI.Xaml;
 using WinRT;
 
 using System.Runtime.InteropServices; // For DllImport
+using Microsoft.UI;
+using WinRT.Interop;
+using Microsoft.UI.Windowing;
+using System.IO.Packaging;
+using System.IO;
+using System.Threading.Tasks;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -21,6 +27,7 @@ namespace Tempo
             Instance = this;
             this.InitializeComponent();
 
+            SetWindowIcon();
         }
 
         // Helpers for SetMicaBackrop
@@ -29,6 +36,25 @@ namespace Tempo
         Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration m_configurationSource;
 
         bool _isMicaSet = false;
+
+
+        /// <summary>
+        /// Set an ICO to the AppWindow
+        /// </summary>
+        async void SetWindowIcon()
+        {
+            // This call is really slow, so don't wait on it
+            var installedPath = await Task.Run<string>(() => Windows.ApplicationModel.Package.Current.InstalledLocation.Path);
+
+            // Get the AppWindow
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+
+            // Set the icon
+            // Used https://www.freeconvert.com/png-to-ico
+            appWindow.SetIcon(Path.Combine(installedPath, "Assets/Icon.ico"));
+        }
 
         /// <summary>
         /// Set Mica as the Window backdrop, if possible
