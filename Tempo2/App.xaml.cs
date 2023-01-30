@@ -54,6 +54,9 @@ namespace Tempo
             // Get the last picked dll/winmd/nupkg names
             LoadCustomFilenamesFromSettings();
 
+            // Read from saved settings which API scope to start with
+            LoadCurrentScope();
+
             UnhandledException += App_UnhandledException;
 
             Settings.Changed += (_, e) =>
@@ -523,7 +526,7 @@ namespace Tempo
                 }
                 catch (Exception)
                 {
-                    _ = MyMessageBox.Show(args[i], "Invalid path", isOKEnabled: true);
+                    _ = MyMessageBox.Show(args[i], "Invalid path", closeButtonText: "OK");
                     return;
                 }
 
@@ -567,6 +570,8 @@ namespace Tempo
             set
             {
                 _isWinPlatformScope = value;
+                SaveCurrentScope();
+
                 if (value)
                 {
                     EnsureWinPlatformScopeStarted();
@@ -574,6 +579,42 @@ namespace Tempo
 
                 RaisePropertyChange();
                 RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+
+
+        const string _currentScopeSettingName = "ApiScope";
+
+        /// <summary>
+        /// Persist the scope to settings
+        /// </summary>
+        /// <param name="scope"></param>
+        void SaveCurrentScope([CallerMemberName] string scope = null)
+        {
+            ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
+            settings.Values[_currentScopeSettingName] = scope;
+        }
+
+        /// <summary>
+        /// Update the current API scope from settings
+        /// </summary>
+        void LoadCurrentScope()
+        {
+            ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
+            if (settings.Values.TryGetValue(_currentScopeSettingName, out var scope))
+            {
+                // Windows platform is the default unless something else is set
+
+                switch (scope as string)
+                {
+                    case "IsWinAppScope":
+                        IsWinAppScope = true;
+                        break;
+
+                    case "IsCustomApiScope":
+                        IsCustomApiScope = true;
+                        break;
+                }
             }
         }
 
@@ -695,6 +736,8 @@ namespace Tempo
                 }
 
                 _isWinAppScope = value;
+                SaveCurrentScope();
+
                 if (value)
                 {
                     EnsureWinAppScopeStarted();
@@ -729,6 +772,8 @@ namespace Tempo
                 }
 
                 _isCustomApiScope = value;
+                SaveCurrentScope();
+
                 if (value)
                 {
                     _ = SelectAndStartLoadCustomApiScopeAsync();
@@ -904,6 +949,10 @@ namespace Tempo
                 {
                     _winAppScopeLoader = null;
 
+                    _ = MyMessageBox.Show(
+                            "Unable to load WinAppSDK package\n\nSwitching to Windows Platform APIs",
+                            "Load error");
+
                     // Go back to an API scope we know is there
                     IsWinPlatformScope = true;
                     App.GoHome();
@@ -921,7 +970,7 @@ namespace Tempo
                 return true;
             }
 
-            return await winAppScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest package ...");
+            return await winAppScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest WinAppSDK package ...");
         }
 
 
@@ -956,7 +1005,7 @@ namespace Tempo
         /// </summary>
         /// <param name="filenames"></param>
         public static void StartLoadCustomScope(
-            string[] filenames, 
+            string[] filenames,
             bool navigateToSearchResults,
             bool useWinRTProjections)
         {
@@ -987,7 +1036,7 @@ namespace Tempo
                         {
                             await (new ContentDialog()
                             {
-                                Content = "No APIs found",
+                                Content = "No APIs found, switching to Windows Platform APIs",
                                 XamlRoot = HomePage.XamlRoot,
                                 CloseButtonText = "OK"
                             }).ShowAsync();
@@ -1789,3 +1838,4 @@ namespace Tempo
         }
     }
 }
+

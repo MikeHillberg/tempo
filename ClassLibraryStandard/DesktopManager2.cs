@@ -574,6 +574,7 @@ namespace Tempo
             {
                 DebugLog.Append($"Couldn't download {packageName}");
                 DebugLog.Append(e);
+                throw;
             }
 
             return new PackageLocationAndVersion();

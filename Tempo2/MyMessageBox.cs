@@ -13,8 +13,9 @@ namespace Tempo
         internal static async Task<ContentDialogResult> Show(
             string message,
             string title = null,
-            bool isOKEnabled = false,
-            bool isCloseEnabled = false)
+            string closeButtonText = null)
+            //bool isOKEnabled = false,
+            //bool isCancelEnabled = false)
         {
             var contentDialog = new ContentDialog()
             {
@@ -29,17 +30,24 @@ namespace Tempo
                 Title = title
             };
 
-            if(isOKEnabled)
-            {
-                contentDialog.PrimaryButtonText = "OK";
-            }
+            //if(isOKEnabled)
+            //{
+            //    contentDialog.PrimaryButtonText = "OK";
+            //}
 
-            if(isCloseEnabled)
-            {
-                contentDialog.SecondaryButtonText = "Cancel";
-            }
+            //if(isCancelEnabled)
+            //{
+            //    contentDialog.SecondaryButtonText = "Cancel";
+            //}
 
-            contentDialog.CloseButtonText = "Close";
+            if(closeButtonText == null)
+            {
+                contentDialog.CloseButtonText = "Close";
+            }
+            else
+            {
+                contentDialog.CloseButtonText = closeButtonText;
+            }
 
             var result = await contentDialog.ShowAsync();
             return result;
