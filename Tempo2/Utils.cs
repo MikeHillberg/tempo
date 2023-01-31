@@ -72,5 +72,15 @@ namespace Tempo
         {
             return i ? t : e;
         }
+
+        public static bool IsEmpty(string[] strings)
+        {
+            return strings == null || strings.Length == 0;
+        }
+
+        public static bool IsntEmpty(string[] strings)
+        {
+            return !IsEmpty(strings);
+        }
     }
 }

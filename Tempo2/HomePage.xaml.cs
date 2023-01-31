@@ -277,8 +277,7 @@ namespace Tempo
         }
 
         // Convert a list of filenames into text that shows
-        // the first filename and the path
-        // (Currently you can only load multiple filenames from a single directory)
+        // the filename and the path
         internal string FilenamesToText(string[] filenames)
         {
             if (filenames == null || filenames.Length == 0)
@@ -286,30 +285,26 @@ namespace Tempo
                 return "";
             }
 
-            var filename = filenames[0];
-            if (!filename.Contains('\\'))
-            {
-                return filename;
-            }
-
-            var index = filename.LastIndexOf('\\');
-            var pathPart = filename.Substring(0, index);
-            var filePart = filename.Substring(index + 1);
-
             var sb = new StringBuilder();
-            sb.AppendLine(filePart);
-            if (filenames.Length > 1)
+            foreach (var filename in filenames)
             {
-                sb.AppendLine("...");
+                var index = filename.LastIndexOf('\\');
+                var pathPart = filename.Substring(0, index);
+                var filePart = filename.Substring(index + 1);
+
+                sb.AppendLine(filePart);
+                sb.AppendLine($"   {pathPart}");
             }
-            sb.Append(pathPart);
+
             return sb.ToString();
         }
 
         private void OpenCustomClick(object sender, RoutedEventArgs e)
         {
-            App.ReloadCustomApiScope();
+            App.Instance.PickAndAddCustomApis();
         }
+
+
 
         private void CloseCustomClick(object sender, RoutedEventArgs e)
         {
@@ -415,17 +410,18 @@ namespace Tempo
             {
                 var items = await e.DataView.GetStorageItemsAsync();
 
-                // Only support one file for now
-                if (items.Count == 1)
+                var paths = new List<string>();
+                foreach (var item in items)
                 {
-                    var storageFile = items[0] as StorageFile;
-                    if (storageFile == null)
+                    var storageFile = item as StorageFile;
+                    if (storageFile != null)
                     {
-                        return;
+                        paths.Add(storageFile.Path);
                     }
-
-                    App.Instance.NavigateToNewCustomScope(new string[] { storageFile.Path });
                 }
+
+                App.Instance.AddCustomApis(paths.ToArray());
+                //App.Instance.NavigateToNewCustomScope(paths.ToArray());
             }
             finally
             {

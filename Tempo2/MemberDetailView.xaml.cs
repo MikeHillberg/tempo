@@ -76,8 +76,12 @@ namespace Tempo
 
         protected override void OnActivated(object parameter)
         {
-            MemberVM = parameter as MemberViewModelBase;
-            App.CurrentItem = MemberVM;
+            // This gets called with a null parameter in Loaded for some reason
+            if(parameter != null)
+            {
+                MemberVM = parameter as MemberViewModelBase;
+                App.CurrentItem = MemberVM;
+            }
         }
         protected override object OnSuspending()
         {

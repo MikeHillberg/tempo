@@ -120,14 +120,14 @@
                             <StackPanel>
                                 <TextBlock x:Name="_customFileLabel"><Underline>C</Underline>ustom file</TextBlock>
                                 <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
-                                    Pick a nupkg or set of DLLs/WinMDs to search. Use the open button or drag a file here.
+                                    Pick DLLs/WinMDs/Nupkgs to search. Use the open button or drag a file here.
                                 </TextBlock>
 
                                 <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
                                     <Button Click="OpenCustomClick">Open</Button>
                                     <Button Content="Close" 
                                             Click="CloseCustomClick"
-                                            IsEnabled="{x:Bind local:App.Instance.IsCustomApiScope, Mode=OneWay}" />
+                                            IsEnabled="{x:Bind local:Utils.IsntEmpty(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}" />
                                 </StackPanel>
 
                                 <!-- Show loaded custom filenames -->
@@ -135,9 +135,9 @@
                                                     local:CollapseIfEmpty.IsEnabledFor="{x:Bind _customFilenamesText}">
                                     <TextBlock Text="Current:" TextWrapping="Wrap"/>
                                     <TextBlock x:Name="_customFilenamesText"
-                                                       Text="{x:Bind FilenamesToText(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}"
-                                                       TextWrapping="Wrap"
-                                                       Margin="5,0,0,0"/>
+                                               Text="{x:Bind FilenamesToText(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}"
+                                               TextWrapping="Wrap"
+                                               Margin="5,0,0,0"/>
                                 </StackPanel>
                             </StackPanel>
                         </RadioButton>

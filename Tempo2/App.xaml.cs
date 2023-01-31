@@ -443,23 +443,8 @@ namespace Tempo
             return true;
         }
 
-        /// <summary>
-        /// Load a custom API scope and navigate to the search results page
-        /// </summary>
-        /// <param name="paths"></param>
-        public void NavigateToNewCustomScope(string[] paths)
-        {
-            CloseCustomScope(goHome: false);
 
-            // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
-            _isCustomApiScope = true;
-            RaisePropertyChange(nameof(IsCustomApiScope));
 
-            // Start loading and go to the search page
-            EnsureCustomScopeStarted(
-                paths,
-                navigateToSearchResults: true);
-        }
 
         /// <summary>
         /// Run an Action on the UI thread
@@ -837,9 +822,6 @@ namespace Tempo
         /// </summary>
         static public void ReloadCustomApiScope()
         {
-            // Close anything that's open now
-            App.CloseCustomScope(goHome: false);
-
             // Load custom APIs and make current scope selection
             if (App.Instance.IsCustomApiScope)
             {
@@ -867,6 +849,36 @@ namespace Tempo
             }
         }
         bool _isCustomApiScopeLoaded = false;
+
+        /// <summary>
+        /// Pick new custom metadata files and add to the current set
+        /// </summary>
+        async public void PickAndAddCustomApis()
+        {
+            var newFilenames = await TryPickMetadataFilesAsync();
+            if (newFilenames == null)
+            {
+                return;
+            }
+
+            AddCustomApis(newFilenames.ToArray());
+        }
+
+        /// <summary>
+        /// Add new custom metadata files to the current set
+        /// </summary>
+        public void AddCustomApis(string[] newFilenames)
+        {
+            var currentFilenames = DesktopManager2.CustomApiScopeFileNames.Value;
+
+            CloseCustomScope(false);
+
+            DesktopManager2.CustomApiScopeFileNames.Value
+                = currentFilenames.Union(newFilenames).ToArray();
+
+            ReloadCustomApiScope();
+        }
+
 
 
         /// <summary>
