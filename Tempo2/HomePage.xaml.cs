@@ -299,6 +299,7 @@ namespace Tempo
             return sb.ToString();
         }
 
+
         private void OpenCustomClick(object sender, RoutedEventArgs e)
         {
             App.Instance.PickAndAddCustomApis();
@@ -526,5 +527,31 @@ namespace Tempo
         {
             App.Instance.GotoSearch("");
         }
+
+        /// <summary>
+        /// Split an array of filenames into name/path tuples
+        /// </summary>
+        IEnumerable<SplitFilename> SplitFilenames(string[] filenames)
+        {
+            var splitFilenames = new List<SplitFilename>();
+            foreach (var filename in filenames)
+            {
+                var index = filename.LastIndexOf('\\');
+
+                splitFilenames.Add(new SplitFilename()
+                {
+                    FilePart = filename.Substring(index + 1),
+                    PathPart = filename.Substring(0, index)
+                });
+            }
+
+            return splitFilenames;
+        }
+    }
+
+    public class SplitFilename
+    {
+        public string FilePart;
+        public string PathPart;
     }
 }

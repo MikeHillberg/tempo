@@ -75,5 +75,10 @@ namespace Tempo
         {
             App.ToggleInternals();
         }
+
+        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            App.ResetSettings();
+        }
     }
 }

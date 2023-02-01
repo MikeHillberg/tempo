@@ -60,7 +60,9 @@
                     <ItemsControl ItemsSource="{x:Bind TypeVM.Ancestors, Mode=OneWay}" x:Name="_ancestorsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TypeViewModel">
-                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 
+                                           TextWrapping="Wrap" 
+                                           IsTextSelectionEnabled="True" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -71,7 +73,9 @@
                     <ItemsControl ItemsSource="{x:Bind TypeVM.Descendents, Mode=Oneway}" x:Name="_descendentsList" >
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TypeViewModel">
-                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" TextWrapping="Wrap"/>
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 
+                                           IsTextSelectionEnabled="True"
+                                           TextWrapping="Wrap"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -86,7 +90,9 @@
                     <ItemsControl ItemsSource="{x:Bind TypeVM.ReferencedByAsync, Mode=OneWay}" x:Name="_referencedByItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TypeViewModel">
-                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" TextWrapping="Wrap" />
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 
+                                           IsTextSelectionEnabled="True"
+                                           TextWrapping="Wrap" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -97,7 +103,9 @@
                     <ItemsControl ItemsSource="{x:Bind TypeVM.ReturnedByAsync, Mode=OneWay}" x:Name="_returnedByItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
-                                <TextBlock local:CsSyntaxGenerator.MemberName="{x:Bind Mode=OneWay}" TextWrapping="Wrap" />
+                                <TextBlock local:CsSyntaxGenerator.MemberName="{x:Bind Mode=OneWay}" 
+                                           IsTextSelectionEnabled="True"
+                                           TextWrapping="Wrap" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -106,7 +114,8 @@
                 <StackPanel>
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind TypeVM, Mode=OneWay}"/>
-                    <TextBlock Text="{x:Bind TypeVM.Contract, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind TypeVM.Contract, Mode=OneWay}"
+                               local:SearchHighlighter.IsEnabled="True" />
                 </StackPanel>
 
                 <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _dllPath, Mode=OneWay}">

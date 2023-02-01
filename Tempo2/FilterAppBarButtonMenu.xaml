@@ -62,4 +62,11 @@
         </MenuFlyoutItem.KeyboardAccelerators>
     </MenuFlyoutItem>
 
+    <!-- Reset filters back to default -->
+    <MenuFlyoutItem Text="Reset filters" Click="MenuFlyoutItem_Click"  >
+        <MenuFlyoutItem.KeyboardAccelerators>
+            <KeyboardAccelerator Key="F3" />
+        </MenuFlyoutItem.KeyboardAccelerators>
+    </MenuFlyoutItem>
+
 </MenuFlyout>

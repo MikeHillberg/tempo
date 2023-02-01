@@ -54,9 +54,6 @@ namespace Tempo
             // Get the last picked dll/winmd/nupkg names
             LoadCustomFilenamesFromSettings();
 
-            // Read from saved settings which API scope to start with
-            LoadCurrentScope();
-
             UnhandledException += App_UnhandledException;
 
             Settings.Changed += (_, e) =>
@@ -239,7 +236,11 @@ namespace Tempo
 
             // bugbug: shouldn't need to load this if we're going to load custom scope later from the command line,
             // but need to see if that actually works
-            IsWinPlatformScope = true;
+
+
+            // Read from saved settings which API scope to start with
+            LoadCurrentScope();
+
 
             //// The command line can be used to pass in filenames to load
             //ProcessCommandLine();
@@ -388,7 +389,7 @@ namespace Tempo
             SetupAccelerator(
                 VirtualKey.F3,
                 VirtualKeyModifiers.None,
-                () => App.ResetAndGoHome());
+                () => App.ResetSettings());
 
         }
 
@@ -528,6 +529,8 @@ namespace Tempo
 
                 // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
                 _isCustomApiScope = true;
+                SaveCurrentScope();
+
                 RaisePropertyChange(nameof(IsCustomApiScope));
             }
 
@@ -574,8 +577,19 @@ namespace Tempo
         /// Persist the scope to settings
         /// </summary>
         /// <param name="scope"></param>
-        void SaveCurrentScope([CallerMemberName] string scope = null)
+        void SaveCurrentScope()
         {
+            string scope = nameof(IsWinPlatformScope);
+
+            if(IsWinAppScope)
+            {
+                scope = nameof(IsWinAppScope);
+            }
+            else if(IsCustomApiScope)
+            {
+                scope = nameof(IsCustomApiScope);
+            }
+
             ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
             settings.Values[_currentScopeSettingName] = scope;
         }
@@ -598,6 +612,10 @@ namespace Tempo
 
                     case "IsCustomApiScope":
                         IsCustomApiScope = true;
+                        break;
+
+                    default:
+                        IsWinPlatformScope = true;
                         break;
                 }
             }
@@ -1023,6 +1041,10 @@ namespace Tempo
         {
             CloseCustomScope(goHome: false);
 
+            // Update the filenames now so it doesn't cause a flicker
+            DesktopManager2.CustomApiScopeFileNames.Value = filenames;
+            SaveCustomFilenamesToSettings();
+
             var typeSet = new MRTypeSet(MRTypeSet.CustomMRName, !App.Instance.UsingCppProjections);
             _customApiScopeLoader = new ApiScopeLoader();
 
@@ -1041,8 +1063,6 @@ namespace Tempo
 
                     if (_isCustomApiScope)
                     {
-                        DesktopManager2.CustomApiScopeFileNames.Value = filenames;
-                        SaveCustomFilenamesToSettings();
 
                         if (typeSet.TypeCount == 0)
                         {
@@ -1704,10 +1724,9 @@ namespace Tempo
             // to respond to it with a new search
             HeadedHome = true;
 
-            // Try shouldn't be necessary, but defenese in depth
             try
             {
-                Manager.Settings = new Settings();
+                ResetSettings();
             }
             finally
             {
@@ -1716,6 +1735,11 @@ namespace Tempo
 
             Instance.SearchText = "";
             MoveToMainAndFocusToSearch();
+        }
+
+        static internal void ResetSettings()
+        {
+            Manager.Settings = new Settings();
         }
 
         bool? _usingCppProjections = null;

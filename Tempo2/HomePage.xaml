@@ -134,10 +134,18 @@
                                 <StackPanel Margin="0,5,0,0"
                                                     local:CollapseIfEmpty.IsEnabledFor="{x:Bind _customFilenamesText}">
                                     <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                    <TextBlock x:Name="_customFilenamesText"
-                                               Text="{x:Bind FilenamesToText(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}"
-                                               TextWrapping="Wrap"
-                                               Margin="5,0,0,0"/>
+                                    <ItemsControl x:Name="_customFilenamesText"
+                                                  Margin="5,0,0,0"
+                                                  ItemsSource="{x:Bind SplitFilenames(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="local:SplitFilename">
+                                                <StackPanel>
+                                                    <TextBlock Text="{x:Bind FilePart}" />
+                                                    <TextBlock Text="{x:Bind PathPart}" Margin="5,0,0,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </StackPanel>
                             </StackPanel>
                         </RadioButton>
