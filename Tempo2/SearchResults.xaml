@@ -14,10 +14,10 @@
         <Grid.RowDefinitions>
             <!-- CommandBar-->
             <RowDefinition Height="Auto"/>
-        
+
             <!-- Content area -->
             <RowDefinition Height="*"/>
-            
+
             <!-- Status bar -->
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -34,7 +34,7 @@
         <!-- Wide mode view
              Code behind moves the content between here and skinny mode Grid depending on width -->
         <Grid  x:Name="_wideMode" Visibility="{x:Bind IsWide, Mode=OneWay}"  Grid.Row="1">
-            
+
             <!-- A left pane with a list, a right pane with detail -->
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -106,10 +106,32 @@
                  "The name 'obj' does not exist in the current context"
                  Visibility="{x:Bind local:Utils.Not(NothingFound), Mode=OneWay}"  -->
 
-                <!-- Note that there's no background on this grid, so the Padding is just for spacing -->
-                <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}"
+                <!-- The Rows are the content and an optional doc page viewer -->
+                <Grid RowDefinitions="*,Auto" 
+                      Visibility="{x:Bind SomethingFound, Mode=OneWay}" 
                       Padding="0,16,0,0">
-                        <local:TypeOrMemberDetailView  x:Name="_detailsView" IsTopLevel="{x:Bind IsWide, Mode=OneWay}" />
+
+                    <local:TypeOrMemberDetailView  x:Name="_detailsView" 
+                                                   CornerRadius="0,0,5,5"
+                                                   IsTopLevel="{x:Bind IsWide, Mode=OneWay}" />
+
+                    <local:DocPageViewer Grid.Row="1"
+                                         CornerRadius="5,5,0,0"
+                                         Margin="0,10,0,0"
+                                         Height="{x:Bind DocPageHeight, Mode=OneWay}"
+                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                         Visibility="{x:Bind _toggleDocsButton.IsChecked, Mode=OneWay}" />
+
+                    <!-- Button that turns on/off the doc page viewer
+                         This overlays content, which is a questionable design, but I couldn't
+                         find a good place to put it that was discoverable but didn't waste a lot of space.
+                         Expander wasn't a good fit for the scenario -->
+                    <ToggleButton x:Name="_toggleDocsButton"  Grid.RowSpan="2"
+                                  IsChecked="False"
+                                  Click="_toggleDocsButton_Click"
+                                  VerticalAlignment="Bottom"
+                                  HorizontalAlignment="Right"
+                                  Content="{x:Bind DocPageButtonLabel, Mode=OneWay}" />
                 </Grid>
 
                 <local:SmokeLayer Grid.Row="2" 
@@ -126,7 +148,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center" >
                 <TextBlock Text="Searching" HorizontalAlignment="Center" />
-                
+
                 <!-- bugbug: best way to stop the animation so it's not wasting battery?
                      For now, set it on IsIndeterminate -->
                 <ProgressBar Height="20"
@@ -153,10 +175,11 @@
         </ContentControl>
 
         <!-- Status bar -->
-        <StackPanel Background="{StaticResource ApplicationPageBackgroundThemeBrush}" Grid.Row="2">
+        <StackPanel  Grid.Row="2" Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+                     VerticalAlignment="Center">
             <Rectangle Height="1" Fill="DarkGray" />
             <Grid ColumnDefinitions="*,Auto">
-                
+
                 <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
                      in the content. -->
                 <!-- The hard-coded accelerator tooltip on the hyperlink is because Hyperlink doesn't 

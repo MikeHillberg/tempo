@@ -1604,7 +1604,7 @@ namespace Tempo
                 return;
             }
 
-            _ = Launcher.LaunchUriAsync(new Uri(MsdnHelper.CalculateWinMDMsdnAddress(CurrentItem)));
+            _ = Launcher.LaunchUriAsync(new Uri(MsdnHelper.CalculateDocPageAddress(CurrentItem)));
         }
 
         static public List<TypeViewModel> AllTypes;
@@ -1629,7 +1629,7 @@ namespace Tempo
             {
                 return;
             }
-            var msdnAddress = MsdnHelper.CalculateWinMDMsdnAddress(CurrentItem);
+            var msdnAddress = MsdnHelper.CalculateDocPageAddress(CurrentItem);
 
             var dataPackage = new DataPackage();
             if (asMarkdown)
@@ -1654,7 +1654,37 @@ namespace Tempo
         }
 
         // The current member/type being viewed
-        public static MemberOrTypeViewModelBase CurrentItem { get; internal set; }
+        static MemberOrTypeViewModelBase _currentItem = null;
+        public static MemberOrTypeViewModelBase CurrentItem 
+        { 
+            get { return _currentItem; }
+            internal set
+            {
+                _currentItem = value;
+
+                // The DocUrl is calculated from the CurrentItem
+                Instance.RaisePropertyChange(nameof(CurrentItemDocUrl));
+            }
+        }
+
+        /// <summary>
+        /// URL of the document page for the current item
+        /// </summary>
+        public Uri CurrentItemDocUrl
+        {
+            get
+            {
+                var address = MsdnHelper.CalculateDocPageAddress(CurrentItem);
+                if(string.IsNullOrEmpty(address))
+                {
+                    return null;
+                }
+                else
+                {
+                    return new Uri(address);
+                }
+            }
+        }
 
         public static void ToggleEventFilter()
         {

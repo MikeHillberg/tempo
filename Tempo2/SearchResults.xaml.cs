@@ -39,6 +39,9 @@ namespace Tempo
 
             ReconfigureLayoutsWhenAnythingChanges();
 
+            // Initialize the docs button
+            _toggleDocsButton_Click(null, null);
+
             // There's a button and global accelerator to show the filters
             App.FilterRequested += (s, e) =>
             {
@@ -77,6 +80,13 @@ namespace Tempo
                 _saveSelectedItem = null;
                 this._navigationStack.Clear();
             };
+
+            // Adjust the WebView height based on the window size.
+            // (This is ignored when it's collapsed.)
+            this.SizeChanged += (_, __) =>
+            {
+                DocPageHeight = this.ActualHeight / 3;
+            };
         }
 
         bool _isFocused = false;
@@ -96,6 +106,18 @@ namespace Tempo
             _searchBox.Focus();
         }
 
+        /// <summary>
+        /// Height that the doc page should be (calculated based on Window height)
+        /// </summary>
+        public double DocPageHeight
+        {
+            get { return (double)GetValue(DocPageHeightProperty); }
+            set { SetValue(DocPageHeightProperty, value); }
+        }
+        public static readonly DependencyProperty DocPageHeightProperty =
+            DependencyProperty.Register("DocPageHeight", typeof(double), typeof(SearchResults),
+                new PropertyMetadata(0d));
+
         private void OnSettingsResetting(object sender, EventArgs e)
         {
             // Re-run search when Settings changes, because it might change the search results.
@@ -106,6 +128,21 @@ namespace Tempo
                 DoSearch();
             }
         }
+
+
+        /// <summary>
+        /// Label for the button that opens/hides the doc page
+        /// </summary>
+        public string DocPageButtonLabel
+        {
+            get { return (string)GetValue(DocPageButtonLabelProperty); }
+            set { SetValue(DocPageButtonLabelProperty, value); }
+        }
+        public static readonly DependencyProperty DocPageButtonLabelProperty =
+            DependencyProperty.Register("DocPageButtonLabel", typeof(string), typeof(SearchResults), 
+                new PropertyMetadata(""));
+
+
 
         public bool IsWide
         {
@@ -845,7 +882,15 @@ namespace Tempo
         {
             DebugLogViewer.Show();
         }
+
+        private void _toggleDocsButton_Click(object sender, RoutedEventArgs e)
+        {
+            DocPageButtonLabel = _toggleDocsButton.IsChecked == true
+                ? "Hide doc page"
+                : "Show doc page";
+        }
     }
+
 
     public enum ActivePane { Left, Right }
 

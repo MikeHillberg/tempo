@@ -8,8 +8,12 @@ namespace Tempo
 {
     public static class MsdnHelper
     {
-        public static string CalculateWinMDMsdnAddress(object item)
+        public static string CalculateDocPageAddress(object item)
         {
+            if (item == null)
+            {
+                return string.Empty;
+            }
 
             var m = item as MethodViewModel;
             var t = item as TypeViewModel;

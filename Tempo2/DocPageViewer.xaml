@@ -1,0 +1,35 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<UserControl
+    x:Class="Tempo.DocPageViewer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo">
+
+    <Grid>
+
+        <!-- WebView that will display doc pages. This uses x:Load so that we don't spin up
+             the various processes unless/until we need to -->
+        <WebView2 x:Name="_webView" x:Load="{x:Bind IsWebViewLoaded, Mode=OneWay}"
+                  Source="{x:Bind local:App.Instance.CurrentItemDocUrl, Mode=OneWay}" 
+                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                  NavigationStarting="WebView2_NavigationStarting" 
+                  NavigationCompleted="WebView2_NavigationCompleted" />
+
+        <!-- Semi-transparent layer that displays over the top of the WebView
+             when it's loading a page -->
+        <local:Smokey IsActive="{x:Bind IsNavigating, Mode=OneWay}"
+                      InProgress="{x:Bind IsInitialLoading, Mode=OneWay}"/>
+
+        <!-- Opaque layer that gives a message if there's no doc page to be fond for this API-->
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              Visibility="{x:Bind HasNavigationError, Mode=OneWay}">
+            
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                       >Couldn't find doc page for this API</TextBlock>
+        </Grid>
+    </Grid>
+
+</UserControl>

@@ -197,7 +197,7 @@ namespace Tempo
 
         private void CopyTypeDefinition(object sender, RoutedEventArgs e)
         {
-            var def = DesktopManager2.GetCsTypeDefinition(this.TypeVM, MsdnHelper.CalculateWinMDMsdnAddress(this.TypeVM));
+            var def = DesktopManager2.GetCsTypeDefinition(this.TypeVM, MsdnHelper.CalculateDocPageAddress(this.TypeVM));
 
             var dataPackage = new DataPackage();
             dataPackage.SetText(def);

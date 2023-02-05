@@ -122,6 +122,7 @@
     <None Remove="AttributesView2.xaml" />
     <None Remove="CommonCommandBar.xaml" />
     <None Remove="DebugLog.xaml" />
+    <None Remove="DocPageViewer.xaml" />
     <None Remove="DropDownAppBarButtonContent.xaml" />
     <None Remove="Filters3.xaml" />
     <None Remove="FiltersFlyout.xaml" />
@@ -130,6 +131,7 @@
     <None Remove="LoadingDialog.xaml" />
     <None Remove="MemberMore.xaml" />
     <None Remove="SmokeLayer.xaml" />
+    <None Remove="Smokey.xaml" />
     <None Remove="TimedTextBox.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -145,6 +147,12 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="DocPageViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Smokey.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="DropDownAppBarButtonContent.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
