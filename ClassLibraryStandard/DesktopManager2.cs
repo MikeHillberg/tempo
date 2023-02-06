@@ -129,88 +129,12 @@ namespace Tempo
 
             // This doesn't need to complete for the load to have completed. So we do this at the end, and
             // let this method return void rather than Task
-            typeSet.AllNames = await GetAllNames(typeSet.Types);
         }
 
-        static void AddName(Dictionary<string, string> names, string name)
-        {
-            if (names.ContainsKey(name))
-            {
-                return;
-            }
-
-            names[name.ToUpper()] = name[0].ToString().ToUpper() + name.Substring(1);
-        }
 
         public static string WinAppSdkPackageName => "Microsoft.WindowsAppSDK";
 
 
-        // Get anything that could be considered a "name" for a set of types, to be used in auto-suggest
-        public static async Task<Dictionary<string, string>> GetAllNames(IList<TypeViewModel> types)
-        {
-            var names = new Dictionary<string, string>(types.Count);
-
-            var thread = new Thread(() =>
-            {
-                foreach (var type in types)
-                {
-                    if (!type.IsPublic)
-                    {
-                        continue;
-                    }
-
-                    if (type.IsGenericType)
-                    {
-                        // For example, use IVector rather than IVector`1
-                        AddName(names, type.GenericTypeName);
-                    }
-                    else
-                    {
-                        AddName(names, type.Name);
-                    }
-                    foreach (var member in type.Members)
-                    {
-                        if (!member.IsPublic && !member.IsProtected)
-                        {
-                            continue;
-                        }
-
-                        var constructorVM = member as ConstructorViewModel;
-                        if (constructorVM == null)
-                        {
-                            AddName(names, member.Name);
-                        }
-                        else
-                        {
-                            foreach (var parameter in constructorVM.Parameters)
-                            {
-                                AddName(names, parameter.Name);
-                            }
-                        }
-
-                        var methodVM = member as MethodViewModel;
-                        if (methodVM != null)
-                        {
-                            foreach (var parameter in methodVM.Parameters)
-                            {
-                                AddName(names, parameter.Name);
-                            }
-                        }
-                    }
-                }
-
-            });
-
-            thread.Priority = ThreadPriority.BelowNormal;
-            thread.Start();
-
-            await Task.Run(() =>
-            {
-                thread.Join();
-            });
-
-            return names;
-        }
 
 
         // Set the WinUI version in the WinUI types

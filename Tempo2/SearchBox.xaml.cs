@@ -5,6 +5,10 @@ using Microsoft.UI.Xaml;
 using System.Diagnostics;
 using System;
 using Windows.Storage;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media;
 
 namespace Tempo
 {
@@ -32,19 +36,37 @@ namespace Tempo
             App.Instance.GotoSearch(_searchBox.Text);
         }
 
-        private void _searchBox_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Enter)
-                Search_Click(null, null);
-        }
-
         public void Focus()
         {
             _ = _searchBox.Focus(FocusState.Programmatic);
 
-            // Move the cursor to the end of the line
-            _searchBox.SelectionStart = _searchBox.Text.Length;
+            // Hack: we need the ASB's text box so that we can select the text
+            // (That lets the user just start typing)
+            if(_asbTextBox == null)
+            {
+                var child = VisualTreeHelper.GetChild(_searchBox, 0);
+                if( child != null)
+                {
+                    child = VisualTreeHelper.GetChild(child, 0);
+                    if(child != null)
+                    {
+                        _asbTextBox = child as TextBox;
+                    }
+                }
+            }
+
+            if(_asbTextBox != null)
+            {
+                _asbTextBox.SelectionStart = 0;
+                
+                // Move the cursor to the end of the line
+                _asbTextBox.SelectionLength = _asbTextBox.Text.Length;
+            }
+
+
         }
+
+        TextBox _asbTextBox = null;
 
 
         /// <summary>
@@ -60,14 +82,14 @@ namespace Tempo
 
 
 
-        internal void FocusAndSelect()
-        {
-            _ = _searchBox.Focus(FocusState.Programmatic);
-            _searchBox.SelectionStart = 0;
+        //internal void FocusAndSelect()
+        //{
+        //    //_ = _searchBox.Focus(FocusState.Programmatic);
+        //    //_searchBox.SelectionStart = 0;
 
-            // Select all of the text (so you can type and replace it)
-            _searchBox.SelectionLength = _searchBox.Text.Length;
-        }
+        //    //// Select all of the text (so you can type and replace it)
+        //    //_searchBox.SelectionLength = _searchBox.Text.Length;
+        //}
 
 
         public bool IsAllVisible
@@ -178,6 +200,72 @@ namespace Tempo
         {
             App.Instance.UsingCppProjections = false;
             App.Instance.ReloadCurrentApiScope();
+        }
+
+
+        // Used in the TextChanged handler
+        int _textChangedGeneration = 0;
+
+        /// <summary>
+        /// In AutoSuggestBox.TextChanged, generate the candidate list
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private async void _searchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // This can be called if the user is moving through the candidate list.
+            // Only do something with actual typing
+            if(args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                return;
+            }
+
+            // If we haven't generated a list of names yet, nothing to do
+            var allNames = Manager.CurrentTypeSet.AllNames;
+            if (allNames == null)
+            {
+                return;
+            }
+
+            var text = sender.Text;
+            if (string.IsNullOrEmpty(text))
+            {
+                sender.ItemsSource = null;
+                return;
+            }
+
+            // allNames matching is in upper case
+            text = text.ToUpper();
+
+            // We're about to make an async call, and we could end up having multiple going at the same time.
+            // Keep a counter so that we ignore all but the last
+            var generation = ++_textChangedGeneration;
+
+            IEnumerable<string> matches = null;
+            await Task.Run(() =>
+            {
+                matches = from name in allNames
+                          where name.Key.Contains(text)
+                          select name.Value;
+            });
+
+            if(generation != _textChangedGeneration)
+            {
+                // After this search started, another search was begun. So ignore.
+                matches = null;
+            }
+
+            sender.ItemsSource = matches;
+        }
+
+        private void _searchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            this.Search_Click(null, null);
+        }
+
+        private void _searchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            sender.Text = args.SelectedItem.ToString();
         }
     }
 }
