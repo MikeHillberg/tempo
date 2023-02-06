@@ -154,7 +154,7 @@
 
                         <TextBlock Margin="0,10,0,0"><Run Text="{x:Bind TypeVM.TotalMembers, Mode=OneWay}" IsTextScaleFactorEnabled="True" /> total members</TextBlock>
 
-                        <TextBlock Margin="{StaticResource VerticalMargin}"><Hyperlink Click="ShowAllModelProperties_Click"
+                        <TextBlock Margin="0,15,0,0"><Hyperlink Click="ShowAllModelProperties_Click"
                                      >All model properties</Hyperlink></TextBlock>
                     </StackPanel>
                 </StackPanel>

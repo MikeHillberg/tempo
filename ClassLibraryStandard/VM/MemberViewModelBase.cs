@@ -1139,37 +1139,54 @@ namespace Tempo
             {
                 if (!_isDeprecatedChecked)
                 {
-                    // bugbug
-                    if (TypeViewModel.IsPhoneContractHack(this.DeclaringType))
-                    {
-                        _isDeprecated = false;
-                        return _isDeprecated;
-                    }
-
-                    var attrs = this.CustomAttributes;
-                    if (attrs != null)
-                    {
-                        foreach (var a in attrs)
-                        {
-                            if (a.Name == "DeprecatedAttribute")
-                            {
-                                _isDeprecated = true;
-                                var args = a.ConstructorArguments; //AttributeView.SafeGetCustomAttributeConstructorArguments(a);
-                                if (args != null && args.Count > 0)
-                                {
-                                    _deprecationString = args[0].Value as string;
-                                }
-                                else
-                                    _deprecationString = "(Can't retrieve deprecation text)";
-                                break;
-                            }
-                        }
-                    }
                     _isDeprecatedChecked = true;
+                    _isDeprecated = GetIsDeprecated(out _deprecationString);
                 }
 
                 return _isDeprecated;
             }
+        }
+
+        /// <summary>
+        /// Determine if this member is deprecated. This is virtual because properties require special handling
+        /// </summary>
+        /// <param name="deprecationString"></param>
+        /// <returns></returns>
+        internal virtual bool GetIsDeprecated(out string deprecationString)
+        {
+            var isDeprecated = false;
+            deprecationString = "";
+
+            // bugbug
+            if (TypeViewModel.IsPhoneContractHack(this.DeclaringType))
+            {
+                return false;
+            }
+
+            var attrs = this.CustomAttributes;
+            if (attrs != null)
+            {
+                foreach (var a in attrs)
+                {
+                    if (a.FullName == "Windows.Foundation.Metadata.DeprecatedAttribute")
+                    {
+                        isDeprecated = true;
+                        var args = a.ConstructorArguments;
+                        if (args != null && args.Count > 0)
+                        {
+                            deprecationString = args[0].Value as string;
+                        }
+                        else
+                        {
+                            deprecationString = "(Can't retrieve deprecation text)";
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            return isDeprecated;
         }
 
         public string Deprecation

@@ -28,7 +28,7 @@
             </StackPanel>
         </StackPanel>
         
-        <TextBlock Margin="{StaticResource VerticalMargin}"><Hyperlink Click="ShowAllModelProperties_Click"
+        <TextBlock Margin="0,15,0,0"><Hyperlink Click="ShowAllModelProperties_Click"
                               >All model properties</Hyperlink></TextBlock>
 
     </StackPanel>

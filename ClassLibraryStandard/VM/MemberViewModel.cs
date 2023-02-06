@@ -174,7 +174,7 @@ namespace Tempo
                         sb.AppendFormat("{0}={1}", arg.MemberName, arg.TypedValue.Value);
                     }
 
-                    if(!first)
+                    if (!first)
                     {
                         sb.Append(")");
                     }
@@ -244,15 +244,15 @@ namespace Tempo
         {
             get
             {
-                if(_nonWinMdCustomAttributes != null)
+                if (_nonWinMdCustomAttributes != null)
                 {
                     return _nonWinMdCustomAttributes;
                 }
                 _nonWinMdCustomAttributes = new List<CustomAttributeViewModel>();
 
-                foreach(var attr in CustomAttributes)
+                foreach (var attr in CustomAttributes)
                 {
-                    if(!_winmdAttributes.Contains(attr.Name))
+                    if (!_winmdAttributes.Contains(attr.Name))
                     {
                         _nonWinMdCustomAttributes.Add(attr);
                     }
@@ -382,6 +382,28 @@ namespace Tempo
                 // If either exists, then this property is a DP
                 return field != null || prop != null;
             }
+        }
+
+        /// <summary>
+        /// Override for properties which require special handling
+        /// </summary>
+        internal override bool GetIsDeprecated(out string deprecationString)
+        {
+            if (base.GetIsDeprecated(out deprecationString))
+            {
+                return true;
+            }
+
+            // If the property itself isn't deprecated, the getter might be
+            // (Not sure what causes this to happen)
+            var getter = Getter;
+            if(getter == null)
+            {
+                // This shouldn't ever happen
+                return false;
+            }
+
+            return getter.GetIsDeprecated(out deprecationString);
         }
 
         public bool IsDependencyPropertyField
