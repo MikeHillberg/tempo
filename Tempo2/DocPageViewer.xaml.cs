@@ -5,6 +5,7 @@ using Windows.Foundation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
+using Microsoft.Web.WebView2.Core;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -91,7 +92,6 @@ namespace Tempo
                 new PropertyMetadata(false));
 
 
-
         private void WebView2_NavigationStarting(
             WebView2 sender, 
             Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
@@ -107,8 +107,10 @@ namespace Tempo
             // Clear the smoke layer
             IsNavigating = false;
 
-            // Put up a no-doc message if it failed
-            HasNavigationError = !args.IsSuccess;
+            // Put up a no-doc message if it failed. Redirects show up as a failure though,
+            // but Unknown is the case where the page doesn't exist.
+            HasNavigationError = !args.IsSuccess 
+                && args.WebErrorStatus == CoreWebView2WebErrorStatus.Unknown;
 
             // We turned on a progress ring when the WebView was being created.
             // Turn it off now (for good)

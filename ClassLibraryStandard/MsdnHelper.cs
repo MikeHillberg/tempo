@@ -25,7 +25,6 @@ namespace Tempo
             TypeViewModel declaringType = null;
             string memberName = null;
 
-
             if (t != null)
             {
                 declaringType = t;
@@ -66,6 +65,9 @@ namespace Tempo
             // Need to use this base address for some WASDK APIs
             var wasdkAddress = @"https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/";
 
+            // CoreWebView2 has special addresses
+            var coreWebView2Address = @"https://learn.microsoft.com/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/";
+
             string typeName;
             if (declaringType.IsGenericType)
             {
@@ -76,13 +78,20 @@ namespace Tempo
                 typeName = $"{typeName}-{args.Count().ToString()}";
             }
             else
+            {
                 typeName = declaringType.FullName;
+            }
 
-
+            var isCoreWebView2 = false;
             StringBuilder address;
-            if(typeName.StartsWith("Windows."))
+            if (typeName.StartsWith("Windows."))
             {
                 address = new StringBuilder(typicalAddress);
+            }
+            else if (typeName.StartsWith("Microsoft.Web.WebView2."))
+            {
+                isCoreWebView2 = true;
+                address = new StringBuilder(coreWebView2Address);
             }
             else
             {
@@ -90,10 +99,20 @@ namespace Tempo
                 address = new StringBuilder(wasdkAddress);
             }
 
+            if (isCoreWebView2)
+            {
+                typeName = typeName.Substring(typeName.LastIndexOf('.') + 1);
+            }
+
             address.Append(typeName);
+
             if (!string.IsNullOrEmpty(memberName))
             {
-                if (declaringType.IsEnum)
+                if (isCoreWebView2)
+                {
+                    address.Append($"#{memberName.ToLower()}");
+                }
+                else if (declaringType.IsEnum)
                 {
                     address.Append("#fields");
                 }
