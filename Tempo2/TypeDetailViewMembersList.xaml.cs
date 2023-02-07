@@ -26,8 +26,6 @@ namespace Tempo
         {
             this.InitializeComponent();
             IsSummaryDisabledChanged(); // bugbug
-            
-            _originalCopyText = _copyText.Text;
         }
 
         string _originalCopyText;
@@ -203,12 +201,13 @@ namespace Tempo
             dataPackage.SetText(def);
             Clipboard.SetContent(dataPackage);
 
-            _copyText.Text = " copied";
+            _flyout.ShowAt(_copySymbol);
+
             var timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(3);
             timer.Tick += (s, e) =>
             {
-                _copyText.Text = _originalCopyText;
+                _flyout.Hide();
                 timer.Stop();
             };
 

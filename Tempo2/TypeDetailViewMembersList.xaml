@@ -69,9 +69,15 @@
             </controls:LayoutTransformControl.Transform>
 
             <HyperlinkButton Click="CopyTypeDefinition" VerticalAlignment="Top" HorizontalAlignment="Right">
-                <StackPanel Orientation="Horizontal" ToolTipService.ToolTip="Copy this type definition to the clipboard">
-                    <SymbolIcon Symbol="Copy" Margin="0,0,12,0"/>
-                    <TextBlock x:Name="_copyText">copy</TextBlock>
+                <StackPanel Orientation="Horizontal" 
+                            ToolTipService.ToolTip="Copy this type definition to the clipboard">
+                    <SymbolIcon x:Name="_copySymbol"  Symbol="Copy" Margin="0,0,12,0">
+                        <FlyoutBase.AttachedFlyout>
+                            <Flyout x:Name="_flyout">
+                                <TextBlock>Copied type definition to clipboard</TextBlock>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
+                    </SymbolIcon>
                 </StackPanel>
             </HyperlinkButton>
 
