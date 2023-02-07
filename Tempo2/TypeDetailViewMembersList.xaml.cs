@@ -28,8 +28,6 @@ namespace Tempo
             IsSummaryDisabledChanged(); // bugbug
         }
 
-        string _originalCopyText;
-
         protected override void OnActivated(object parameter)
         {
         }
@@ -201,6 +199,8 @@ namespace Tempo
             dataPackage.SetText(def);
             Clipboard.SetContent(dataPackage);
 
+            // Show a visual indication that the copy just happened in a flyout,
+            // then set a timer to close it
             _flyout.ShowAt(_copySymbol);
 
             var timer = new DispatcherTimer();

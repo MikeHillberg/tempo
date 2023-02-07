@@ -382,7 +382,7 @@ namespace Tempo
             if (member == null)
                 return;
 
-            if (withHyperlink && !member.DeclaringType.IsWinMD )
+            if (withHyperlink && !member.DeclaringType.IsInCurrentTypeSet)
             {
                 withHyperlink = false;
             }

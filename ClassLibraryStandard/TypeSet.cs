@@ -175,7 +175,6 @@ namespace Tempo
                     }
                 }
 
-                // Get rid of dups
                 names2 = names1.ToArray();
 
             });
