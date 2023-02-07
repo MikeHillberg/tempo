@@ -560,7 +560,7 @@ namespace Tempo
 
         internal void FocusAndSelect()
         {
-            _searchBox.FocusAndSelect();
+            _searchBox.Focus();
         }
 
         public static readonly DependencyProperty IsDetailWideProperty =

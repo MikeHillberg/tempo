@@ -37,13 +37,30 @@
 
 
         <!-- Row 0 -->
-        <TextBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
+        <!--<TextBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
                  KeyDown="_searchBox_KeyDown"
                  VerticalAlignment="Top"
                  Padding="10"
                  InputScope="Search" IsSpellCheckEnabled="False"
                  Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
-                 PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"/>
+                 PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"/>-->
+
+        <AutoSuggestBox x:Name="_searchBox" Grid.Row="0"  Grid.Column="1"
+                        TextChanged="_searchBox_TextChanged"
+                        QuerySubmitted="_searchBox_QuerySubmitted"
+                        SuggestionChosen="_searchBox_SuggestionChosen"
+                        VerticalAlignment="Stretch"
+                        Padding="10"
+                        Text="{x:Bind local:App.Instance.SearchText, Mode=TwoWay}"
+                        PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}">
+            <AutoSuggestBox.TextBoxStyle>
+                <Style TargetType="TextBox">
+                    <Setter Property="InputScope" Value="Search"/>
+                    <Setter Property="IsSpellCheckEnabled" Value="False"/>
+                </Style>
+            </AutoSuggestBox.TextBoxStyle>
+        </AutoSuggestBox>
+
 
         <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
