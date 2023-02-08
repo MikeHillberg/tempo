@@ -221,7 +221,7 @@ namespace Tempo
             }
 
             // If we haven't generated a list of names yet, nothing to do
-            var allNames = Manager.CurrentTypeSet.AllNames;
+            var allNames = Manager.CurrentTypeSet?.AllNames;
             if (allNames == null)
             {
                 return;

@@ -260,11 +260,11 @@ namespace Tempo
                     .Union(typeof(FieldViewModel).GetProperties())
                     .Union(typeof(ConstructorViewModel).GetProperties());
 
-                _validAqsKeys = (from i in propertyInfos select i.Name).ToList();
+                _validAqsKeys = (from i in propertyInfos select i.Name.ToUpper()).ToList();
             }
 
             key = MemberViewModelBase.NormalizePropertyNameForQueries(key);
-            return _validAqsKeys.Contains(key);
+            return _validAqsKeys.Contains(key.ToUpper());
         }
 
 

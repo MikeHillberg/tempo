@@ -67,13 +67,14 @@ button Namespace:controls
 ```
 
 Note that the search term needs to be before the AQS,
-for example `button Namespace:controls` rather than `Namespace:controls` button.
+for example `button Namespace:controls` rather than `Namespace:controls button`.
 You can though have only AQS, for example `Namespace:controls IsType:True`.
 
 You can combine terms with AND, OR, and NOT, or equivalently "&&", "||", and "!".
 You can also wrap in parens.
-If you put two terms next to each other, AND is assumed.
+Properties and values are case-insensitive.
 
+If you put two terms next to each other, AND is assumed.
 For example these are equivalent:
 
 ```

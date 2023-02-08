@@ -623,7 +623,7 @@ namespace Tempo
 
                 part = NormalizePropertyNameForQueries(part);
 
-                var propInfo = declaringObject.GetType().GetProperty(part);
+                var propInfo = declaringObject.GetType().MyGetPropertyCaseInsensitive(part);
                 value = propInfo?.GetValue(declaringObject);
                 if (value == null)
                     return false;
