@@ -192,15 +192,22 @@ namespace Tempo
             if (!shouldContinue)
                 return;
 
-            shouldContinue = TeachingTips.TryShow(
+            shouldContinue = ShowScopeTeachingTip();
+            if (!shouldContinue)
+                return;
+        }
+
+        bool ShowScopeTeachingTip(bool force = false)
+        {
+            return TeachingTips.TryShow(
                 TeachingTipIds.ApiScopeSwitcher, _root, _apiScopeButton,
                 () => new TeachingTip()
                 {
                     Title = "Change your API scope",
                     Subtitle = "Change the APIs you're searching, for example search WinAppSDK rather than Windows APIs",
-                });// ;
-            if (!shouldContinue)
-                return;
+                },
+                force: force);
+
         }
 
 
@@ -309,14 +316,10 @@ namespace Tempo
             App.Instance.ShowHelp();
         }
 
-        //private void RegexMenuItem_Click(object sender, RoutedEventArgs e)
-        //{
-        //    Manager.Settings.IsWildcardSyntax = false;
-        //}
-
-        //private void WildcardMenuItem_Click_1(object sender, RoutedEventArgs e)
-        //{
-        //    Manager.Settings.IsWildcardSyntax = true;
-        //}
+        private void _apiScopeButton_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
+        {
+            // Show the API scope button teaching tip (just here to be demo-able)
+            ShowScopeTeachingTip(force: true);
+        }
     }
 }

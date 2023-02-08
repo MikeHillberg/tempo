@@ -96,7 +96,8 @@
             <!-- Button to choose the ApiScope -->
             <AppBarButton x:Name="_apiScopeButton"
                           Visibility="{x:Bind IsScopeVisible, Mode=OneWay}"
-                          ToolTipService.ToolTip="Choose an API scope">
+                          ToolTipService.ToolTip="Choose an API scope" 
+                          ContextRequested="_apiScopeButton_ContextRequested">
                 <local:DropDownAppBarButtonContent Symbol="Library" 
                                                    Label="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"/>
 
@@ -108,6 +109,7 @@
                                 <KeyboardAccelerator Modifiers="Control" Key="W" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
+                        
                         <ToggleMenuFlyoutItem Text="WinAppSDK APIs" Click="SelectWinAppSdkApis"
                                               IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>

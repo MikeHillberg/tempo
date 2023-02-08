@@ -897,6 +897,31 @@ namespace Tempo
             ReloadCustomApiScope();
         }
 
+        /// <summary>
+        /// Replace the current custom filenames with a new array, re-loading files
+        /// </summary>
+        public void ReplaceCustomApis(string[] newFilenames)
+        {
+            CloseCustomScope(false);
+
+            DesktopManager2.CustomApiScopeFileNames.Value = newFilenames;
+
+            if(IsCustomApiScope)
+            {
+                if(newFilenames.Length == 0)
+                {
+                    // Custom APIs are being shown, but we just closed the last one
+                    IsWinPlatformScope = true;
+                }
+
+                else
+                {
+                    // Reload the new, smaller list of files
+                    ReloadCustomApiScope();
+                }
+            }
+        }
+
 
 
         /// <summary>

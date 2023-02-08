@@ -422,7 +422,6 @@ namespace Tempo
                 }
 
                 App.Instance.AddCustomApis(paths.ToArray());
-                //App.Instance.NavigateToNewCustomScope(paths.ToArray());
             }
             finally
             {
@@ -547,6 +546,44 @@ namespace Tempo
 
             return splitFilenames;
         }
+
+        /// <summary>
+        /// Event handler to remove a custom file
+        /// </summary>
+        private void RemoveCustomFile_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            var split = GetTextElementTag(sender) as SplitFilename;
+            var path = $@"{split.PathPart}\{split.FilePart}";
+
+            var oldList = DesktopManager2.CustomApiScopeFileNames.Value;
+            var newList = new List<string>();
+            foreach(var filename in oldList)
+            {
+                if(filename != path)
+                {
+                    newList.Add(filename);
+                }
+            }
+
+            App.Instance.ReplaceCustomApis(newList.ToArray());
+        }
+
+
+
+        /// <summary>
+        /// TextElement type doesn't have a Tag property, so add one
+        /// </summary>
+        public static object GetTextElementTag(DependencyObject obj)
+        {
+            return (object)obj.GetValue(TextElementTagProperty);
+        }
+        public static void SetTextElementTag(DependencyObject obj, object value)
+        {
+            obj.SetValue(TextElementTagProperty, value);
+        }
+        public static readonly DependencyProperty TextElementTagProperty =
+            DependencyProperty.RegisterAttached("Tag", typeof(object), typeof(HomePage), 
+                    new PropertyMetadata(null));
     }
 
     public class SplitFilename
