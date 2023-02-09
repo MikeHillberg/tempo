@@ -327,13 +327,15 @@
                 <!-- Template to use for Boolean settings -->
                 <local:SettingVewTemplateSelector.BooleanTemplate>
                     <DataTemplate x:Name="_booleanSettingViewTemplate" x:DataType="local:BooleanSettingView">
-                        <CheckBox
-                              Tag="{x:Bind}"
-                              IsChecked="{x:Bind Setting, Mode=TwoWay}" 
-                              Content="{x:Bind Label}"  
-                              IsThreeState="{x:Bind IsThreeState}"
-                              ToolTipService.ToolTip="{x:Bind Description}"
-                              Click="CheckBox_Click"/>
+                        <local:ADifferentCheckBox
+                            Margin="0,8,0,0"
+                            IsChecked="{x:Bind Setting, Mode=TwoWay}"
+                            Label="{x:Bind Label}"
+                            Click="CheckBox_Click"
+                            Tag="{x:Bind}"
+                            Description="{x:Bind Description}"
+                            IsThreeState="{x:Bind IsThreeState}"
+                            />
                     </DataTemplate>
                 </local:SettingVewTemplateSelector.BooleanTemplate>
 
@@ -373,6 +375,7 @@
         <ListView x:Name="_searchResults"
                   local:CollapseIfEmpty.IsEnabledFor="{x:Bind _search.Text, Mode=OneWay}"
                   ItemsSource="{x:Bind cvs.View, Mode=OneWay}"
+                  SelectionMode="None"
                   ItemTemplateSelector="{StaticResource _settingViewTemplateSelector}"
                   >
             <ListView.GroupStyle>
@@ -421,6 +424,7 @@
 
             <!-- Third list shows the settings in a group -->
             <ListView ItemsSource="{x:Bind ((local:MyRibbonGroup2)_groupListView.SelectedItem), Mode=OneWay}"
+                      SelectionMode="None"
                   Grid.Column="2"
                       ItemTemplateSelector="{StaticResource _settingViewTemplateSelector}">
             </ListView>

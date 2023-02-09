@@ -8,12 +8,18 @@
     mc:Ignorable="d">
 
     <Flyout.FlyoutPresenterStyle>
+        
+        <!-- Need some overrides to get the sizing right -->
         <Style TargetType="FlyoutPresenter">
-            <Setter Property="MinWidth" Value="500"/>
-            <Setter Property="MinHeight" Value="300"/>
+            <Setter Property="MinHeight" Value="400"/>
+
+            <!-- Have to set both Width and MaxWidth to get it to stick -->
+            <Setter Property="Width" Value="600"/>
+            <Setter Property="MaxWidth" Value="600"/>
         </Style>
     </Flyout.FlyoutPresenterStyle>
 
-    <local:Filters3 />
+    <!-- The Width needs to match the Width above -->
+    <local:Filters3 Width="600"  />
 
 </Flyout>

@@ -180,9 +180,14 @@ namespace Tempo
         {
         }
 
-        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        private void CheckBox_Click(ADifferentCheckBox sender, object e)
         {
-            ((sender as FrameworkElement).DataContext as BooleanSettingView).RaiseClick();
+            if(sender.Tag == null)
+            {
+                return;
+            }
+
+            ((sender as FrameworkElement).Tag as BooleanSettingView).RaiseClick();
         }
 
         private void ToggleTypeFilter(object sender, BooleanSettingView e)

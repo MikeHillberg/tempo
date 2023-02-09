@@ -117,6 +117,7 @@
     <Compile Remove="App.xaml.old.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="ADifferentCheckBox.xaml" />
     <None Remove="AllModelProperties.xaml" />
     <None Remove="AllModelPropertiesPage.xaml" />
     <None Remove="AttributesView2.xaml" />
@@ -139,6 +140,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="AllModelPropertiesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="ADifferentCheckBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="Assemblies\System.Private.CoreLib.dll">
