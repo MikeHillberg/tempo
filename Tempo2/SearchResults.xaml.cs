@@ -85,7 +85,7 @@ namespace Tempo
             // (This is ignored when it's collapsed.)
             this.SizeChanged += (_, __) =>
             {
-                DocPageHeight = this.ActualHeight / 3;
+                DefaultDocHeight = this.ActualHeight / 3;
             };
         }
 
@@ -109,14 +109,24 @@ namespace Tempo
         /// <summary>
         /// Height that the doc page should be (calculated based on Window height)
         /// </summary>
-        public double DocPageHeight
+        public double DefaultDocHeight
         {
-            get { return (double)GetValue(DocPageHeightProperty); }
-            set { SetValue(DocPageHeightProperty, value); }
+            get { return (double)GetValue(DefaultDocHeightProperty); }
+            set { SetValue(DefaultDocHeightProperty, value); }
         }
-        public static readonly DependencyProperty DocPageHeightProperty =
-            DependencyProperty.Register("DocPageHeight", typeof(double), typeof(SearchResults),
+        public static readonly DependencyProperty DefaultDocHeightProperty =
+            DependencyProperty.Register("DefaultDocHeight", typeof(double), typeof(SearchResults),
                 new PropertyMetadata(0d));
+
+        /// <summary>
+        /// Calculate the doc height based to be the default or zero.
+        /// The DefaultDocHeight is passed in as a parameter, rather than using the property,
+        /// so that it can be used in a OneWay x:Bind, which will track changes to it.
+        /// </summary>
+        internal GridLength DocHeight(bool? isVisible, double defaultDocHeight)
+        {
+            return isVisible == true ? new GridLength(defaultDocHeight) : new GridLength(0);
+        }
 
         private void OnSettingsResetting(object sender, EventArgs e)
         {

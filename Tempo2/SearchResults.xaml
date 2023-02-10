@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     NavigationCacheMode="Required"
     >
@@ -107,9 +108,15 @@
                  Visibility="{x:Bind local:Utils.Not(NothingFound), Mode=OneWay}"  -->
 
                 <!-- The Rows are the content and an optional doc page viewer -->
-                <Grid RowDefinitions="*,Auto" 
-                      Visibility="{x:Bind SomethingFound, Mode=OneWay}" 
+                <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}" 
                       Padding="0,16,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        
+                        <!-- The height of the doc pane is zero if closed, otherwise calculated to be
+                             a portion of the total height. But there's a grid splitter on this, so it can change -->
+                        <RowDefinition Height="{x:Bind DocHeight(_toggleDocsButton.IsChecked, DefaultDocHeight), Mode=OneWay}" />
+                    </Grid.RowDefinitions>
 
                     <local:TypeOrMemberDetailView  x:Name="_detailsView" 
                                                    CornerRadius="0,0,5,5"
@@ -118,9 +125,20 @@
                     <local:DocPageViewer Grid.Row="1"
                                          CornerRadius="5,5,0,0"
                                          Margin="0,10,0,0"
-                                         Height="{x:Bind DocPageHeight, Mode=OneWay}"
                                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                          Visibility="{x:Bind _toggleDocsButton.IsChecked, Mode=OneWay}" />
+
+
+                    <!-- Spliiter between the metadata info and the doc page, _if_ the pane is open -->
+                    <controls:GridSplitter Grid.Row="1"
+                                           Background="Transparent"
+                                           VerticalAlignment="Top"
+                                           Height="16"
+                                           Visibility="{x:Bind _toggleDocsButton.IsChecked, Mode=OneWay}" >
+                        <controls:GridSplitter.RenderTransform>
+                            <TranslateTransform Y="-8" />
+                        </controls:GridSplitter.RenderTransform>
+                    </controls:GridSplitter>
 
                     <!-- Button that turns on/off the doc page viewer
                          This overlays content, which is a questionable design, but I couldn't
@@ -138,6 +156,20 @@
                       CornerRadius="5,0,0,0"
                       Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
             </Grid>
+
+            <!-- Splitter between the search results list and the selected item detail -->
+            <controls:GridSplitter Grid.Column="1"
+                    Background="Transparent"
+                    GripperCursor="Default"
+                    HorizontalAlignment="Left"
+                    ResizeDirection="Auto"
+                    ResizeBehavior="BasedOnAlignment"
+                    CursorBehavior="ChangeOnSplitterHover"
+                    Width="16">
+                <controls:GridSplitter.RenderTransform>
+                    <TranslateTransform X="-8" />
+                </controls:GridSplitter.RenderTransform>
+            </controls:GridSplitter>
 
             <!-- Progress UI that turns on when/while search is slow -->
             <StackPanel Grid.ColumnSpan="2"
