@@ -52,7 +52,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
                     <Border BorderThickness="4,0,0,0" 
-                                    local:SearchHighlighter.BorderForMember="{x:Bind}"
+                                    local:SearchHighlighter.BorderForMember="{x:Bind, Mode=OneWay}"
                                     Padding="3,0,0,0">
                         <local:MemberItemView MemberVM="{x:Bind}"/>
                     </Border>
