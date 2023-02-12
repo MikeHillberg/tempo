@@ -9,6 +9,7 @@ using Windows.System;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
+using System.Diagnostics;
 
 namespace Tempo
 {
@@ -388,6 +389,7 @@ namespace Tempo
         {
             if (!e.DataView.AvailableFormats.Contains(StandardDataFormats.StorageItems))
             {
+                Debug.WriteLine("Dragging non-StorageItems");
                 return;
             }
 
@@ -427,10 +429,12 @@ namespace Tempo
         /// </summary>
         private void CustomScope_DragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("Drag enter");
             IsDraggingOverCustom = true;
         }
         private void CustomScope_DragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("Drag leave");
             IsDraggingOverCustom = false;
         }
 
@@ -526,8 +530,19 @@ namespace Tempo
         IEnumerable<SplitFilename> SplitFilenames(string[] filenames)
         {
             var splitFilenames = new List<SplitFilename>();
+            if(filenames == null)
+            {
+                // First time startup
+                return splitFilenames;
+            }
+
             foreach (var filename in filenames)
             {
+                if(string.IsNullOrEmpty(filename))
+                {
+                    continue;
+                }
+
                 var index = filename.LastIndexOf('\\');
 
                 splitFilenames.Add(new SplitFilename()

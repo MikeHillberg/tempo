@@ -619,6 +619,11 @@ namespace Tempo
                         break;
                 }
             }
+            else
+            {
+                // This is a first-time startup, default to Windows APIs
+                IsWinPlatformScope = true;
+            }
         }
 
 
@@ -1044,6 +1049,7 @@ namespace Tempo
 
             // Bugbug: workaround for x:Bind ignoring the two-way binding when this value is null
             DesktopManager2.CustomApiScopeFileNames.Value = new string[0];
+            SaveCustomFilenamesToSettings();
 
             _customApiScopeLoader = null;
             App.Instance.IsCustomApiScopeLoaded = false;
