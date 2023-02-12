@@ -1,21 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Windows.Devices.Input;
 using Microsoft.UI.Xaml;
 using System.Linq;
 using System.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.System;
-using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
-using System.Text.RegularExpressions;
-using Microsoft.UI.Xaml.Media.Imaging;
-
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace Tempo
 {

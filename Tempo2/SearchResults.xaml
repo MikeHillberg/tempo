@@ -38,7 +38,8 @@
 
             <!-- A left pane with a list, a right pane with detail -->
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="_resultsColumn"  
+                                  Width="{x:Bind ResultsColumnWidth, Mode=OneWay}"/>
                 <ColumnDefinition Width="{x:Bind SecondColumnWidth, Mode=OneWay}" />
             </Grid.ColumnDefinitions>
 
@@ -115,7 +116,8 @@
                         
                         <!-- The height of the doc pane is zero if closed, otherwise calculated to be
                              a portion of the total height. But there's a grid splitter on this, so it can change -->
-                        <RowDefinition Height="{x:Bind DocHeight(_toggleDocsButton.IsChecked, DefaultDocHeight), Mode=OneWay}" />
+                        <RowDefinition x:Name="_docPageRow"
+                                       Height="{x:Bind DocHeight(_toggleDocsButton.IsChecked, DefaultDocHeight), Mode=OneWay}" />
                     </Grid.RowDefinitions>
 
                     <local:TypeOrMemberDetailView  x:Name="_detailsView" 
@@ -129,16 +131,19 @@
                                          Visibility="{x:Bind _toggleDocsButton.IsChecked, Mode=OneWay}" />
 
 
-                    <!-- Spliiter between the metadata info and the doc page, _if_ the pane is open -->
-                    <controls:GridSplitter Grid.Row="1"
-                                           Background="Transparent"
-                                           VerticalAlignment="Top"
-                                           Height="16"
-                                           Visibility="{x:Bind _toggleDocsButton.IsChecked, Mode=OneWay}" >
-                        <controls:GridSplitter.RenderTransform>
-                            <TranslateTransform Y="-8" />
-                        </controls:GridSplitter.RenderTransform>
-                    </controls:GridSplitter>
+                    <!-- Splitter between the metadata info and the doc page, _if_ the pane is open -->
+
+                    <Rectangle x:Name="_docPageSplitter"  Grid.Row="1"
+                               Fill="Transparent"
+                               VerticalAlignment="Top"
+                               Height="16"
+                               Margin="0,-8,0,0"
+                               PointerEntered="Splitter_PointerEntered"
+                               PointerExited="Splitter_PointerExited"
+                               PointerPressed="Splitter_PointerPressed"
+                               PointerReleased="Splitter_PointerReleased"
+                               PointerMoved="Splitter_PointerMoved"
+                        />
 
                     <!-- Button that turns on/off the doc page viewer
                          This overlays content, which is a questionable design, but I couldn't
@@ -158,18 +163,17 @@
             </Grid>
 
             <!-- Splitter between the search results list and the selected item detail -->
-            <controls:GridSplitter Grid.Column="1"
-                    Background="Transparent"
-                    GripperCursor="Default"
-                    HorizontalAlignment="Left"
-                    ResizeDirection="Auto"
-                    ResizeBehavior="BasedOnAlignment"
-                    CursorBehavior="ChangeOnSplitterHover"
-                    Width="16">
-                <controls:GridSplitter.RenderTransform>
-                    <TranslateTransform X="-8" />
-                </controls:GridSplitter.RenderTransform>
-            </controls:GridSplitter>
+            <Rectangle x:Name="_resultsSplitter" Grid.Column="1"
+                       Fill="Transparent"
+                       HorizontalAlignment="Left"
+                       Width="16"
+                       Margin="-8,0,0,0"
+                       PointerEntered="Splitter_PointerEntered"
+                       PointerExited="Splitter_PointerExited"
+                       PointerPressed="Splitter_PointerPressed"
+                       PointerMoved="Splitter_PointerMoved"
+                       PointerReleased="Splitter_PointerReleased"
+                       />
 
             <!-- Progress UI that turns on when/while search is slow -->
             <StackPanel Grid.ColumnSpan="2"
