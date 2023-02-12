@@ -810,7 +810,9 @@ namespace Tempo
             else
             {
                 var filenames = DesktopManager2.CustomApiScopeFileNames.Value;
-                if (filenames == null || filenames.Length == 0)
+                if (filenames == null 
+                    || filenames.Length == 0
+                    || filenames.Length == 1 && string.IsNullOrEmpty(filenames[0]))
                 {
                     // No filenames saved in app settings from last time
                     await PickAndStartLoadCustomApiScopeAsync();
