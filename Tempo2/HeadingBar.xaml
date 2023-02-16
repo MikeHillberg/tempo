@@ -39,6 +39,7 @@
                            TextWrapping="Wrap"
                            IsTextSelectionEnabled="True"
                            Style="{x:Bind SubtitleStyle, Mode=Oneway}" 
+                           local:SearchHighlighter.IsEnabled="True"
                            >
                 </TextBlock>
             </StackPanel>
