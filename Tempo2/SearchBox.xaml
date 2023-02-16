@@ -81,9 +81,10 @@
 
         <!-- Row 1 -->
         <!-- Use UniformGrid so that the buttons have the same width -->
-        <controls:UniformGrid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
-                              Columns="3"
+        <local:UniformStackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
                               HorizontalAlignment="Left"
+                                 Spacing="5"
+                                 Orientation="Horizontal"
                               Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
 
             <!-- Button to open the filters dialog -->
@@ -139,7 +140,7 @@
                 </Button.Flyout>
             </DropDownButton>
 
-        </controls:UniformGrid>
+        </local:UniformStackPanel>
 
         <!-- Row 2 -->
         <Border Grid.Row="2" Grid.Column="1"

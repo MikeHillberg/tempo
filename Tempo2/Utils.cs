@@ -20,6 +20,14 @@ namespace Tempo
             return b1 || b2;
         }
 
+        /// <summary>
+        /// b ? Visibility.Collapsed : Visibility.Visible;
+        /// </summary>
+        static public Visibility NotVisibleIf(bool b)
+        {
+            return b ? Visibility.Collapsed : Visibility.Visible;
+        }
+
         static public Visibility VisibleIfEither(bool b1, bool b2)
         {
             return (b1 || b2) ? Visibility.Visible : Visibility.Collapsed;

@@ -123,12 +123,15 @@
                                     Pick DLLs/WinMDs/Nupkgs to search. Use the open button or drag a file here.
                                 </TextBlock>
 
-                                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                                    <Button Click="OpenCustomClick">Open</Button>
+                                <local:UniformStackPanel Margin="0,10,0,0" 
+                                                         Orientation="Horizontal"
+                                                         Spacing="5">
+                                    <Button Click="OpenCustomClick" HorizontalAlignment="Stretch">Open</Button>
                                     <Button Content="Close all" 
                                             Click="CloseCustomClick"
+                                            HorizontalAlignment="Stretch"
                                             IsEnabled="{x:Bind local:Utils.IsntEmpty(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}" />
-                                </StackPanel>
+                                </local:UniformStackPanel>
 
                                 <!-- Show loaded custom filenames -->
                                 <StackPanel Margin="0,5,0,0"
