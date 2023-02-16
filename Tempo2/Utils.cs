@@ -33,6 +33,11 @@ namespace Tempo
             return (b1 || b2) ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        static public Visibility VisibleIfNeither(bool b1, bool b2)
+        {
+            return (!b1 && !b2) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         /// <summary>
         /// Invert Visibility (e.g. Collapsed becomes Visibile)
         /// </summary>

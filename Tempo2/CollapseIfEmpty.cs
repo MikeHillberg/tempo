@@ -15,7 +15,7 @@ namespace Tempo
     interface ICanBeEmpty
     {
         public bool IsEmpty { get; }
-        public event EventHandler<EventArgs> Changed;
+        public event EventHandler<EventArgs> IsEmptyChanged;
     }
 
 
@@ -185,7 +185,7 @@ namespace Tempo
                 }
                 else if (canBeEmptyObject != null)
                 {
-                    canBeEmptyObject.Changed += (s, e) => TargetPropertyChanged(frameworkElement);
+                    canBeEmptyObject.IsEmptyChanged += (s, e) => TargetPropertyChanged(frameworkElement);
                 }
             }
         }

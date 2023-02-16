@@ -78,5 +78,24 @@ namespace Tempo
         {
             AllModelPropertiesPage.ShowWindow(TypeVM);
         }
+
+        /// <summary>
+        /// Be visible if the type VM has some kind of version
+        /// </summary>
+        Visibility HasVersion(TypeViewModel typeVM)
+        {
+            if(typeVM == null)
+            {
+                return Visibility.Collapsed;
+            }
+
+            if(!string.IsNullOrEmpty(TypeVM.Contract)
+                || !string.IsNullOrEmpty(TypeVM.UwpBuild)
+                || !string.IsNullOrEmpty(TypeVM.VersionFriendlyName))
+            {
+                return Visibility.Visible;
+            }
+            return Visibility.Collapsed;
+        }
     }
 }

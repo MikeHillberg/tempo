@@ -36,7 +36,7 @@ namespace Tempo
         // Convert e.g. "0A000005" to "Anniversay Update ..."
         public static string FriendlyBuildNameFromUglyVersionName(string version)
         {
-            var build = "(unknown)";
+            var build = "";
 
             if (!string.IsNullOrEmpty(version))
             {

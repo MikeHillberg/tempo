@@ -27,7 +27,7 @@ namespace Tempo
         }
         public static readonly DependencyProperty AttributeTypeInfosProperty =
             DependencyProperty.Register("AttributeTypeInfos", typeof(IEnumerable<AttributeTypeInfo>), typeof(AttributesView2),
-                new PropertyMetadata(null, (d, dp) => (d as AttributesView2).Changed?.Invoke(d, null)));
+                new PropertyMetadata(null, (d, dp) => (d as AttributesView2).IsEmptyChanged?.Invoke(d, null)));
 
         // ICanBeEmpty.IsEmpty
         public bool IsEmpty
@@ -39,6 +39,6 @@ namespace Tempo
         }
 
         // ICanBeEmpty.Changed
-        public event EventHandler<EventArgs> Changed;
+        public event EventHandler<EventArgs> IsEmptyChanged;
     }
 }

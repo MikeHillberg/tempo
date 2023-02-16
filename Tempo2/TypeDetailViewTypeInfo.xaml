@@ -116,7 +116,7 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Visibility="{x:Bind HasVersion(TypeVM), Mode=OneWay}">
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind TypeVM, Mode=OneWay}"/>
                     <TextBlock Text="{x:Bind TypeVM.Contract, Mode=OneWay}"
