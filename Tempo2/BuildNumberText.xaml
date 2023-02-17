@@ -17,7 +17,8 @@
         </TextBlock>
 
         <TextBlock Visibility="{x:Bind local:Utils.NotHack(MemberVM.DeclaringType.IsWindows), Mode=OneWay}"
-                   Text="{x:Bind MemberVM.VersionFriendlyName, Mode=OneWay}"/>
+                   Text="{x:Bind MemberVM.VersionFriendlyName, Mode=OneWay}"
+                   local:SearchHighlighter.IsEnabled="True" />
     </Grid>
 
 </UserControl>

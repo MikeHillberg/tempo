@@ -78,7 +78,8 @@
                             <StackPanel Margin="{StaticResource VerticalMargin}">
                                 <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                                 <local:BuildNumberText MemberVM="{x:Bind MemberVM, Mode=OneWay }" />
-                                <TextBlock Text="{x:Bind MemberVM.Contract, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind MemberVM.Contract, Mode=OneWay}"
+                                           local:SearchHighlighter.IsEnabled="True"/>
                             </StackPanel>
 
                             <!-- Custom atributes -->

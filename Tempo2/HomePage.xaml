@@ -258,11 +258,11 @@
                                   IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
 
                         <!-- Open/Close buttons -->
-                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <local:UniformStackPanel Orientation="Horizontal" Margin="0,5" Spacing="5">
                             <Button Click="OpenBaseline">Open</Button>
                             <Button Click="CloseBaseline"
                                     IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
-                        </StackPanel>
+                        </local:UniformStackPanel>
 
                         <!-- Show loaded filenames -->
                         <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
