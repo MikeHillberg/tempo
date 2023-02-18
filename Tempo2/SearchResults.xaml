@@ -163,11 +163,13 @@
             </Grid>
 
             <!-- Splitter between the search results list and the selected item detail -->
+            <!-- Optimally we'd set a -8 left margin on this so that it perfectly straddles the line,
+                 but doing so causes it to cover up the scroll bar of the ListView to the left -->
             <Rectangle x:Name="_resultsSplitter" Grid.Column="1"
                        Fill="Transparent"
                        HorizontalAlignment="Left"
                        Width="16"
-                       Margin="-8,0,0,0"
+                       Margin="0,0,0,0"
                        PointerEntered="Splitter_PointerEntered"
                        PointerExited="Splitter_PointerExited"
                        PointerPressed="Splitter_PointerPressed"
