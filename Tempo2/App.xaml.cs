@@ -1304,9 +1304,9 @@ namespace Tempo
             _winPlatformScopeLoader = new ApiScopeLoader();
 
             _winPlatformScopeLoader.StartLoad(
-                offThreadLoadAction: async () => // Runs *off* UI thread
+                offThreadLoadAction: () => // Runs *off* UI thread
                 {
-                    await DesktopManager2.LoadWindowsTypesWithMRAsync(
+                    DesktopManager2.LoadWindowsTypesWithMRAsync(
                         useWinRTProjections,
                         (assemblyName) => LocateAssembly(assemblyName));
                 },

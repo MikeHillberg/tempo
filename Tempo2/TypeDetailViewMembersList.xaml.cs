@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.ApplicationModel.DataTransfer;
+using Microsoft.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -22,6 +23,17 @@ namespace Tempo
 {
     public sealed partial class TypeDetailViewMembersList : global::Tempo.MySerializableControl
     {
+        /// <summary>
+        /// Returns a brush if isMatch is true. The 'matchGeneration' parameter isn't used,
+        /// but by having it here you can use it in an x:Bind method and get it called when
+        /// MatchGeneration raises a change notification.
+        /// </summary>
+        public static Brush ColorIfMatching(bool isMatch, int matchGeneration)
+        {
+            return isMatch ? _orangeBrush : null;
+        }
+        public static Brush _orangeBrush = new SolidColorBrush(Colors.Orange); //bugbug, shouldn't be public
+
         public TypeDetailViewMembersList()
         {
             this.InitializeComponent();

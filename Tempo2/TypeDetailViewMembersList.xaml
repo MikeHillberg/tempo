@@ -52,9 +52,11 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
                     <Border BorderThickness="4,0,0,0" 
-                                    local:SearchHighlighter.BorderForMember="{x:Bind}"
-                                    Padding="3,0,0,0">
-                        <local:MemberItemView MemberVM="{x:Bind}"/>
+                            BorderBrush="{x:Bind local:TypeDetailViewMembersList.ColorIfMatching(
+                                                IsMatch, 
+                                                local:Manager.MatchGeneration.Value), Mode=OneWay}" 
+                            Padding="3,0,0,0">
+                            <local:MemberItemView MemberVM="{x:Bind}"/>
                     </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
