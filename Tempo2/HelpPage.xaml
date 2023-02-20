@@ -9,7 +9,8 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <ScrollViewer Padding="20" Margin="50" MaxWidth="800" Background="White"
+    <ScrollViewer Padding="20" Margin="50" MaxWidth="800" 
+                  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                   HorizontalAlignment="Center">
         
         <!-- Use the community toolkit's markdown reader -->

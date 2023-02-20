@@ -134,6 +134,7 @@
     <None Remove="SmokeLayer.xaml" />
     <None Remove="Smokey.xaml" />
     <None Remove="TimedTextBox.xaml" />
+    <None Remove="UserControl1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="AllModelProperties.xaml">
@@ -151,6 +152,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="UserControl1.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="DocPageViewer.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
