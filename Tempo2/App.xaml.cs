@@ -54,6 +54,9 @@ namespace Tempo
             // Get the last picked dll/winmd/nupkg names
             LoadCustomFilenamesFromSettings();
 
+            // Figure out light/dark mode
+            LoadThemeSetting();
+
             UnhandledException += App_UnhandledException;
 
             Settings.Changed += (_, e) =>
@@ -125,8 +128,6 @@ namespace Tempo
             // activation to here
             keyInstance.Activated += OnRedirected;
 
-
-
             // TODO This code defaults the app to a single instance app. If you need multi instance app, remove this part.
             // Read: https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/guides/applifecycle#single-instancing-in-applicationonlaunched
             // If this is the first instance launched, then register it as the "main" instance.
@@ -160,7 +161,7 @@ namespace Tempo
             if (RootFrame == null)
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
-                RootFrame = new Frame();
+                RootFrame = new RootFrame();
 
                 // Place the frame in the current Window
                 Window.Content = RootFrame;
@@ -390,6 +391,10 @@ namespace Tempo
                 VirtualKey.F3,
                 VirtualKeyModifiers.None,
                 () => App.ResetSettings());
+            SetupAccelerator(
+                VirtualKey.T,
+                VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
+                () => App.Instance.ToggleTheme());
 
         }
 
@@ -581,11 +586,11 @@ namespace Tempo
         {
             string scope = nameof(IsWinPlatformScope);
 
-            if(IsWinAppScope)
+            if (IsWinAppScope)
             {
                 scope = nameof(IsWinAppScope);
             }
-            else if(IsCustomApiScope)
+            else if (IsCustomApiScope)
             {
                 scope = nameof(IsCustomApiScope);
             }
@@ -810,7 +815,7 @@ namespace Tempo
             else
             {
                 var filenames = DesktopManager2.CustomApiScopeFileNames.Value;
-                if (filenames == null 
+                if (filenames == null
                     || filenames.Length == 0
                     || filenames.Length == 1 && string.IsNullOrEmpty(filenames[0]))
                 {
@@ -913,9 +918,9 @@ namespace Tempo
 
             DesktopManager2.CustomApiScopeFileNames.Value = newFilenames;
 
-            if(IsCustomApiScope)
+            if (IsCustomApiScope)
             {
-                if(newFilenames.Length == 0)
+                if (newFilenames.Length == 0)
                 {
                     // Custom APIs are being shown, but we just closed the last one
                     IsWinPlatformScope = true;
@@ -1688,8 +1693,8 @@ namespace Tempo
 
         // The current member/type being viewed
         static MemberOrTypeViewModelBase _currentItem = null;
-        public static MemberOrTypeViewModelBase CurrentItem 
-        { 
+        public static MemberOrTypeViewModelBase CurrentItem
+        {
             get { return _currentItem; }
             internal set
             {
@@ -1708,7 +1713,7 @@ namespace Tempo
             get
             {
                 var address = MsdnHelper.CalculateDocPageAddress(CurrentItem);
-                if(string.IsNullOrEmpty(address))
+                if (string.IsNullOrEmpty(address))
                 {
                     return null;
                 }
@@ -1934,6 +1939,150 @@ namespace Tempo
             window.Title = "Tempo Help";
 
             window.Activate();
+        }
+
+        public bool IsLightTheme
+        {
+            get { return _isLightTheme; }
+
+            set
+            {
+                if (_isLightTheme != value)
+                {
+                    _isLightTheme = value;
+
+                    if (value)
+                    {
+                        // Need to maintain mutual exclusion manually or the radio buttons get confused
+                        IsDarkTheme = IsSystemTheme = false;
+                        SaveThemeSetting();
+                    }
+
+                    RaisePropertyChange();
+                }
+            }
+        }
+        bool _isLightTheme = false;
+
+        public bool IsDarkTheme
+        {
+            get { return _isDarkTheme; }
+            set
+            {
+                if (_isDarkTheme != value)
+                {
+                    _isDarkTheme = value;
+
+                    if (value)
+                    {
+                        // Need to maintain mutual exclusion manually or the radio buttons get confused
+                        IsLightTheme = IsSystemTheme = false;
+                        SaveThemeSetting();
+                    }
+
+                    RaisePropertyChange();
+                }
+            }
+        }
+        bool _isDarkTheme = false;
+
+        public bool IsSystemTheme
+        {
+            get { return _isSystemTheme; }
+            set
+            {
+                if (_isSystemTheme != value)
+                {
+                    _isSystemTheme = value;
+
+                    if (value)
+                    {
+                        // Need to maintain mutual exclusion manually or the radio buttons get confused
+                        IsLightTheme = IsDarkTheme = false;
+                        SaveThemeSetting();
+                    }
+
+                    RaisePropertyChange();
+
+                }
+            }
+        }
+        bool _isSystemTheme = false;
+
+        /// <summary>
+        /// Save the light/dark theme setting
+        /// </summary>
+        void SaveThemeSetting([CallerMemberName] string theme = null)
+        {
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[_themeSettingName] = theme;
+
+            RaisePropertyChange(nameof(ElementTheme));
+        }
+        static string _themeSettingName = "ThemeSetting3";
+
+        /// <summary>
+        /// Load the light/dark theme setting
+        /// </summary>
+        void LoadThemeSetting()
+        {
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            if (localSettings.Values.TryGetValue(_themeSettingName, out var theme))
+            {
+                switch (theme)
+                {
+                    case nameof(IsLightTheme):
+                        IsLightTheme = true;
+                        break;
+
+                    case nameof(IsDarkTheme):
+                        IsDarkTheme = true;
+                        break;
+
+                    default:
+                        IsSystemTheme = true; 
+                        break;
+                }
+            }
+            else
+            {
+                IsSystemTheme = true;
+            }
+        }
+
+        /// <summary>
+        /// Element theme (light/dark)
+        /// </summary>
+        public ElementTheme ElementTheme
+        {
+            get
+            {
+                if (IsLightTheme)
+                    return ElementTheme.Light;
+                else if (IsDarkTheme)
+                    return ElementTheme.Dark;
+                else
+                    return ElementTheme.Default;
+            }
+        }
+
+        /// <summary>
+        /// Cycle theme through default/light/dark with repeated calls
+        /// </summary>
+        public void ToggleTheme()
+        {
+            if(IsSystemTheme)
+            {
+                IsLightTheme = true;
+            }
+            else if(IsLightTheme)
+            {
+                IsDarkTheme = true;
+            }
+            else
+            {
+                IsSystemTheme = true;
+            }
         }
     }
 }

@@ -24,15 +24,14 @@ namespace Tempo
     public sealed partial class TypeDetailViewMembersList : global::Tempo.MySerializableControl
     {
         /// <summary>
-        /// Returns a brush if isMatch is true. The 'matchGeneration' parameter isn't used,
+        /// Returns Visible if isMatch is true. The 'matchGeneration' parameter isn't used,
         /// but by having it here you can use it in an x:Bind method and get it called when
         /// MatchGeneration raises a change notification.
         /// </summary>
-        public static Brush ColorIfMatching(bool isMatch, int matchGeneration)
+        public static Visibility VisibleIfMatching(bool isMatch, int matchGeneration)
         {
-            return isMatch ? _orangeBrush : null;
+            return isMatch ? Visibility.Visible : Visibility.Collapsed;
         }
-        public static Brush _orangeBrush = new SolidColorBrush(Colors.Orange); //bugbug, shouldn't be public
 
         public TypeDetailViewMembersList()
         {

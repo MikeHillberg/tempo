@@ -33,9 +33,13 @@ namespace Tempo
             //MainWindow.Instance.SizeChanged += Window_SizeChanged;
         }
 
+        static public HomePage Instance = null;
+
         public HomePage()
         {
             this.InitializeComponent();
+
+            Instance = this;
 
             Loaded += DoLoaded;
 
@@ -146,6 +150,8 @@ namespace Tempo
         static bool _initialLoad = true;
         private void DoLoaded(object sender, RoutedEventArgs e)
         {
+            Loaded -= DoLoaded;
+
             if (_selectedIndexOnLoaded != -1)
             {
                 _selectedIndexOnLoaded = -1;

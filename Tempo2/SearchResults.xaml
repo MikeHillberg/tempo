@@ -213,9 +213,9 @@
         </ContentControl>
 
         <!-- Status bar -->
-        <StackPanel  Grid.Row="2" Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+        <StackPanel  Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
                      VerticalAlignment="Center">
-            <Rectangle Height="1" Fill="DarkGray" />
+            <Rectangle Height="1" Fill="LightGray" />
             <Grid ColumnDefinitions="*,Auto">
 
                 <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
@@ -224,6 +224,7 @@
                      have built-in support for keyboard accelerators -->
                 <TextBlock Name="_statusTextBlock" 
                            HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
                            Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
                        ><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTotal, Mode=OneWay}" FontWeight="Bold"
                        /><Run Text=" matches: " xml:space="preserve" FontWeight="Bold" 

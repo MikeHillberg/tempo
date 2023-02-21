@@ -1,0 +1,10 @@
+
+<!-- RootFrame is a Frame that sets the RequestedTheme -->
+<Frame
+    x:Class="Tempo.RootFrame"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    RequestedTheme="{x:Bind local:App.Instance.ElementTheme, Mode=OneWay}">
+
+</Frame>
