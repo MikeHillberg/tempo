@@ -61,7 +61,7 @@ namespace Tempo
 
 
         // Load System32 types with MR reflection, using either a C++ projection or a C# projection
-        async static public Task LoadWindowsTypesWithMRAsync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
+        static public void LoadWindowsTypesWithMRAsync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
         {
             // Early out if already loaded
             if (Manager.WindowsTypeSet?.Types != null && useWinRTProjections)
@@ -183,9 +183,9 @@ namespace Tempo
             }
 
             var sem = new Semaphore(0, 1);
-            _ = Task.Run(async () =>
+            _ = Task.Run(() =>
             {
-                await LoadWindowsTypesWithMRAsync(useWinRTProjections, assemblyLocator, winuiWinMDFilename);
+                LoadWindowsTypesWithMRAsync(useWinRTProjections, assemblyLocator, winuiWinMDFilename);
                 sem.Release();
             });
 
@@ -500,8 +500,6 @@ namespace Tempo
                 DebugLog.Append(e);
                 throw;
             }
-
-            return new PackageLocationAndVersion();
         }
 
 

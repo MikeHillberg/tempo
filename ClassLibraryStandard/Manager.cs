@@ -528,7 +528,12 @@ namespace Tempo
         }
 
 
-        static public int MatchGeneration = 0;
+        //static public int MatchGeneration = 0;
+
+        // Every time a search is done this number is incremeneted. Every type/member
+        // that's found during the search has this number put into it. 
+        // That way we can highlight what matched a search.
+        static public ReifiedProperty<int> MatchGeneration = new ReifiedProperty<int>(0);
 
         /// <summary>
         /// Check if a type matches the regex filter. This is mostly about the type name,
@@ -563,7 +568,7 @@ namespace Tempo
                 }
             }
 
-            if(!string.IsNullOrEmpty(type.Guid))
+            if (!string.IsNullOrEmpty(type.Guid))
             {
                 if (MatchesFilter(filter, type.Guid, settings, ref abort, ref meaningfulMatch))
                 {
@@ -672,7 +677,11 @@ namespace Tempo
             LastType = null;
             LastMember = null;
 
-            MatchGeneration++;
+            // SetValueQuietly means don't rause a PropertyChanged notification.
+            // There's no point in doing that until we've actually done the search and given the generation meaning.
+            // Also we need to raise it on the UI thread
+            // But we need to set the value now because during the search we're going to set it into matching VMs
+            MatchGeneration.SetValueQuietly(MatchGeneration + 1);
 
             var typesChecked = 0;
 
@@ -735,7 +744,7 @@ namespace Tempo
                 }
 
                 // Update the result stats
-                PostToUIThread(() => MatchingStats.RaiseAllPropertiesChanged());
+                PostSearchResultUpdates();
 
                 // And we're done
                 yield break;
@@ -828,7 +837,7 @@ namespace Tempo
                 }
 
 
-                else if(typeMatches)
+                else if (typeMatches)
                 {
                     // Check for AQS queries
 
@@ -924,7 +933,7 @@ namespace Tempo
 
                         // True means it matched, null means it didn't not match (maybe there was no AQS),
                         // false means it was rejected.
-                        if(aqsResult == true)
+                        if (aqsResult == true)
                         {
                             meaningfulMatch = true;
                         }
@@ -1004,7 +1013,19 @@ namespace Tempo
                 }
             }
 
-            PostToUIThread(() => MatchingStats.RaiseAllPropertiesChanged());
+            PostSearchResultUpdates();
+        }
+
+        /// <summary>
+        /// Raise change events at the end of a search
+        /// </summary>
+        static void PostSearchResultUpdates()
+        {
+            PostToUIThread(() =>
+            {
+                MatchingStats.RaiseAllPropertiesChanged();
+                MatchGeneration.RaisePropertyChanged();
+            });
         }
 
         /// <summary>
@@ -1055,14 +1076,14 @@ namespace Tempo
                         }
                     });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 UnhandledExceptionManager.ProcessException(e);
                 SearchExpression.RaiseSearchExpressionError();
 
             }
 
-            if(result == null || !keyUsed)
+            if (result == null || !keyUsed)
             {
                 return null;
             }

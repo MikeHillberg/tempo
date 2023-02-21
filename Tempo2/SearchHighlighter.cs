@@ -94,33 +94,6 @@ namespace Tempo
 
 
 
-        public static MemberOrTypeViewModelBase GetBorderForMember(DependencyObject obj)
-        {
-            return (MemberOrTypeViewModelBase)obj.GetValue(BorderForMemberProperty);
-        }
-        public static void SetBorderForMember(DependencyObject obj, MemberOrTypeViewModelBase value)
-        {
-            obj.SetValue(BorderForMemberProperty, value);
-        }
-
-        public static readonly DependencyProperty BorderForMemberProperty =
-            DependencyProperty.RegisterAttached("BorderForMember", typeof(MemberOrTypeViewModelBase), typeof(SearchHighlighter),
-                new PropertyMetadata(null, (s, e) => BorderForMemberChanged(s as Border)));
-
-        public static Brush _orangeBrush = new SolidColorBrush() { Color = Colors.Orange }; // bugbug
-        private static void BorderForMemberChanged(Border border)
-        {
-            // bugbug: There should be a change notification if the IsMatch changes too?
-
-            var memberVM = GetBorderForMember(border);
-            if (memberVM == null)
-                return;
-
-            if (memberVM.IsMatch)
-                border.BorderBrush = _orangeBrush;
-            else
-                border.BorderBrush = null;
-        }
 
         static bool _updatingText = false;
         private static void TextChangedCallback(TextBlock textBlock)

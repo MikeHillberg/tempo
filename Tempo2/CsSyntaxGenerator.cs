@@ -484,7 +484,7 @@ namespace Tempo
                     Margin = new Thickness(0, 0, 3, 0),
                     Width = 4, // bugbug
                     Height = 12,
-                    Fill = SearchHighlighter._orangeBrush // bugbug
+                    Fill = HomePage.Instance._accentColorBrush.Fill
                 };
 
                 inlines.Add(new InlineUIContainer() { Child = rectangle });

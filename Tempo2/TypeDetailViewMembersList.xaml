@@ -51,11 +51,18 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
-                    <Border BorderThickness="4,0,0,0" 
-                                    local:SearchHighlighter.BorderForMember="{x:Bind}"
-                                    Padding="3,0,0,0">
-                        <local:MemberItemView MemberVM="{x:Bind}"/>
-                    </Border>
+                    <Grid ColumnDefinitions="4,Auto">
+                        <Border BorderThickness="4,0,0,0" 
+                                BorderBrush="{ThemeResource SystemAccentColor}"
+                                Visibility="{x:Bind local:TypeDetailViewMembersList.VisibleIfMatching(
+                                                IsMatch, 
+                                                local:Manager.MatchGeneration.Value), Mode=OneWay}" 
+                            >
+                        </Border>
+                        <local:MemberItemView Grid.Column="1" 
+                                              MemberVM="{x:Bind}"
+                                              Margin="3,0,0,0"/>
+                    </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

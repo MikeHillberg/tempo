@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 
 namespace CommonLibrary
 {
+    /// <summary>
+    /// Property value with built-in change notification
+    /// This allows you to provide change notifications for a static property/field
+    /// In code there's an overload to get the T value,
+    /// but there's no overloaded assignment operator in C#, so you need to do ".Value" (same for x:Bind)
+    /// </summary>
     // Property value with built-in change notification
     public class ReifiedProperty<T> : INotifyPropertyChanged
     {
@@ -29,15 +35,51 @@ namespace CommonLibrary
             get { return _value; }
             set
             {
-                _value = value;
-                PropertyChanged?.Invoke(this, _args);
-                _changeCallback?.Invoke();
+                // Update _value and raise a change notification
+                SetValue(value, quiet: false);
             }
         }
 
-        static PropertyChangedEventArgs _args = new PropertyChangedEventArgs("");
+        /// <summary>
+        /// Set the value but don't raise a change notification
+        /// </summary>
+        public void SetValueQuietly(T value)
+        {
+            SetValue(value, quiet: true);
+        }
+
+        void SetValue(T value, bool quiet)
+        {
+            _value = value;
+
+            if (!quiet)
+            {
+                RaisePropertyChanged();
+            }
+        }
+
+        public void RaisePropertyChanged()
+        {
+            PropertyChanged?.Invoke(this, _args);
+            _changeCallback?.Invoke();
+        }
+
+        static PropertyChangedEventArgs _args = new PropertyChangedEventArgs(nameof(Value));
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         static public implicit operator T(ReifiedProperty<T> r) => r.Value;
+
+        public override string ToString()
+        {
+            if(Value != null)
+            {
+                return Value.ToString();
+            }
+            else
+            {
+                return "(null)";
+            }
+        }
     }
 }

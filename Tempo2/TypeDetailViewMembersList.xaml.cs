@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.ApplicationModel.DataTransfer;
+using Microsoft.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -22,6 +23,16 @@ namespace Tempo
 {
     public sealed partial class TypeDetailViewMembersList : global::Tempo.MySerializableControl
     {
+        /// <summary>
+        /// Returns Visible if isMatch is true. The 'matchGeneration' parameter isn't used,
+        /// but by having it here you can use it in an x:Bind method and get it called when
+        /// MatchGeneration raises a change notification.
+        /// </summary>
+        public static Visibility VisibleIfMatching(bool isMatch, int matchGeneration)
+        {
+            return isMatch ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         public TypeDetailViewMembersList()
         {
             this.InitializeComponent();
