@@ -377,8 +377,12 @@ namespace Tempo
                             if (attributeClassName != "MarshalingBehaviorAttribute")
                                 continue;
 
-                            var argument = attr.ConstructorArguments[0];
-                            _marshalingType = (TempoMarshalingType)argument.Value;
+                            // There won't be any arguments if the type is being faked by MR
+                            if (attr.ConstructorArguments.Count > 0)
+                            {
+                                var argument = attr.ConstructorArguments[0];
+                                _marshalingType = (TempoMarshalingType)argument.Value;
+                            }
                         }
                     }
                 }

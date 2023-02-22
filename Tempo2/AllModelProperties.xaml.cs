@@ -91,13 +91,13 @@ namespace Tempo
         {
             var filter = Filter;
             var strings = new List<string>();
-            for(int i = 0; i < _propertyNames.Count; i++)
+            for (int i = 0; i < _propertyNames.Count; i++)
             {
                 var name = _propertyNames[i];
                 var val = _propertyValues[i];
 
-                if(string.IsNullOrEmpty(filter) 
-                    || name.Contains(filter, StringComparison.OrdinalIgnoreCase) 
+                if (string.IsNullOrEmpty(filter)
+                    || name.Contains(filter, StringComparison.OrdinalIgnoreCase)
                     || val.Contains(filter, StringComparison.OrdinalIgnoreCase))
                 {
                     strings.Add(_propertyNames[i]);
@@ -118,7 +118,7 @@ namespace Tempo
             set { SetValue(FilterProperty, value); }
         }
         public static readonly DependencyProperty FilterProperty =
-            DependencyProperty.Register("Filter", typeof(string), typeof(AllModelProperties), 
-                new PropertyMetadata(null, (d,_) => (d as AllModelProperties).UpdateStrings()));
+            DependencyProperty.Register("Filter", typeof(string), typeof(AllModelProperties),
+                new PropertyMetadata(null, (d, _) => (d as AllModelProperties).UpdateStrings()));
     }
 }

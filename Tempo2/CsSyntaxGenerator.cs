@@ -17,6 +17,8 @@ namespace Tempo
         static Thickness Indent1 = new Thickness(20, 0, 0, 0);
         static Thickness Indent2 = new Thickness(40, 0, 0, 0);
 
+        // In light mode, should be blue
+        // In dark mode, should be #569cd6
         static SolidColorBrush _blueBrush = new SolidColorBrush(Colors.Blue); // bugbug: put into app or resources?
 
         // CsSyntaxGenerator.Member attached property

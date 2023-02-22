@@ -267,8 +267,13 @@ namespace Tempo
 
         static private void LoadContext_FakeTypeRequired(object sender, MrLoadContext.FakeTypeRequiredEventArgs e)
         {
+            // The Windows Platform SDK has naming mismatches between what's in the SDK and what's on
+            // the system at runtime. For example Windows.Foundation types are in Windows.Foundation.WinMD at runtime
+            // but Windows.Foundation.FoundationContract.WinMD in the SDK. If we have what looks like one of those
+            // cases, just look for the type in all loaded assemblies.
             if (!e.AssemblyName.StartsWith("Windows.")
-                && !e.AssemblyName.Contains("Contract."))
+                && !e.AssemblyName.Contains("Contract.")
+                && !e.TypeName.StartsWith("Windows.Foundation."))
             {
                 return;
             }
@@ -533,6 +538,7 @@ namespace Tempo
                 var loadContext = new MrLoadContext(useWinRTProjections: useWinRTProjections);
                 var resolver = new MRAssemblyResolver();
                 loadContext.AssemblyPathFromName = resolver.ResolveCustomAssembly;
+                loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
                 // Sleep for testing the dialog
                 //Thread.Sleep(5000);
@@ -605,6 +611,11 @@ namespace Tempo
             }
 
             return;
+        }
+
+        private static void LoadContext_FakeTypeRequired1(object sender, MrLoadContext.FakeTypeRequiredEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         public static void LoadCustomWinMDFileNamesFromRegistry()
