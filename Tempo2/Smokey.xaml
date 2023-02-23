@@ -12,7 +12,7 @@
          This also has an optional progress ring. -->
     
     <Grid x:Name="_root" IsHitTestVisible="False" 
-          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
           Opacity="0.9">
 
         <VisualStateManager.VisualStateGroups>

@@ -19,7 +19,7 @@
 
             <Grid ColumnDefinitions="Auto,*"
                   VerticalAlignment="Center" HorizontalAlignment="Center"
-                  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                  Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
                   Padding="40"
                   CornerRadius="5"
                   ColumnSpacing="50" RowSpacing="40">

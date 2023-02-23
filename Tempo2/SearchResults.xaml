@@ -179,7 +179,7 @@
 
             <!-- Progress UI that turns on when/while search is slow -->
             <StackPanel Grid.ColumnSpan="2"
-                        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                        Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
                         CornerRadius="5"
                         Padding="{StaticResource ContentMargin}"
                         Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}"

@@ -24,7 +24,7 @@
 
         <!-- Opaque layer that gives a message if there's no doc page to be fond for this API-->
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
               Visibility="{x:Bind HasNavigationError, Mode=OneWay}">
             
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"

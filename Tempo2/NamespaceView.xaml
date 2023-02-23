@@ -12,7 +12,7 @@
         <CollectionViewSource x:Name="_cvs" Source="{x:Bind NamespacesAndTypes, Mode=Oneway}" IsSourceGrouped="True" />
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    <Grid Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
           Padding="{StaticResource ContentMargin2}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

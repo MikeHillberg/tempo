@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}">
 
     <StackPanel Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
         <TextBlock FontStyle="Italic" FontSize="12" Foreground="{ThemeResource SystemAccentColor}" x:Name="_tb" 

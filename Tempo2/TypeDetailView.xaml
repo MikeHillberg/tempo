@@ -8,7 +8,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
+    <Grid Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}" 
           PointerPressed="Grid_PointerPressed" >
 
         <Grid.RowDefinitions>
@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
 
         <!-- Command bar and heading -->
-        <Border BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="0" >
+        <Border BorderBrush="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}" BorderThickness="0" >
             <StackPanel>
 
                 <!-- Show the command bar if we're the content of the Frame, or if "top level" meaning the primary content -->

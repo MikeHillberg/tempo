@@ -12,7 +12,7 @@
 
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    <Grid Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
           Padding="{StaticResource ContentMargin}">
 
         <Grid.RowDefinitions>
