@@ -121,6 +121,7 @@ namespace Tempo
         public void ParseRawValue()
         {
             _typeRegex = _memberRegex = null;
+            SearchSlowly = false;
 
             if (string.IsNullOrEmpty(_rawValue))
             {
@@ -131,6 +132,13 @@ namespace Tempo
             if (searchString != null)
             {
                 searchString = searchString.Trim();
+            }
+
+            // Testing aid
+            if(searchString.Contains("-slowly"))
+            {
+                SearchSlowly = true;
+                searchString = searchString.Replace("-slowly", "");
             }
 
             // A "::" means Type::Member syntax, a single ":" means AQS syntax
@@ -558,6 +566,9 @@ namespace Tempo
         public bool HasAqsExpression => _aqsExpression != null;
 
         public WhereCondition WhereCondition { get; private set; }
+
+        // This is a testing aid. When set, do a sleep during search
+        public bool SearchSlowly = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
         void RaisePropertyChanged([CallerMemberName] string name = null)

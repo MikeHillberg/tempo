@@ -683,6 +683,12 @@ namespace Tempo
             // But we need to set the value now because during the search we're going to set it into matching VMs
             MatchGeneration.SetValueQuietly(MatchGeneration + 1);
 
+            // Testing aid
+            if(searchExpression.SearchSlowly)
+            {
+                Thread.Sleep(10000);
+            }
+
             var typesChecked = 0;
 
             ResetMatchCounts();

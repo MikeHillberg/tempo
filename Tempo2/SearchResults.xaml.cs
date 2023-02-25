@@ -369,10 +369,6 @@ namespace Tempo
 
         static int _cacheCounter = 0;
 
-        // Keeps count of outstanding calls to GetMembers
-        // There can be more than one because it runs on another thread
-        int _gettingMembersCount = 0;
-
         private async void DoSearch()
         {
             var shouldContinue = await App.EnsureApiScopeLoadedAsync();
@@ -398,10 +394,12 @@ namespace Tempo
 
             IList<MemberOrTypeViewModelBase> newResults = null;
             DateTime _startTime = DateTime.Now;
-            _gettingMembersCount++;
+
+            // We might get multiple searches going at once. Ignore all but the last.
+            var iteration = ++Manager.RecalculateIteration;
+
             var searchTask = Task.Run(() =>
             {
-                var iteration = ++Manager.RecalculateIteration;
                 newResults = Manager.GetMembers(searchExpression, iteration);
             });
 
@@ -448,9 +446,9 @@ namespace Tempo
                 //dialog.Hide();
             }
 
-            --_gettingMembersCount;
 
-            if (_gettingMembersCount == 0)
+            // Ignore the results unless this was the last concurrent search started
+            if(iteration == Manager.RecalculateIteration)
             {
                 SlowSearchInProgress = false;
 
