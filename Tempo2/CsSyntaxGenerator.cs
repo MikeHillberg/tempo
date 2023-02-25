@@ -486,7 +486,7 @@ namespace Tempo
                     Margin = new Thickness(0, 0, 3, 0),
                     Width = 4, // bugbug
                     Height = 12,
-                    Fill = HomePage.Instance._accentColorBrush.Fill
+                    Fill = HomePage.Instance.SystemAccentColorShape.Fill
                 };
 
                 inlines.Add(new InlineUIContainer() { Child = rectangle });

@@ -50,8 +50,6 @@ namespace Tempo
                 new PropertyMetadata(null, (d, __) => (d as NameValuePanel).InvalidateMeasure()));
 
 
-        SolidColorBrush _grayBrush = new SolidColorBrush(Colors.LightGray);
-
         /// <summary>
         /// During measure, set the Grid attached properties and RowDefinitions on the Children
         /// </summary>
@@ -77,7 +75,9 @@ namespace Tempo
                 // Set even rows to have a gray background
                 if ((row % 2) == 0)
                 {
-                    child.Background = _grayBrush;
+                    // bugbug: Using this resource from HomePage doesn't dynamically respond to theme changes
+                    // until you navigate back to HomePage.
+                    child.Background = HomePage.Instance.ApplicationPageBackgroundThemeBrushShape.Fill;
                 }
 
                 // Set the column if not already set

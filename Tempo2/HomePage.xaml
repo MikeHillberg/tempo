@@ -9,11 +9,13 @@
 
     <ScrollViewer>
         <ScrollViewer.Resources>
-            
             <!-- Hack to do a theme lookup since there's no API for it -->
-            <Rectangle x:Name="_accentColorBrush" x:FieldModifier="public"
+            <Rectangle x:Name="SystemAccentColorShape" x:FieldModifier="public"
                        Fill="{ThemeResource SystemAccentColor}"/>
+            <Rectangle x:Name="ApplicationPageBackgroundThemeBrushShape" x:FieldModifier="public"
+                       Fill="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
         </ScrollViewer.Resources>
+        
         <Grid x:Name="_root" Background="Transparent" Padding="60" 
           PointerPressed="TeachingTipDemo_PointerPressed">
 
