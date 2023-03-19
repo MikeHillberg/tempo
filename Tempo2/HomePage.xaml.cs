@@ -598,6 +598,12 @@ namespace Tempo
         public static readonly DependencyProperty TextElementTagProperty =
             DependencyProperty.RegisterAttached("Tag", typeof(object), typeof(HomePage), 
                     new PropertyMetadata(null));
+
+        private void ApiScope_RadioButton_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            App.Instance.GotoSearch();
+        }
+
     }
 
     public class SplitFilename
