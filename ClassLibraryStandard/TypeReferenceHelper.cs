@@ -16,11 +16,63 @@ namespace Tempo
     public class TypeReferenceHelper
     {
 
+        static public IList<TypeViewModel> FindReturnedByTypesClosure(TypeViewModel typeVM)
+        {
+            //var asyncCounter = new AsyncCounter();
+            //foreach (var type in typeVM.TypeSet.Types)
+            //{
+            //    var allOutMembers = AllMembersWhereForType(
+            //                            type,               
+            //                            asyncCounter,
+            //                            checkOutOnly: true,
+            //                            (t) => true);
+
+            //    var list = new List<TypeViewModel>();
+            //    foreach(var member in allOutMembers)
+            //    {
+            //        if(!list.Contains(member.Item2))
+            //        {
+            //            list.Add(member.Item2);
+            //        }
+            //    }
+            //}
+
+            var typesToFollow = new List<TypeViewModel>()
+            {
+                typeVM
+            };
+            var referencingTypes = new List<TypeViewModel>();
+            var counter = new AsyncCounter();
+
+            while (typesToFollow.Count != 0)
+            {
+                Debug.WriteLine($"Types to follow: {typesToFollow.Count}");
+
+                var copy = typesToFollow.ToArray();
+                typesToFollow.Clear();
+                foreach (var type in copy)
+                {
+                    var directReferencing = type.ReturnedByAsync;
+                    foreach (var member in directReferencing)
+                    {
+                        var type2 = member.DeclaringType;
+                        if (!referencingTypes.Contains(type2))
+                        {
+                            typesToFollow.Add(type2);
+                            referencingTypes.Add(type2);
+                        }
+                    }
+                }
+            }
+
+            return referencingTypes;
+        }
+
         static public IEnumerable<TypeViewModel> FindReferencesToOtherNamespaces(AsyncCounter counter, string fromNamespace)
         {
             var matchingTypes = new List<TypeViewModel>();
             var members = AllMembersWhere(counter, /*checkOutOnly*/false,
-                (TypeViewModel type) =>
+                (type, _) =>
                 {
                     var matches = !type.Namespace.StartsWith(fromNamespace); // Return types from other namespaces
                     if (matches && !matchingTypes.Contains(type))
@@ -42,14 +94,14 @@ namespace Tempo
             return AllMembersWhere(
                 counter,
                 /*checkOutOnly*/true,
-                (TypeViewModel type) => type == soughtType);
+                (type, _) => type == soughtType);
         }
 
 
         static public IEnumerable<MemberOrTypeViewModelBase> AllMembersWhere(
             AsyncCounter counter,
             bool checkOutOnly, // Only check [out] parameters
-            Func<TypeViewModel, bool> typeCheck,
+            Func<TypeViewModel, MemberViewModelBase, bool> typeCheck,
             Func<TypeViewModel, bool> typeFilter = null)
         {
             var initialCount = counter.Value;
@@ -58,99 +110,134 @@ namespace Tempo
 
             foreach (var type in Manager.CurrentTypeSet.Types)
             {
-                if (typeFilter != null && !typeFilter(type))
-                {
-                    continue;
-                }
-
-                if (!type.IsPublic && !Manager.Settings.InternalInterfaces)
-                    continue;
-
                 if (counter.Value != -1 && initialCount != counter.Value)
+                {
                     yield break;
-
-                foreach (var prop in type.Properties)
-                {
-                    if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, typeCheck))
-                        yield return prop;
                 }
 
-                foreach (var ev in type.Events)
+                var members = AllMembersWhereForType(type, counter, checkOutOnly, typeCheck, typeFilter);
+                if(members == null)
                 {
-                    if (WalkTypesInAncestorsOrGenericArguments(ev.EventHandlerType, typeCheck))
-                    {
-                        yield return ev;
-                    }
+                    continue;
+                }
 
-                    // If the event handler type is TypedEventHandler<TSender,TArgs>, and we're looking
-                    // for TArgs, then we just found it. But if the type is a custom delegate we didn't.
-                    // Ex if we're looking for SelectionChangedEventArgs and the event handler type is SelectionChangedHandler,
-                    // then we didn't just find it but we should. So check the parameters on the Invoke() method
-                    else if(ev.EventHandlerType.DelegateInvoker != null)
+                foreach(var member in members)
+                {
+                    yield return member.Item1;
+                }
+
+            }
+        }
+
+        public static IEnumerable<(MemberOrTypeViewModelBase,TypeViewModel)> AllMembersWhereForType(
+            TypeViewModel type,
+            AsyncCounter counter,
+            bool checkOutOnly, // Only check [out] parameters
+            Func<TypeViewModel, MemberViewModelBase, bool> typeCheck,
+            Func<TypeViewModel, bool> typeFilter = null)
+
+        {
+            if (typeFilter != null && !typeFilter(type))
+            {
+                yield break;
+            }
+
+            if (!type.IsPublic && !Manager.Settings.InternalInterfaces)
+            {
+                yield break;
+            }
+
+            //if (counter.Value != -1 && initialCount != counter.Value)
+            //    yield break;
+
+            foreach (var prop in type.Properties)
+            {
+                if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, prop, typeCheck))
+                {
+                    yield return  (prop, prop.PropertyType);
+                }
+            }
+
+            foreach (var ev in type.Events)
+            {
+                if (WalkTypesInAncestorsOrGenericArguments(ev.EventHandlerType, ev, typeCheck))
+                {
+                    yield return (ev, ev.EventHandlerType);
+                }
+
+                // If the event handler type is TypedEventHandler<TSender,TArgs>, and we're looking
+                // for TArgs, then we just found it. But if the type is a custom delegate we didn't.
+                // Ex if we're looking for SelectionChangedEventArgs and the event handler type is SelectionChangedHandler,
+                // then we didn't just find it but we should. So check the parameters on the Invoke() method
+                else if (ev.EventHandlerType.DelegateInvoker != null)
+                {
+                    var parameters = ev.EventHandlerType.DelegateInvoker.Parameters;
+                    if (parameters != null)
                     {
-                        var parameters = ev.EventHandlerType.DelegateInvoker.Parameters;
-                        if (parameters != null)
+                        foreach (var param in parameters)
                         {
-                            foreach (var param in parameters)
+                            if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, ev, typeCheck))
                             {
-                                if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, typeCheck))
-                                {
-                                    yield return ev;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-
-                foreach (var method in type.Methods)
-                {
-                    if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, typeCheck))
-                    {
-                        yield return method;
-                        continue;
-                    }
-
-                    foreach (var param in method.Parameters)
-                    {
-                        if ((param.IsOut || !checkOutOnly)
-                            && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, typeCheck)))
-                        {
-                            yield return method;
-                        }
-                    }
-                }
-
-                if (!checkOutOnly)
-                {
-                    foreach (var constructor in type.Constructors)
-                    {
-                        if (WalkTypesInAncestorsOrGenericArguments(constructor.ReturnType, typeCheck))
-                        {
-                            yield return constructor;
-                            continue;
-                        }
-
-                        foreach (var param in constructor.Parameters)
-                        {
-                            if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, typeCheck))
-                            {
-                                yield return constructor;
+                                yield return (ev, param.ParameterType);
                                 break;
                             }
                         }
                     }
+                }
+            }
 
-                    if (WalkTypesInAncestorsOrGenericArguments(type, typeCheck))
+
+            foreach (var method in type.Methods)
+            {
+                if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, method, typeCheck))
+                {
+                    yield return (method, method.ReturnType);
+                    continue;
+                }
+
+                foreach (var param in method.Parameters)
+                {
+                    if ((param.IsOut || !checkOutOnly)
+                        && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, method, typeCheck)))
                     {
-                        yield return type;
+                        yield return (method, param.ParameterType);
                     }
                 }
             }
+
+            if (!checkOutOnly)
+            {
+                foreach (var constructor in type.Constructors)
+                {
+                    if (WalkTypesInAncestorsOrGenericArguments(constructor.ReturnType, constructor, typeCheck))
+                    {
+                        yield return (constructor, constructor.ReturnType);
+                        continue;
+                    }
+
+                    foreach (var param in constructor.Parameters)
+                    {
+                        if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, constructor, typeCheck))
+                        {
+                            yield return (constructor, param.ParameterType);
+                            break;
+                        }
+                    }
+                }
+
+                if (WalkTypesInAncestorsOrGenericArguments(type, null, typeCheck))
+                {
+                    yield return (type, type);
+                }
+            }
+
         }
 
-        static bool WalkTypesInAncestorsOrGenericArguments(TypeViewModel candidateType, Func<TypeViewModel, bool> check)
+        static bool WalkTypesInAncestorsOrGenericArguments(
+            TypeViewModel candidateType, 
+            MemberViewModelBase member,
+            Func<TypeViewModel, MemberViewModelBase, bool> 
+            check)
         {
             // bugbug: don't do early returns here when we find the first matching type, because one usage of this method
             // is to find all matching types.
@@ -168,7 +255,7 @@ namespace Tempo
             {
                 if (!ancestor.IsGenericType)
                 {
-                    if (check(ancestor))
+                    if (check(ancestor, member))
                     {
                         result = true;
                     }
@@ -178,7 +265,7 @@ namespace Tempo
                     // Ignore IAsync stuff, but still check for the <T> type
                     var genericTypeDefinition = ancestor.GetGenericTypeDefinition();
                     if (!genericTypeDefinition.FullName.StartsWith("Windows.Foundation.IAsync")
-                        && check(genericTypeDefinition))
+                        && check(genericTypeDefinition, member))
                     {
                         result = true;
                     }
@@ -198,7 +285,7 @@ namespace Tempo
                             skipArg = false;
                             continue;
                         }
-                        if (WalkTypesInAncestorsOrGenericArguments(arg, check))
+                        if (WalkTypesInAncestorsOrGenericArguments(arg, member, check))
                             result = true;
                     }
                 }
@@ -210,7 +297,7 @@ namespace Tempo
             foreach (var iface in ifaces)
             {
                 //if (candidateType == iface)
-                if (iface.IsPublic && check(iface))
+                if (iface.IsPublic && check(iface, member))
                 {
                     result = true;
                 }
@@ -253,8 +340,8 @@ namespace Tempo
         //}
 
         static public IEnumerable<TypeViewModel> FindReferencingTypes(
-            TypeViewModel findType, 
-            int referenceIndex )
+            TypeViewModel findType,
+            int referenceIndex)
         {
             if (referenceIndex != -1 && referenceIndex != Manager._referenceIndex) yield break;
 
@@ -290,7 +377,7 @@ namespace Tempo
                                             findType.AutomationPeer = checkType;
                                         };
 
-                                        if(Manager.PostToUIThread != null)
+                                        if (Manager.PostToUIThread != null)
                                         {
                                             Manager.PostToUIThread(update);
                                         }
@@ -390,7 +477,7 @@ namespace Tempo
             {
                 var type = typeAndSource.TypeVM;
 
-                if(type == findType)
+                if (type == findType)
                 {
                     // Not interesting to know that you refer to yourself
                     continue;

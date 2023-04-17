@@ -131,6 +131,7 @@
     <None Remove="HelpPage.xaml" />
     <None Remove="LoadingDialog.xaml" />
     <None Remove="MemberMore.xaml" />
+    <None Remove="ReferencingTypes.xaml" />
     <None Remove="RootFrame.xaml" />
     <None Remove="SmokeLayer.xaml" />
     <None Remove="Smokey.xaml" />
@@ -153,6 +154,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="ReferencingTypes.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="RootFrame.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

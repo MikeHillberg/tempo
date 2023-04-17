@@ -6,6 +6,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 using Microsoft.Web.WebView2.Core;
+using System;
+using Windows.System;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -24,7 +27,7 @@ namespace Tempo
             SizeChanged += OnSizeChanged;
         }
 
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private async void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             if(e.NewSize != Size.Empty)
             {
@@ -37,7 +40,55 @@ namespace Tempo
 
                 // Create and initialize the web view
                 IsWebViewLoaded = true;
+
+                await _webView.EnsureCoreWebView2Async();
+                var wv2 = _webView.CoreWebView2;
+                //wv2.Settings.UserAgent = "Tempo";
+
+                //wv2.AddWebResourceRequestedFilter("*docs.microsoft.com*", CoreWebView2WebResourceContext.All);
+                //wv2.WebResourceRequested += (_, args) =>
+                //{
+                //    Debug.WriteLine($"WRR: {args.Request.Uri}");
+
+                //    Launcher.LaunchUriAsync(new Uri(args.Request.Uri));
+                //};
+
+                //wv2.NavigationStarting += (_, args) =>
+                //{
+                //    Debug.WriteLine(args.Uri.ToString());
+                //    if (args.Uri.ToString().Contains("login.microsoftonline.com"))
+                //    {
+                //        args.Cancel = true;
+                //        Foo(args.Uri);
+                //    }
+                //};
             }
+        }
+
+        void Foo(string uri)
+        {
+            var w = new Window();
+            var wv = new WebView2();
+            wv.Loaded += async (_, __) =>
+            {
+                await wv.EnsureCoreWebView2Async();
+
+                wv.CoreWebView2.NavigationStarting += (_, args) =>
+                {
+                    var s = "";
+                    if (args != null && args.Uri != null)
+                    {
+                        s = args.Uri;
+                    }
+                    Debug.WriteLine($"temp: {s}");
+                };
+
+                //wv.CoreWebView2.Settings.UserAgent = "Tempo";
+                wv.CoreWebView2.Navigate(uri);
+            };
+
+
+            w.Activate();
         }
 
         /// <summary>

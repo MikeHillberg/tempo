@@ -69,24 +69,30 @@
 
         <!-- Use a scaling inversion on this copy button, so that when the content is being
              zoomed up we don't zoom this button up along with it -->
-        <controls:LayoutTransformControl Grid.Row="1">
+        <controls:LayoutTransformControl >
             <controls:LayoutTransformControl.Transform>
                 <ScaleTransform ScaleX="{x:Bind Descale(local:App.Instance.ContentScaling), Mode=OneWay}"
                                 ScaleY="{x:Bind Descale(local:App.Instance.ContentScaling), Mode=OneWay}"/>
             </controls:LayoutTransformControl.Transform>
 
-            <HyperlinkButton Click="CopyTypeDefinition" VerticalAlignment="Top" HorizontalAlignment="Right">
-                <StackPanel Orientation="Horizontal" 
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                <HyperlinkButton Click="CopyTypeDefinition" >
+                    <StackPanel Orientation="Horizontal" 
                             ToolTipService.ToolTip="Copy this type definition to the clipboard">
-                    <SymbolIcon x:Name="_copySymbol"  Symbol="Copy" Margin="0,0,12,0">
-                        <FlyoutBase.AttachedFlyout>
-                            <Flyout x:Name="_flyout">
-                                <TextBlock>Copied type definition to clipboard</TextBlock>
-                            </Flyout>
-                        </FlyoutBase.AttachedFlyout>
-                    </SymbolIcon>
-                </StackPanel>
-            </HyperlinkButton>
+                        <SymbolIcon x:Name="_copySymbol"  Symbol="Copy" Margin="0,0,12,0">
+                            <FlyoutBase.AttachedFlyout>
+                                <Flyout x:Name="_flyout">
+                                    <TextBlock>Copied type definition to clipboard</TextBlock>
+                                </Flyout>
+                            </FlyoutBase.AttachedFlyout>
+                        </SymbolIcon>
+                    </StackPanel>
+                </HyperlinkButton>
+
+                <HyperlinkButton Click="HyperlinkButton_Click">
+                    <SymbolIcon Symbol="Map"/>
+                </HyperlinkButton>
+            </StackPanel>
 
         </controls:LayoutTransformControl>
 
