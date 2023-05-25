@@ -237,10 +237,6 @@ namespace Tempo
                 var asyncCounter = new AsyncCounter();
                 foreach (var type in Types)
                 {
-                    if(type.Name == "UIElement")
-                    {
-                        int j = 2001;
-                    }
 
                     var allOutMembers = TypeReferenceHelper.AllMembersWhereForType(
                                             type,

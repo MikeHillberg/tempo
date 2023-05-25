@@ -187,7 +187,19 @@ namespace Tempo
             }
 
 
-            foreach (var method in type.Methods)
+            // For most types, look for [out] parameters. For Delegate types,
+            // look at the Invoker method, which is essentially an "out"
+            IList<MethodViewModel> methods;
+            if(type.DelegateInvoker == null)
+            {
+                methods = type.Methods;
+            }
+            else
+            {
+                methods = new MethodViewModel[] { type.DelegateInvoker }.ToList();
+            }
+
+            foreach (var method in methods)
             {
                 if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, method, typeCheck))
                 {
@@ -197,7 +209,7 @@ namespace Tempo
 
                 foreach (var param in method.Parameters)
                 {
-                    if ((param.IsOut || !checkOutOnly)
+                    if ((param.IsOut || !checkOutOnly || type.DelegateInvoker != null)
                         && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, method, typeCheck)))
                     {
                         yield return (method, param.ParameterType);
@@ -236,8 +248,7 @@ namespace Tempo
         static bool WalkTypesInAncestorsOrGenericArguments(
             TypeViewModel candidateType, 
             MemberViewModelBase member,
-            Func<TypeViewModel, MemberViewModelBase, bool> 
-            check)
+            Func<TypeViewModel, MemberViewModelBase, bool>  check)
         {
             // bugbug: don't do early returns here when we find the first matching type, because one usage of this method
             // is to find all matching types.
@@ -419,7 +430,6 @@ namespace Tempo
         {
             public TypeAndSource(TypeViewModel type, string source)
             {
-                //if (type.FullName != null && type.FullName.Contains("XmlWriter"))
                 TypeVM = type;
                 Source = source;
             }
@@ -459,9 +469,7 @@ namespace Tempo
 
         static internal bool IsTerminator(TypeViewModel typeVM)
         {
-            //var type = typeVM == null ? null : typeVM.Type;
-
-            if (typeVM == null || typeVM.ShouldIgnore)// (Type2Ancestors.ShouldIgnoreType(type))
+            if (typeVM == null || typeVM.ShouldIgnore)
                 return true;
 
             if (typeVM.Namespace == "System")
@@ -551,7 +559,7 @@ namespace Tempo
 
             foreach (var method in findType.Methods)  //type.GetMethods(bindingFlags))
             {
-                yield return new TypeAndSource(method.ReturnType, "Method: " + method.Name);
+                yield return new TypeAndSource(method.ReturnType, $"Method:  {method.Name} ({method.ReturnType})");
 
 
                 IList<ParameterViewModel> parameters = null;
@@ -559,7 +567,7 @@ namespace Tempo
                 {
                     parameters = method.Parameters;
                 }
-                catch (Exception) //(System.IO.FileLoadException) // FileLoadException doesn't work in CommonLibrary
+                catch (Exception)
                 {
                     // Work around reflection bug with new type projections
                     parameters = new List<ParameterViewModel>();
@@ -567,16 +575,16 @@ namespace Tempo
 
                 if (parameters != null)
                 {
-                    foreach (var parameter in parameters) // .GetParameters())
+                    foreach (var parameter in parameters)
                     {
-                        yield return new TypeAndSource(parameter.ParameterType, "Parameter: " + parameter.Name + " (" + parameter.ParameterType + ")");
+                        yield return new TypeAndSource(parameter.ParameterType, $"Parameter: {parameter.Name} on {method.PrettyName} ({parameter.ParameterType}) ");
                     }
                 }
             }
 
-            foreach (var constructor in findType.Constructors)  //type.GetMethods(bindingFlags))
+            foreach (var constructor in findType.Constructors) 
             {
-                foreach (var parameter in constructor.Parameters) // constructor.GetParameters())
+                foreach (var parameter in constructor.Parameters)
                 {
                     yield return new TypeAndSource(parameter.ParameterType, "Constructor parameter: " + parameter.Name + " (" + parameter.ParameterType + ")");
                 }
