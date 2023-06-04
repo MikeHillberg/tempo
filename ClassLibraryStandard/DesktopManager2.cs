@@ -679,7 +679,7 @@ namespace Tempo
             else if (channel == WinAppSDKChannel.Experimental)
                 prereleasePrefix = "experimental";
 
-            DebugLog.Append("Loading {packageName}, {prereleasePrefix}");
+            DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
             // Download the nupkg from nuget.org (or used the cached copy)
             var t = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, prereleasePrefix);

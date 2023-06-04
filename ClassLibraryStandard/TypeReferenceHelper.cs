@@ -16,56 +16,40 @@ namespace Tempo
     public class TypeReferenceHelper
     {
 
+        /// <summary>
+        /// Find the transitive closure of types that return the specified type
+        /// </summary>
         static public IList<TypeViewModel> FindReturnedByTypesClosure(TypeViewModel typeVM)
         {
-            //var asyncCounter = new AsyncCounter();
-            //foreach (var type in typeVM.TypeSet.Types)
-            //{
-            //    var allOutMembers = AllMembersWhereForType(
-            //                            type,               
-            //                            asyncCounter,
-            //                            checkOutOnly: true,
-            //                            (t) => true);
-
-            //    var list = new List<TypeViewModel>();
-            //    foreach(var member in allOutMembers)
-            //    {
-            //        if(!list.Contains(member.Item2))
-            //        {
-            //            list.Add(member.Item2);
-            //        }
-            //    }
-            //}
-
             var typesToFollow = new List<TypeViewModel>()
             {
                 typeVM
             };
-            var referencingTypes = new List<TypeViewModel>();
-            var counter = new AsyncCounter();
 
+            var returningTypes = new List<TypeViewModel>();
+
+            // For each type in typesToFollow, add types that return it to returningTypes
+            // Also add to typesToFollow, so that we can find those returning types
             while (typesToFollow.Count != 0)
             {
-                Debug.WriteLine($"Types to follow: {typesToFollow.Count}");
-
                 var copy = typesToFollow.ToArray();
                 typesToFollow.Clear();
                 foreach (var type in copy)
                 {
-                    var directReferencing = type.ReturnedByAsync;
-                    foreach (var member in directReferencing)
+                    var directReturning = type.ReturnedByAsync;
+                    foreach (var member in directReturning)
                     {
                         var type2 = member.DeclaringType;
-                        if (!referencingTypes.Contains(type2))
+                        if (!returningTypes.Contains(type2))
                         {
                             typesToFollow.Add(type2);
-                            referencingTypes.Add(type2);
+                            returningTypes.Add(type2);
                         }
                     }
                 }
             }
 
-            return referencingTypes;
+            return returningTypes;
         }
 
         static public IEnumerable<TypeViewModel> FindReferencesToOtherNamespaces(AsyncCounter counter, string fromNamespace)
@@ -98,6 +82,9 @@ namespace Tempo
         }
 
 
+        /// <summary>
+        /// Return all members that callbacks approve of
+        /// </summary>
         static public IEnumerable<MemberOrTypeViewModelBase> AllMembersWhere(
             AsyncCounter counter,
             bool checkOutOnly, // Only check [out] parameters
@@ -106,16 +93,17 @@ namespace Tempo
         {
             var initialCount = counter.Value;
 
-            if (counter.Value != -1 && initialCount != counter.Value) yield break;
-
+            // Check every type
             foreach (var type in Manager.CurrentTypeSet.Types)
             {
+                // If the counter has updated, it means that this query has been canceled
                 if (counter.Value != -1 && initialCount != counter.Value)
                 {
                     yield break;
                 }
 
-                var members = AllMembersWhereForType(type, counter, checkOutOnly, typeCheck, typeFilter);
+                // Helper method that gets all the member for one type
+                var members = AllMembersWhereForType(type, checkOutOnly, typeCheck, typeFilter);
                 if(members == null)
                 {
                     continue;
@@ -129,9 +117,11 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// Return all members for a type that matches the callbacks
+        /// </summary>
         public static IEnumerable<(MemberOrTypeViewModelBase,TypeViewModel)> AllMembersWhereForType(
             TypeViewModel type,
-            AsyncCounter counter,
             bool checkOutOnly, // Only check [out] parameters
             Func<TypeViewModel, MemberViewModelBase, bool> typeCheck,
             Func<TypeViewModel, bool> typeFilter = null)
@@ -146,9 +136,6 @@ namespace Tempo
             {
                 yield break;
             }
-
-            //if (counter.Value != -1 && initialCount != counter.Value)
-            //    yield break;
 
             foreach (var prop in type.Properties)
             {
@@ -479,9 +466,13 @@ namespace Tempo
         }
 
 
+        /// <summary>
+        /// Get all types referenced by the given type, referenced by members, base, or type arguments
+        /// </summary>
         static internal IEnumerable<TypeAndSource> GetDirectReferencedTypesHelper1(TypeViewModel findType, bool shouldFlatten, bool includeDerived)
         {
-            foreach (var typeAndSource in GetDirectReferencedTypesHelper2(findType, shouldFlatten, includeDerived))
+            // Get each of the types that findType references via members or the base (and implemented interfaces)
+            foreach (var typeAndSource in GetDirectReferencedMemberAndBaseTypes(findType, shouldFlatten, includeDerived))
             {
                 var type = typeAndSource.TypeVM;
 
@@ -493,13 +484,20 @@ namespace Tempo
 
                 if (!type.IsGenericType)
                 {
+                    // Not a generic type, nothing left to check for
                     yield return typeAndSource;
                 }
                 else
                 {
+                    // This is a generic type, so we'll return the open type and then
+                    // its type arguments
+
+                    // Return the open type
                     var generic = type.GetGenericTypeDefinition();
                     yield return new TypeAndSource(generic, typeAndSource.Source);
 
+                    // Return the type arguments
+                    // (Specifically type _arguments_, not type _parameters_
                     foreach (var t in GetTypeArguments(type))
                     {
                         if (t.TypeVM == findType)
@@ -514,19 +512,28 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// Get the type _arguments_ for a (partially) closed open type
+        /// </summary>
         static IEnumerable<TypeAndSource> GetTypeArguments(TypeViewModel type)
         {
             foreach (var t in type.GetGenericArguments())
             {
+                // Skip type parameters. E.g. return Person for List<Person>,
+                // but don't return T for List<T>
                 if (!t.IsGenericParameter)
                 {
                     if (t.IsGenericType)
                     {
+                        // This type argument is itself a generic type
+
                         var generic = t.GetGenericTypeDefinition();
                         yield return new TypeAndSource(generic, "Open type argument: " + generic.Name);
 
                         foreach (var t2 in GetTypeArguments(t))
+                        {
                             yield return t2;
+                        }
                     }
                     else
                     {
@@ -536,7 +543,11 @@ namespace Tempo
             }
         }
 
-        static internal IEnumerable<TypeAndSource> GetDirectReferencedTypesHelper2(TypeViewModel findType, bool shouldFlatten, bool includeDerived)
+        /// <summary>
+        /// Get types referenced by the given type via members, interfaces, or optionally base types
+        /// (This doesn't walk type arguments though)
+        /// </summary>
+        static internal IEnumerable<TypeAndSource> GetDirectReferencedMemberAndBaseTypes(TypeViewModel findType, bool shouldFlatten, bool includeDerived)
         {
             if (includeDerived)
             {
@@ -547,7 +558,7 @@ namespace Tempo
                 }
             }
 
-            foreach (var i in findType.Interfaces) //findType.GetInterfaces())
+            foreach (var i in findType.Interfaces)
             {
                 yield return new TypeAndSource(i, "Implements: " + i.Name);
             }
@@ -557,7 +568,7 @@ namespace Tempo
                 yield return new TypeAndSource(property.PropertyType, "Property: " + property.Name + " (" + property.PropertyType.Name + ")");
             }
 
-            foreach (var method in findType.Methods)  //type.GetMethods(bindingFlags))
+            foreach (var method in findType.Methods)
             {
                 yield return new TypeAndSource(method.ReturnType, $"Method:  {method.Name} ({method.ReturnType})");
 

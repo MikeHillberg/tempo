@@ -131,41 +131,27 @@ namespace Tempo
         }
 
         IList<MemberOrTypeViewModelBase> _returnedBy = new List<MemberOrTypeViewModelBase>();
+
+        /// <summary>
+        /// List of members that output instances of this type
+        /// </summary>
         public IList<MemberOrTypeViewModelBase> ReturnedByAsync
         {
             get
             {
-                if (_returnedBy == null)
+                if (!TypeSet.ReturnedByCalculated)
                 {
-                    UpdateReturnedByAsync();
+                    // _returnedBy hasn't been calculated yet. When it is, raise INPC
+                    TypeSet.ReturnedByCalculationCompleted += (s, e) => RaisePropertyChanged(nameof(ReturnedByAsync));
                     return null;
                 }
 
                 return _returnedBy;
             }
         }
-        AsyncCounter _returnedByCounter = new AsyncCounter();
-        public async void UpdateReturnedByAsync()
-        {
-            //var initialCount = _returnedByCounter.Value;
 
-            await Task.Run(() =>
-            {
-                //return TypeReferenceHelper.FindReturningMembers(this, _returnedByCounter).ToList();
-                TypeSet.CalculateReturnedByEventWait.WaitOne();
-            });
-
-            //if (_returnedBy == null && initialCount == _returnedByCounter.Value)
-            //{
-            //    _returnedBy = members;
-
-            //    RaisePropertyChanged(nameof(ReturnedByAsync));
-            //}
-            RaisePropertyChanged(nameof(ReturnedByAsync));
-
-        }
-
-        public void AddReturnedBy(MemberOrTypeViewModelBase m)
+        // This is called by TypeSet when it finds a member that outputs this type
+        public void AddMemberToReturnedBy(MemberOrTypeViewModelBase m)
         {
             _returnedBy.Add(m);
         }
@@ -765,7 +751,7 @@ namespace Tempo
                     foreach (var attr in CustomAttributes)
                     {
                         _guid = attr.TryParseGuidAttribute();
-                        if(_guid != string.Empty)
+                        if (_guid != string.Empty)
                         {
                             break;
                         }
@@ -1432,7 +1418,7 @@ namespace Tempo
         {
             get
             {
-                if (!_versionChecked )
+                if (!_versionChecked)
                 {
                     _versionChecked = true;
                     _version = "";
@@ -2421,6 +2407,9 @@ namespace Tempo
 
         virtual public AcidInfo AcidInfo => null;
 
+        /// <summary>
+        /// True if this type is in a TypeSet (not a generated/fake type)
+        /// </summary>
         public bool IsInTypes { get; internal set; } = false;
     }
 }

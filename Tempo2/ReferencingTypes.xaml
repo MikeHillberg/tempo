@@ -1,5 +1,3 @@
-<!-- Copyright (c) Microsoft Corporation and Contributors. -->
-<!-- Licensed under the MIT License. -->
 
 <local:MySerializableControl
     x:Class="Tempo.ReferencingTypes"
@@ -29,7 +27,7 @@
                               SubHeading="{x:Bind ReferencedType.PrettyFullName}"/>
         </StackPanel>
 
-
+        <!-- Content -->
         <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="0,0,0,0">
 
             <!-- This is covered up as long as there's at least one referencing type -->
@@ -60,7 +58,6 @@
 
                 <!-- List of types that have out types that can reach the target -->
                 <ListView x:Name="_list"  ItemsSource="{x:Bind Types, Mode=OneWay}"
-                      SelectionChanged="ListView_SelectionChanged"
                       SelectedItem="{x:Bind SelectedItem, Mode=TwoWay}"/>
 
                 <!-- For the selected type, each of the paths -->

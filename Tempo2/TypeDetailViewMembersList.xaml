@@ -88,10 +88,6 @@
                         </SymbolIcon>
                     </StackPanel>
                 </HyperlinkButton>
-
-                <HyperlinkButton Click="HyperlinkButton_Click">
-                    <SymbolIcon Symbol="Map"/>
-                </HyperlinkButton>
             </StackPanel>
 
         </controls:LayoutTransformControl>

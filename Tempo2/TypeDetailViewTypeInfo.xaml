@@ -103,7 +103,15 @@
                 </StackPanel>
 
                 <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _returnedByItemsControl, Mode=OneWay}" >
-                    <local:StackListHeaderItem >Returned by</local:StackListHeaderItem>
+
+                    <StackPanel Orientation="Horizontal">
+                        <local:StackListHeaderItem >Returned by</local:StackListHeaderItem>
+                        <HyperlinkButton Click="HyperlinkButton_Click" Margin="5,0,0,-5"
+                                         ToolTipService.ToolTip="Show all the ways to get an instance of this type">
+                            <SymbolIcon Symbol="Map" />
+                        </HyperlinkButton>
+                    </StackPanel>
+
                     <ItemsControl ItemsSource="{x:Bind TypeVM.ReturnedByAsync, Mode=OneWay}" x:Name="_returnedByItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
