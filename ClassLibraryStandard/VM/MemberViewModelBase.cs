@@ -128,6 +128,10 @@ namespace Tempo
             }
         }
 
+        // Technically only types have a namespace, but makes sense for all members to have it
+        // Note that TypeVM.DeclaringType just returns itself
+        public string Namespace => DeclaringType.Namespace;
+
         abstract public string Version { get; }
 
         public string VersionFriendlyName
