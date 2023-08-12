@@ -97,5 +97,10 @@ namespace Tempo
             }
             return Visibility.Collapsed;
         }
+
+        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.NavigateToReferencingTypes(this.TypeVM);
+        }
     }
 }

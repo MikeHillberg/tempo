@@ -8,14 +8,17 @@
     xmlns:local="using:Tempo">
 
     <Grid>
+        
 
         <!-- WebView that will display doc pages. This uses x:Load so that we don't spin up
              the various processes unless/until we need to -->
-        <WebView2 x:Name="_webView" x:Load="{x:Bind IsWebViewLoaded, Mode=OneWay}"
+        <WebView2 x:Name="_webView"
+                  x:Load="{x:Bind IsWebViewLoaded, Mode=OneWay}"
                   Source="{x:Bind local:App.Instance.CurrentItemDocUrl, Mode=OneWay}" 
                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                   NavigationStarting="WebView2_NavigationStarting" 
-                  NavigationCompleted="WebView2_NavigationCompleted" />
+                  NavigationCompleted="WebView2_NavigationCompleted"
+                  />
 
         <!-- Semi-transparent layer that displays over the top of the WebView
              when it's loading a page -->
@@ -26,7 +29,7 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
               Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
               Visibility="{x:Bind HasNavigationError, Mode=OneWay}">
-            
+
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                        >Couldn't find doc page for this API</TextBlock>
         </Grid>

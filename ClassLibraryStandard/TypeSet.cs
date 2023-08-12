@@ -10,6 +10,8 @@ using System.Threading;
 using System.Xml.Linq;
 using System.Runtime.CompilerServices;
 using System.Data;
+using System.Diagnostics;
+using MiddleweightReflection;
 
 namespace Tempo
 {
@@ -73,10 +75,25 @@ namespace Tempo
                 _types = value;
                 TypeCount = value == null ? 0 : value.Count;
 
-                // Update the AllNames property based on these types
-                CalculateAllNamesAsync();
+                OnTypesUpdated();
             }
         }
+
+        async void OnTypesUpdated()
+        {
+            // Update the AllNames property based on these types
+            await CalculateAllNamesAsync();
+
+            // Set IsInTypes for all of the types
+            foreach (var type in Types)
+            {
+                type.IsInTypes = true;
+            }
+
+            // Calculate type.ReturnedByAsync property
+            await CalculateReturnedByAsync();
+        }
+
 
         public virtual bool IsWinmd
         {
@@ -108,7 +125,7 @@ namespace Tempo
         /// <summary>
         /// Get anything that could be a search name, to be used in auto-suggest
         /// </summary>
-        async void CalculateAllNamesAsync()
+        async Task CalculateAllNamesAsync()
         {
             var names1 = new Dictionary<string, string>(_types.Count);
             KeyValuePair<string, string>[] names2 = null;
@@ -157,15 +174,15 @@ namespace Tempo
                         else
                         {
                             parameters = constructorVM.Parameters;
-                     	}
+                        }
 
-                        if(methodVM != null)
+                        if (methodVM != null)
                         {
                             parameters = methodVM.Parameters;
                         }
 
                         // If this is a constructor or a method, add the parameter names
-                        if(parameters != null)
+                        if (parameters != null)
                         {
                             foreach (var parameter in parameters)
                             {
@@ -208,6 +225,50 @@ namespace Tempo
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
+
+        public event EventHandler<object> ReturnedByCalculationCompleted;
+
+        /// <summary>
+        /// Calculate the type.ReturnedByAsync properties (off thread)
+        /// </summary>
+        /// <returns></returns>
+        async Task CalculateReturnedByAsync()
+        {
+            await Task.Run(() =>
+            {
+                // Walk all the types and find out what types each returns
+                // The result is stored in a list on each of those returning types
+                foreach (var type in Types)
+                {
+                    // Look at each member of type and find the types that each 
+                    // member outputs (returns, out parameter, etc),
+                    // calling the lambda for each one to add a back reference.
+                    // For example, say 'type' is Border, we'll add Border.Child to UIElement's ReturnedBy list
+                    _ = TypeReferenceHelper.AllMembersWhereForType(
+                                            type,
+                                            checkOutOnly: true,
+                                            (returnedType, member) =>
+                                            {
+                                                // If the returned type isn't itself, and is in the TypeSet
+                                                // (so not a fake type), then 
+                                                if (returnedType != type && returnedType.IsInTypes)
+                                                {
+                                                    returnedType.AddMemberToReturnedBy(member);
+                                                }
+                                                return true;
+                                            }
+                                            ).ToList(); // Have to call ToList to get the enumerator to run
+                }
+            });
+
+            // Back on the UI thread
+            // It's now OK to use the ReturnedByAsync property
+            ReturnedByCalculated = true;
+            ReturnedByCalculationCompleted?.Invoke(this, new EventArgs());
+            ReturnedByCalculationCompleted = null;
+
+        }
+        public bool ReturnedByCalculated = false;
 
         async public void LoadContracts()
         {
@@ -279,5 +340,104 @@ namespace Tempo
                 return _fullNamespaces;
             }
         }
+
+        // A cache of TypeVMs and a list of weak references. The list is necessary becuse you can't
+        // enumerate members of a ConditionalWeakTable
+        //private ConditionalWeakTable<object, TypeViewModel> _typeVMCache = new ConditionalWeakTable<object, TypeViewModel>();
+
+        Dictionary<object, TypeViewModel> _typeVMCache = new Dictionary<object, TypeViewModel>();
+        private List<WeakReference<TypeViewModel>> _typeVMWeakList = new List<WeakReference<TypeViewModel>>();
+
+        //public void AddToCache(string name, TypeViewModel vm, bool checkForDup = false)
+        //{
+        //    // bugbug: couldn't this have already been added to the cache since we don't take the lock until there?
+        //    lock (_typeVMCache)
+        //    {
+        //        // bugbug: getting dups in .Native builds?
+        //        // (Probably because of the above AddToCache() method)
+        //        if (checkForDup && _typeVMCache.TryGetValue(name, out var type))
+        //        {
+        //            return;
+        //        }
+
+        //        _typeVMCache.Add(name, vm);
+        //        _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));
+        //    }
+        //}
+
+        public TypeViewModel LookupByNameSlowly(string typeName)
+        {
+            foreach (var typeWeakRef in _typeVMWeakList)
+            {
+                if (typeWeakRef.TryGetTarget(out var type))
+                {
+                    if (type.FullName == typeName)
+                    {
+                        return type;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        object _async = null;
+        public TypeViewModel GetFromCacheBase(object t, Func<TypeViewModel> create)
+        {
+            TypeViewModel vm = null;
+
+            if (t == null)
+                return null;
+
+            if (!_typeVMCache.TryGetValue(t, out vm))
+            {
+                lock (_typeVMCache)
+                {
+                    if (!_typeVMCache.TryGetValue(t, out vm))
+                    {
+                        vm = create();
+
+                        _typeVMCache.Add(t, vm);
+
+#if DEBUG
+                        var found = _typeVMCache.TryGetValue(t, out var vm2);
+                        Debug.Assert(found);
+                        Debug.Assert(t.Equals((vm2 as MRTypeViewModel).Type));
+#endif
+                        // This is so that we can do enumeration
+                        _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));
+                    }
+                }
+            }
+
+            //if (_async != null)
+            //{
+            //    var found = _typeVMCache.TryGetValue(_async, out var vm3);
+            //    Debug.Assert(found);
+            //    Debug.Assert(vm3.PrettyFullName == "Windows.Foundation.IAsyncOperation<TResult>");
+            //}
+
+            //if(!t.Equals((vm as MRTypeViewModel).Type))
+            //{
+            //    _typeVMCache.TryGetValue(t, out var vm4);
+            //    Debug.Assert(vm4 == vm);
+            //    Debug.WriteLine(vm.ToString());
+            //    Debug.WriteLine((vm as MRTypeViewModel).Type);
+
+            //    var list = _typeVMCache.Values
+            //                    .Where(type => type.Name.StartsWith("IAsync"))
+            //                    .OrderBy((k) => k.Name)
+            //                    .Select(type => new
+            //                    {
+            //                        Type = type,
+            //                    }).ToList();
+            //    Debug.Assert(false);
+            //}
+
+            //var b = t.Equals((vm as MRTypeViewModel).Type);
+
+            return vm;
+        }
+
     }
 }

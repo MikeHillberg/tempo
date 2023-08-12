@@ -130,37 +130,30 @@ namespace Tempo
             }
         }
 
-        IList<MemberOrTypeViewModelBase> _returnedBy = null;
+        IList<MemberOrTypeViewModelBase> _returnedBy = new List<MemberOrTypeViewModelBase>();
+
+        /// <summary>
+        /// List of members that output instances of this type
+        /// </summary>
         public IList<MemberOrTypeViewModelBase> ReturnedByAsync
         {
             get
             {
-                if (_returnedBy == null)
+                if (!TypeSet.ReturnedByCalculated)
                 {
-                    UpdateReturnedByAsync();
+                    // _returnedBy hasn't been calculated yet. When it is, raise INPC
+                    TypeSet.ReturnedByCalculationCompleted += (s, e) => RaisePropertyChanged(nameof(ReturnedByAsync));
                     return null;
                 }
 
                 return _returnedBy;
             }
         }
-        AsyncCounter _returnedByCounter = new AsyncCounter();
-        public async void UpdateReturnedByAsync()
+
+        // This is called by TypeSet when it finds a member that outputs this type
+        public void AddMemberToReturnedBy(MemberOrTypeViewModelBase m)
         {
-            var initialCount = _returnedByCounter.Value;
-
-            var members = await BackgroundHelper2.DoWorkAsync(() =>
-            {
-                return TypeReferenceHelper.FindReturningMembers(this, _returnedByCounter).ToList();
-            });
-
-            if (_returnedBy == null && initialCount == _returnedByCounter.Value)
-            {
-                _returnedBy = members;
-
-                RaisePropertyChanged(nameof(ReturnedByAsync));
-            }
-
+            _returnedBy.Add(m);
         }
 
         public bool IsDotNetType
@@ -758,7 +751,7 @@ namespace Tempo
                     foreach (var attr in CustomAttributes)
                     {
                         _guid = attr.TryParseGuidAttribute();
-                        if(_guid != string.Empty)
+                        if (_guid != string.Empty)
                         {
                             break;
                         }
@@ -1425,7 +1418,7 @@ namespace Tempo
         {
             get
             {
-                if (!_versionChecked )
+                if (!_versionChecked)
                 {
                     _versionChecked = true;
                     _version = "";
@@ -2142,28 +2135,28 @@ namespace Tempo
         virtual public bool IsIdlSupported { get { return false; } }
 
 
-        // A cache of TypeVMs and a list of weak references. The list is necessary becuse you can't
-        // enumerate members of a ConditionalWeakTable
-        static private ConditionalWeakTable<object, TypeViewModel> _typeVMCache = new ConditionalWeakTable<object, TypeViewModel>();
-        static private List<WeakReference<TypeViewModel>> _typeVMWeakList = new List<WeakReference<TypeViewModel>>();
+        //// A cache of TypeVMs and a list of weak references. The list is necessary becuse you can't
+        //// enumerate members of a ConditionalWeakTable
+        //static private ConditionalWeakTable<object, TypeViewModel> _typeVMCache = new ConditionalWeakTable<object, TypeViewModel>();
+        //static private List<WeakReference<TypeViewModel>> _typeVMWeakList = new List<WeakReference<TypeViewModel>>();
 
 
-        static public void AddToCache(string name, TypeViewModel vm, bool checkForDup = false)
-        {
-            // bugbug: couldn't this have already been added to the cache since we don't take the lock until there?
-            lock (_typeVMCache)
-            {
-                // bugbug: getting dups in .Native builds?
-                // (Probably because of the above AddToCache() method)
-                if (checkForDup && _typeVMCache.TryGetValue(name, out var type))
-                {
-                    return;
-                }
+        //static public void AddToCache(string name, TypeViewModel vm, bool checkForDup = false)
+        //{
+        //    // bugbug: couldn't this have already been added to the cache since we don't take the lock until there?
+        //    lock (_typeVMCache)
+        //    {
+        //        // bugbug: getting dups in .Native builds?
+        //        // (Probably because of the above AddToCache() method)
+        //        if (checkForDup && _typeVMCache.TryGetValue(name, out var type))
+        //        {
+        //            return;
+        //        }
 
-                _typeVMCache.Add(name, vm);
-                _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));
-            }
-        }
+        //        _typeVMCache.Add(name, vm);
+        //        _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));
+        //    }
+        //}
 
         protected override Task<string> GetGitUrlFilenameAsync(string baseUri)
         {
@@ -2173,32 +2166,32 @@ namespace Tempo
             return Task<string>.FromResult(s);
         }
 
-        static protected TypeViewModel GetFromCacheBase(object t, Func<TypeViewModel> create)
-        {
-            TypeViewModel vm = null;
+        //static protected TypeViewModel GetFromCacheBase(object t, Func<TypeViewModel> create)
+        //{
+        //    TypeViewModel vm = null;
 
-            if (t == null)
-                return null;
+        //    if (t == null)
+        //        return null;
 
-            if (!_typeVMCache.TryGetValue(t, out vm))
-            {
-                lock (_typeVMCache)
-                {
-                    if (!_typeVMCache.TryGetValue(t, out vm))
-                    {
-                        vm = create();
+        //    if (!_typeVMCache.TryGetValue(t, out vm))
+        //    {
+        //        lock (_typeVMCache)
+        //        {
+        //            if (!_typeVMCache.TryGetValue(t, out vm))
+        //            {
+        //                vm = create();
 
-                        // This is a ConditionalWeakTable to avoid leaks
-                        _typeVMCache.Add(t, vm);
+        //                // This is a ConditionalWeakTable to avoid leaks
+        //                _typeVMCache.Add(t, vm);
 
-                        // This is so that we can do enumeration
-                        _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));
-                    }
-                }
-            }
+        //                // This is so that we can do enumeration
+        //                _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));
+        //            }
+        //        }
+        //    }
 
-            return vm;
-        }
+        //    return vm;
+        //}
 
         // bugbug: Consolidate this with the other cache
         // Can't use TypeInfo instance as a key because CLR appears to give back different instances
@@ -2234,53 +2227,53 @@ namespace Tempo
         }
 
 
-        static public TypeViewModel LookupByName(string typeName)
-        {
+        //static public TypeViewModel LookupByName(string typeName)
+        //{
 
-            // bugbug:  should be a cache per type set
+        //    // bugbug:  should be a cache per type set
 
-            lock (_typeVMCache)
-            {
-                List<WeakReference<TypeViewModel>> cleanup = null;
+        //    lock (_typeVMCache)
+        //    {
+        //        List<WeakReference<TypeViewModel>> cleanup = null;
 
-                try
-                {
-                    foreach (var typeWeakRef in _typeVMWeakList)
-                    {
-                        if (typeWeakRef.TryGetTarget(out var type))
-                        {
-                            if (type.FullName == typeName)
-                            {
-                                return type;
-                            }
-                        }
-                        else
-                        {
-                            // The type's not in the list anymore. Remember that it needs to be cleaned
-                            // up (but don't clean it up now as it would break the enumerator).
-                            if (cleanup == null)
-                            {
-                                cleanup = new List<WeakReference<TypeViewModel>>();
-                            }
-                            cleanup.Add(typeWeakRef);
-                        }
-                    }
-                }
+        //        try
+        //        {
+        //            foreach (var typeWeakRef in _typeVMWeakList)
+        //            {
+        //                if (typeWeakRef.TryGetTarget(out var type))
+        //                {
+        //                    if (type.FullName == typeName)
+        //                    {
+        //                        return type;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    // The type's not in the list anymore. Remember that it needs to be cleaned
+        //                    // up (but don't clean it up now as it would break the enumerator).
+        //                    if (cleanup == null)
+        //                    {
+        //                        cleanup = new List<WeakReference<TypeViewModel>>();
+        //                    }
+        //                    cleanup.Add(typeWeakRef);
+        //                }
+        //            }
+        //        }
 
-                finally
-                {
-                    if (cleanup != null)
-                    {
-                        foreach (var typeWeakRef in cleanup)
-                        {
-                            _typeVMWeakList.Remove(typeWeakRef);
-                        }
-                    }
-                }
-            }
+        //        finally
+        //        {
+        //            if (cleanup != null)
+        //            {
+        //                foreach (var typeWeakRef in cleanup)
+        //                {
+        //                    _typeVMWeakList.Remove(typeWeakRef);
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
 
         static public bool operator !=(TypeViewModel t1, TypeViewModel t2)
@@ -2413,5 +2406,10 @@ namespace Tempo
         public abstract TypeViewModel UnderlyingEnumType { get; }
 
         virtual public AcidInfo AcidInfo => null;
+
+        /// <summary>
+        /// True if this type is in a TypeSet (not a generated/fake type)
+        /// </summary>
+        public bool IsInTypes { get; internal set; } = false;
     }
 }

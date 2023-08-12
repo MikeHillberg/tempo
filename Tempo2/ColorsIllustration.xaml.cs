@@ -73,7 +73,7 @@ namespace Tempo
 
         private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-            App.Navigate(TypeViewModel.LookupByName("Microsoft.UI.Colors"));
+            App.Navigate(Manager.WindowsTypeSet.LookupByNameSlowly("Microsoft.UI.Colors"));
         }
     }
 

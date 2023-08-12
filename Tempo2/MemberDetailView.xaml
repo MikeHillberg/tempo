@@ -65,13 +65,15 @@
                                 local:CsSyntaxGenerator.Member="{x:Bind MemberVM, Mode=OneWay}"
                                 TextWrapping="Wrap"/>
 
-                            <StackPanel Margin="{StaticResource VerticalMargin}"          
+                            <StackPanel Margin="{StaticResource VerticalMargin}"   
                                 local:CollapseIfEmpty.IsEnabledFor="{x:Bind EventVM, Mode=OneWay}">
                                 <local:StackListHeaderItem>Sender</local:StackListHeaderItem>
-                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.SenderType, Mode=OneWay}" />
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.SenderType, Mode=OneWay}"
+                                           HorizontalAlignment="Left"/>
 
                                 <local:StackListHeaderItem>Args</local:StackListHeaderItem>
-                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.ArgsType, Mode=OneWay}" />
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind EventVM.ArgsType, Mode=OneWay}"
+                                           HorizontalAlignment="Left"/>
                             </StackPanel>
 
                             <!-- Version -->

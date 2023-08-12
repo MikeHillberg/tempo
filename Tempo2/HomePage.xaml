@@ -95,7 +95,8 @@
                     <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsWinPlatformScope, Mode=TwoWay}" 
                                  VerticalAlignment="Top"
                                  GroupName="Test"
-                                 AccessKey="W">
+                                 AccessKey="W"
+                                 DoubleTapped="ApiScope_RadioButton_DoubleTapped">
                         <StackPanel>
                             <TextBlock><Underline>W</Underline>indows</TextBlock>
                             <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" >
@@ -107,6 +108,7 @@
                     <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" 
                                  VerticalAlignment="Top"
                                  GroupName="Test"
+                                 DoubleTapped="ApiScope_RadioButton_DoubleTapped"
                                  AccessKey="K">
                         <StackPanel>
                             <TextBlock>Windows App SD<Underline>K</Underline></TextBlock>
@@ -126,6 +128,7 @@
                                      GroupName="Test"
                                      AccessKey="C"
                                      AllowDrop="True" 
+                                     DoubleTapped="ApiScope_RadioButton_DoubleTapped"
                                      DragOver="HandleDragOver" Drop="CustomScope_Drop"
                                      DragEnter="CustomScope_DragEnter" DragLeave="CustomScope_DragLeave">
                             <StackPanel>
