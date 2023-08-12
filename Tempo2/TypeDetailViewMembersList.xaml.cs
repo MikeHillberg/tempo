@@ -224,6 +224,11 @@ namespace Tempo
 
             timer.Start();
         }
+
+        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.NavigateToReferencingTypes(this.TypeVM);
+        }
     }
 
 

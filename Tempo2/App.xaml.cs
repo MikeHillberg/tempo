@@ -1592,6 +1592,14 @@ namespace Tempo
             InternalNavigate(GetViewTypeFor(memberVM), memberVM);
         }
 
+        /// <summary>
+        /// Show a page with types that reference the given type
+        /// </summary>
+        public static void NavigateToReferencingTypes(TypeViewModel typeVM)
+        {
+            InternalNavigate(typeof(ReferencingTypes), typeVM);
+        }
+
         public static Type GetViewTypeFor(MemberOrTypeViewModelBase memberVM)
         {
             if (memberVM is TypeViewModel)

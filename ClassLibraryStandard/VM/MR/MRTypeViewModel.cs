@@ -19,6 +19,7 @@ namespace Tempo
     public class MRTypeViewModel : TypeViewModel
     {
         public MrType Type { get; private set; }
+
         private MRTypeViewModel(MrType type, TypeSet typeSet)
         {
             Type = type;
@@ -52,7 +53,7 @@ namespace Tempo
             //return new MRTypeViewModel(type, typeSet);
 
             // Bugbug: this needs to be instance based, so there can be independent sets.
-            return TypeViewModel.GetFromCacheBase(type, () => new MRTypeViewModel(type, typeSet));
+            return typeSet.GetFromCacheBase(type, () => new MRTypeViewModel(type, typeSet));
         }
 
 

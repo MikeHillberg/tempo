@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.19041</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -110,7 +110,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.6" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="TypeNameView_old.xaml.cs" />
@@ -131,6 +131,7 @@
     <None Remove="HelpPage.xaml" />
     <None Remove="LoadingDialog.xaml" />
     <None Remove="MemberMore.xaml" />
+    <None Remove="ReferencingTypes.xaml" />
     <None Remove="RootFrame.xaml" />
     <None Remove="SmokeLayer.xaml" />
     <None Remove="Smokey.xaml" />
@@ -153,6 +154,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="ReferencingTypes.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="RootFrame.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

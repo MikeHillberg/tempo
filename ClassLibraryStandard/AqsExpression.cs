@@ -121,12 +121,15 @@ namespace Tempo
                         }
                         else
                         {
-                            // This is a left-hand side
-
-                            if(!keyValidator(tokenString))
+                            // This is a left-hand side. Break down the property path
+                            // and validate each part
+                            foreach (var part in tokenString.Split('.'))
                             {
-                                SearchExpression.RaiseSearchExpressionError();
-                                return false;
+                                if (!keyValidator(part))
+                                {
+                                    SearchExpression.RaiseSearchExpressionError();
+                                    return false;
+                                }
                             }
 
                             if (expectingAndor)

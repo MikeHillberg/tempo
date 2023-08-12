@@ -1053,14 +1053,6 @@ namespace Tempo
                         // The evaluator wants to know the value of a property name
 
                         var tryGet = memberVM.TryGetVMProperty(key, out var value);
-                        if (!tryGet && key.ToLower() == "namespace")
-                        {
-                            var declaringType = memberVM.DeclaringType;
-                            if ((declaringType as MemberOrTypeViewModelBase) != memberVM)
-                            {
-                                tryGet = declaringType.TryGetVMProperty(key, out value);
-                            }
-                        }
 
                         if (!tryGet)
                         {

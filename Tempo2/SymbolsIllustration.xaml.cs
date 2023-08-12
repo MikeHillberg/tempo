@@ -57,7 +57,7 @@ namespace Tempo
 
         private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-            App.Navigate(TypeViewModel.LookupByName("Microsoft.UI.Xaml.Controls.Symbol"));
+            App.Navigate(Manager.WindowsTypeSet.LookupByNameSlowly("Microsoft.UI.Xaml.Controls.Symbol"));
         }
 
         public static string Description => "Symbols from the Windows.UI.Xaml.Controls.Symbol enum";
