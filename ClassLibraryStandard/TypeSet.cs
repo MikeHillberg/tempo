@@ -127,6 +127,11 @@ namespace Tempo
         /// </summary>
         async Task CalculateAllNamesAsync()
         {
+            if(_types == null)
+            {
+                return;
+            }
+
             var names1 = new Dictionary<string, string>(_types.Count);
             KeyValuePair<string, string>[] names2 = null;
 
@@ -261,8 +266,6 @@ namespace Tempo
                 }
             });
 
-            // Back on the UI thread
-            // It's now OK to use the ReturnedByAsync property
             ReturnedByCalculated = true;
             ReturnedByCalculationCompleted?.Invoke(this, new EventArgs());
             ReturnedByCalculationCompleted = null;

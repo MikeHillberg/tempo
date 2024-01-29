@@ -5,6 +5,7 @@
     xmlns:local="using:Tempo"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <ScrollViewer>
@@ -15,7 +16,7 @@
             <Rectangle x:Name="ApplicationPageBackgroundThemeBrushShape" x:FieldModifier="public"
                        Fill="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
         </ScrollViewer.Resources>
-        
+
         <Grid x:Name="_root" Background="Transparent" Padding="60" 
           PointerPressed="TeachingTipDemo_PointerPressed">
 
@@ -35,13 +36,13 @@
                     <!-- API scope -->
                     <RowDefinition Height="Auto" />
 
+                    <!-- Baseline -->
+                    <RowDefinition Height="Auto"/>
+
                     <!-- How to -->
                     <RowDefinition Height="Auto" />
 
                     <!-- Illustrations -->
-                    <RowDefinition Height="Auto"/>
-
-                    <!-- Baseline -->
                     <RowDefinition Height="Auto"/>
 
                     <!-- Theme -->
@@ -120,7 +121,7 @@
 
                     <!-- Custom API scope -->
                     <Grid VerticalAlignment="Top">
-                        <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                        <Border Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
                                             Margin="-10"
                                             Visibility="{x:Bind IsDraggingOverCustom, Mode=OneWay}"/>
 
@@ -181,14 +182,75 @@
 
                 </StackPanel>
 
+                <!-- Baseline row -->
+                <TextBlock x:Name="_baseline"  Grid.Row="3" Grid.Column="0"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Margin="0,5,0,0"
+                           HorizontalAlignment="Left"
+                           >API diffs</TextBlock>
+
+                <Grid Grid.Row="3" Grid.Column="1">
+                    
+                    <!-- IsExpanded is set in code-behind -->
+                    <Expander x:Name="_baselineExpander">
+                        <Expander.Header>
+                            <Grid>
+                                <!-- Dummy line to get the width when closed to match when open -->
+                                <!-- bugbug -->
+                                <TextBlock Opacity="0" Text="{x:Bind _baselineDescription.Text}"/>
+
+                                <TextBlock>Baseline APIs</TextBlock>
+                            </Grid>
+                        </Expander.Header>
+                        <Grid>
+                            <!-- {ThemeResource ApplicationPageBackgroundThemeBrush} -->
+                            <Border Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
+                                            Margin="-10"
+                                            Visibility="{x:Bind IsDraggingOverBaseline, Mode=OneWay}" 
+                                            />
+
+                            <!-- Set the Background to transparent so that the drag/drop hit-testing always works -->
+                            <StackPanel AllowDrop="True" DragOver="HandleDragOver" Drop="Baseline_Drop"
+                                DragEnter="Baseline_DragEnter" DragLeave="Baseline_DragLeave"
+                                Background="Transparent">
+
+                                <TextBlock x:Name="_baselineDescription" 
+                                           Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline. Use the open button or drag a file here</TextBlock>
+                                <CheckBox IsThreeState="False" 
+                                  IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
+                                  Content="Show only new compared to baseline"
+                                  IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
+
+                                <!-- Open/Close buttons -->
+                                <local:UniformStackPanel Orientation="Horizontal" Margin="0,5" Spacing="5">
+                                    <Button Click="OpenBaseline">Open</Button>
+                                    <Button Click="CloseBaseline"
+                                    IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
+                                </local:UniformStackPanel>
+
+                                <!-- Show loaded filenames -->
+                                <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
+                                    <TextBlock Text="Current:" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="_baselineFilenamesText"
+                                       Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
+                                       TextWrapping="Wrap"
+                                       Margin="5,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Expander>
+                </Grid>
+
+
+
                 <!-- How to row -->
-                <TextBlock Grid.Row="3" Grid.Column="0"
+                <TextBlock Grid.Row="4" Grid.Column="0"
                            Style="{StaticResource SubtitleTextBlockStyle}"
                            HorizontalAlignment="Left"
                            Margin="0">How to</TextBlock>
 
 
-                <StackPanel Grid.Row="3" Grid.Column="1"
+                <StackPanel Grid.Row="4" Grid.Column="1"
                             VerticalAlignment="Top" HorizontalAlignment="Left"
                             MaxWidth="600"
                             Margin="0,6,0,0" >
@@ -212,18 +274,19 @@
                         <TextBlock TextWrapping="Wrap" >You can launch the app from the command prompt too, optionally passing in filenames. You can also launch as a hyperlink. For example:</TextBlock>
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo</TextBlock>
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo MyComponent.dll</TextBlock>
+                        <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo /diff ComponentV1.nupkg ComponentV2.nupkg</TextBlock>
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; start "tempo:Button"</TextBlock>
                     </StackPanel>
 
                 </StackPanel>
 
                 <!-- Illustrations row -->
-                <TextBlock Grid.Row="4" Grid.Column="0"
+                <TextBlock Grid.Row="5" Grid.Column="0"
                            Style="{StaticResource SubtitleTextBlockStyle}"
                            HorizontalAlignment="Left"
                            >Illustrations</TextBlock>
 
-                <StackPanel Grid.Row="4" Grid.Column="1"
+                <StackPanel Grid.Row="5" Grid.Column="1"
                             Margin="0,5,0,0" >
                     <StackPanel >
                         <TextBlock>
@@ -246,50 +309,6 @@
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
-
-                <!-- Baseline row -->
-                <TextBlock Grid.Row="5" Grid.Column="0"
-                           Style="{StaticResource SubtitleTextBlockStyle}"
-                           Margin="0,5,0,0"
-                           HorizontalAlignment="Left"
-                           >Baseline</TextBlock>
-
-                <Grid Grid.Row="5" Grid.Column="1">
-                    <Border Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                                            Margin="-10"
-                                            Visibility="{x:Bind IsDraggingOverBaseline, Mode=OneWay}"/>
-
-                    <!-- Set the Background to transparent so that the drag/drop hit-testing always works -->
-                    <StackPanel AllowDrop="True" DragOver="HandleDragOver" Drop="Baseline_Drop"
-                                DragEnter="Baseline_DragEnter" DragLeave="Baseline_DragLeave"
-                                Background="Transparent">
-
-                        <!--<TextBlock FontWeight="Bold">Baseline</TextBlock>-->
-                        <TextBlock Margin="0,10" TextWrapping="Wrap">Setting a baseline lets you compare the selected set of APIs to the baseline. Use the open button or drag a file here</TextBlock>
-                        <CheckBox IsThreeState="False" 
-                                  IsChecked="{x:Bind Settings.CompareToBaseline, Mode=TwoWay}" 
-                                  Content="Show only new compared to baseline"
-                                  IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}"/>
-
-                        <!-- Open/Close buttons -->
-                        <local:UniformStackPanel Orientation="Horizontal" Margin="0,5" Spacing="5">
-                            <Button Click="OpenBaseline">Open</Button>
-                            <Button Click="CloseBaseline"
-                                    IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
-                        </local:UniformStackPanel>
-
-                        <!-- Show loaded filenames -->
-                        <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
-                            <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                            <TextBlock x:Name="_baselineFilenamesText"
-                                       Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
-                                       TextWrapping="Wrap"
-                                       Margin="5,0,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
-
-
 
                 <!-- Row 6: theme -->
                 <TextBlock Grid.Row="6" Grid.Column="0"

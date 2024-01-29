@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Tempo
@@ -22,7 +23,7 @@ namespace Tempo
         public string ActivationType { get; set; }
         public string Threading { get; set; }
 
-        static public Dictionary<TypeViewModel, AcidInfo> AcidMap = new Dictionary<TypeViewModel, AcidInfo>();
+        static public ConcurrentDictionary<TypeViewModel, AcidInfo> AcidMap = new ConcurrentDictionary<TypeViewModel, AcidInfo>();
 
     }
 

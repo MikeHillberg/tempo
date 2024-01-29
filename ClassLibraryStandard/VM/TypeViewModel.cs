@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Tempo
 {
@@ -142,7 +143,12 @@ namespace Tempo
                 if (!TypeSet.ReturnedByCalculated)
                 {
                     // _returnedBy hasn't been calculated yet. When it is, raise INPC
-                    TypeSet.ReturnedByCalculationCompleted += (s, e) => RaisePropertyChanged(nameof(ReturnedByAsync));
+                    TypeSet.ReturnedByCalculationCompleted += (s, e) =>
+                    {
+                        // This event is raised off thread
+                        Manager.PostToUIThread(() => RaisePropertyChanged(nameof(ReturnedByAsync)));
+                    };
+
                     return null;
                 }
 

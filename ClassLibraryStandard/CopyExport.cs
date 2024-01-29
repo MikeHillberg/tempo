@@ -288,7 +288,9 @@ namespace Tempo
                         typeItem,
                         flat,
                         groupByNamespace);
-
+                    
+                    // compressTypes means that if all members of a type are included, don't
+                    // bother including the members. (Useful for baseline compare mode.)
                     if (compressTypes)
                     {
                         var memberCount = 0;

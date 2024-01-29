@@ -66,6 +66,12 @@ such as Windows.UI.Xaml.Controls:
 button Namespace:controls
 ```
 
+This searches for methods whose name begins with "Try" and return void:
+
+```
+^Try IsMethod:True ReturnType:void
+```
+
 Note that the search term needs to be before the AQS,
 for example `button Namespace:controls` rather than `Namespace:controls button`.
 You can though have only AQS, for example `Namespace:controls IsType:True`.
@@ -87,3 +93,34 @@ the "All model properties" link.
 That will show you an example for that item of all the properties and values.
 
 ![screenshot of link to all model properties list](Assets/all-model-properties-link.jpg)
+
+# Launching from the command-line (with parameters)
+
+You can launch Tempo with simply:
+
+```
+Tempo
+```
+
+(Note that there's a PowerShell bug where the command doesn't return to
+the command line until the app is closed.
+You can work around this by using `start tempo` syntax.)
+
+You can provide a metadata file on the command line.
+This will load the file as the "Custom API Scope".
+For example:
+
+```
+tempo Component.dll
+tempo Component.winmd
+tempo Component.nupkg
+```
+
+You can also compare two files,
+setting one file as the "Baseline" and
+the other as the "Custom API Scope"
+
+```
+tempo /diff Component_V1.nupkg Component_V2.nupkg
+tempo /diff Component_V1.dll Component_V2.dll
+```

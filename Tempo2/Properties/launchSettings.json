@@ -2,7 +2,9 @@
   "profiles": {
     "Tempo (Package)": {
       "commandName": "MsixPackage",
-      "nativeDebugging": false
+      "commandLineArgs": "/diff \"C:\\Users\\Mike\\OneDrive - Microsoft\\WinMDs\\Microsoft.WindowsAppSDK.1.4.230628000-preview1.nupkg\" \"C:\\Users\\Mike\\OneDrive - Microsoft\\WinMDs\\Microsoft.WindowsAppSDK.1.4.230809004-preview2.nupkg\"",
+      "nativeDebugging": false,
+      "doNotLaunchApp": false
     },
     "Tempo (Unpackaged)": {
       "commandName": "Project"

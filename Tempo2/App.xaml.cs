@@ -18,6 +18,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Text;
 using Windows.ApplicationModel.Activation;
+using NuGet.Configuration;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -69,6 +70,16 @@ namespace Tempo
                 }
             };
         }
+
+        //private void App_TestEvent2(object sender, EventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //private void App_TestEvent1(object sender, EventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         /// <summary>
         /// INPC helper
@@ -170,6 +181,12 @@ namespace Tempo
             // Force wide mode until skinny mode works again
             //RootFrame.MinWidth = 1024;
 
+            RootFrame.Navigated += (s, e) =>
+            {
+                // Enable the whole UI now
+                RootFrame.IsEnabled = true;
+            };
+
             if (RootFrame.Content == null)
             {
                 // When the navigation stack isn't restored navigate to the first page,
@@ -237,14 +254,6 @@ namespace Tempo
 
             // bugbug: shouldn't need to load this if we're going to load custom scope later from the command line,
             // but need to see if that actually works
-
-
-            // Read from saved settings which API scope to start with
-            LoadCurrentScope();
-
-
-            //// The command line can be used to pass in filenames to load
-            //ProcessCommandLine();
 
 
 #if DEBUG
@@ -418,12 +427,25 @@ namespace Tempo
             RootFrame.KeyboardAccelerators.Add(accel);
         }
 
+
+        // Process the activation args we get when activated by app redirection
+        internal void ProcessActivationArgs(AppActivationArguments args = null)
+        {
+            if (!ProcessActivationArgsWorker(args))
+            {
+                ProcessCommandLine();
+            }
+        }
+        bool _activationArgsLoaded = false;
+
+
+
         /// <summary>
         /// Process the activation arguments (different than command line).
         /// This must be called on the tHread of the args.
         /// Returns true if something was processed.
         /// </summary>
-        internal bool ProcessActivationArgs(AppActivationArguments activationArgs = null)
+        bool ProcessActivationArgsWorker(AppActivationArguments activationArgs = null)
         {
             // On a redirected activation, we can't use AppInstance.GetActivatedEventArgs()
             if (activationArgs == null)
@@ -438,9 +460,11 @@ namespace Tempo
 
                 // We've pulled everything out of the args, now if necessary we can switch threads
 
-                RunOnUIThread(() => App.Instance.GotoSearch(searchTerm));
+                // Post so that we can finish initialization
+                Manager.PostToUIThread(() => App.Instance.GotoSearch(searchTerm));
 
             }
+
             else
             {
                 return false;
@@ -468,10 +492,13 @@ namespace Tempo
             }
         }
 
+
+        public string CustomFullPath = null;
+
         /// <summary>
         /// Check for filenames that should be loaded. This is called by HomePage by which point we have things loaded.
         /// </summary>
-        internal void ProcessCommandLine()
+        void ProcessCommandLine()
         {
             // Not sure the best way to debug parameters that are passed in on the command line
             // (See AppExecutionAlias in Package.appxmanifest)
@@ -480,6 +507,8 @@ namespace Tempo
 
 
             var args = Environment.GetCommandLineArgs();
+            string baselineFilename = null;
+            var useBaseline = false;
 
             // The first arg is the name of the exe
             if (args == null || args.Length == 1)
@@ -489,10 +518,18 @@ namespace Tempo
 
             List<string> commandLineFilenames = null;
 
+            // These flags track the processing if the /diff switch
+            var waitingForFirstDiff = false;
+            var waitingForSecondDiff = false;
+
+            // Process the command line arguments
+            // (Skip [0]; it's the exe filename)
             for (int i = 1; i < args.Length; i++)
             {
+                var arg = args[i].ToLower();
+
                 // If asked, wait for a debugger to be attached
-                if (args[i].ToLower() == "/waitfordebugger")
+                if (arg == "/waitfordebugger")
                 {
                     while (!Debugger.IsAttached)
                     {
@@ -501,14 +538,44 @@ namespace Tempo
                     continue;
                 }
 
+                if (arg == "/diff")
+                {
+                    // Next we should see the baseline file
+                    // Skip to the next argument
+                    waitingForFirstDiff = true;
+                    waitingForSecondDiff = false;
+                    continue;
+                }
+                else if (waitingForFirstDiff)
+                {
+                    // Next we should see the new file
+                    // Skip to the next argument
+                    baselineFilename = Path.GetFullPath(arg);
+                    waitingForSecondDiff = true;
+                    waitingForFirstDiff = false;
+                    continue;
+                }
+                else if (waitingForSecondDiff)
+                {
+                    // We have a good /diff command line, we know the two filenames
+                    useBaseline = true;
+                    Manager.Settings.CompareToBaseline = true;
+                }
+                waitingForFirstDiff = waitingForSecondDiff = false;
+
                 if (commandLineFilenames == null)
                 {
                     commandLineFilenames = new List<string>();
                 }
 
-                // Figure out the full path name
-                // Path.GetFullPath() doesn't seem to mind invalidate characters coming in,
+                // If we get here, we have a custom filename
+                // (Maybe also a baseline filename)
+
+                // Figure out the full custom path name
+                // Path.GetFullPath() doesn't seem to mind invalid characters coming in,
                 // but the docs say it can throw, so show a message box if it does and abort.
+                // Bugbug: is this really necessary? Not doing this for the baseline filename,
+                // maybe something downstream is handling it.
                 try
                 {
                     var path = args[i];
@@ -523,14 +590,27 @@ namespace Tempo
 
             }
 
+            // If /diff was used on the command line, check for syntax errors
+            if(waitingForFirstDiff || waitingForSecondDiff)
+            {
+                _ = MyMessageBox.Show("Usage: Tempo /diff file1 file2\r\nFiles can be dll, winmd, or nupkg",
+                                      "Invalid paramters", 
+                                      closeButtonText: "OK");
+            }
+
+            // If we got custom filenames, start opening them
             if (commandLineFilenames != null)
             {
+                _initialScopeSet = true;
+
                 DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
+
+                OfferToCopyResultsToClipboard = true;
 
                 App.StartLoadCustomScope(
                     DesktopManager2.CustomApiScopeFileNames.Value,
                     navigateToSearchResults: true,
-                    !App.Instance.UsingCppProjections);
+                    useWinRTProjections: !App.Instance.UsingCppProjections);
 
                 // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
                 _isCustomApiScope = true;
@@ -539,8 +619,17 @@ namespace Tempo
                 RaisePropertyChange(nameof(IsCustomApiScope));
             }
 
+            // If this was a /diff command line, start opening the baseline filenames
+            if(baselineFilename != null)
+            {
+                StartLoadBaselineScope(new string[] {baselineFilename});
+            }
 
         }
+
+        // DoSearch checks this, and when true (when using /diff),
+        // prompts the user to copy results to the clipboard
+        public static bool OfferToCopyResultsToClipboard = false;
 
         public static MainWindow Window { get; private set; }
 
@@ -602,8 +691,16 @@ namespace Tempo
         /// <summary>
         /// Update the current API scope from settings
         /// </summary>
-        void LoadCurrentScope()
+        /// 
+        bool _initialScopeSet = false;
+        internal void InitializeToPreviousScopeFromSettings()
         {
+            if (_initialScopeSet)
+            {
+                return;
+            }
+            _initialScopeSet = true;
+
             ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
             if (settings.Values.TryGetValue(_currentScopeSettingName, out var scope))
             {
@@ -1164,14 +1261,20 @@ namespace Tempo
             }
         }
 
-        static ApiScopeLoader _baselineScope = null;
+        static ApiScopeLoader _baselineScopeLoader = null;
 
         /// <summary>
         /// Make IsBaselineScopeLoaded go false
         /// </summary>
         public static void CloseBaselineScope()
         {
-            _baselineScope = null;
+            if(_baselineScopeLoader == null)
+            {
+                return;
+            }
+
+            Manager.Settings.CompareToBaseline = false;
+            _baselineScopeLoader = null;
             Manager.BaselineTypeSet = null;
             App.Instance.RaisePropertyChange(nameof(IsBaselineScopeLoaded));
         }
@@ -1197,12 +1300,16 @@ namespace Tempo
         /// <param name="filenames"></param>
         public static void StartLoadBaselineScope(string[] filenames)
         {
+            DebugLog.Append($"Loading baseline scope {filenames[0]}");
+
             CloseBaselineScope();
 
-            var typeSet = new MRTypeSet("Baseline", !App.Instance.UsingCppProjections);
-            _baselineScope = new ApiScopeLoader();
+            App.Instance.BaselineFilenames = filenames.ToArray();
 
-            _baselineScope.StartLoad(
+            var typeSet = new MRTypeSet("Baseline", !App.Instance.UsingCppProjections);
+            _baselineScopeLoader = new ApiScopeLoader();
+
+            _baselineScopeLoader.StartLoad(
                 offThreadLoadAction: () =>
                 {
                     DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames, useWinRTProjections: true);
@@ -1210,7 +1317,7 @@ namespace Tempo
 
                 uiThreadCompletedAction: async () =>
                 {
-                    _baselineScope = null;
+                    _baselineScopeLoader = null;
                     if (typeSet.TypeCount == 0)
                     {
                         await (new ContentDialog()
@@ -1230,20 +1337,27 @@ namespace Tempo
 
                 uiThreadCanceledAction: () =>
                 {
-                    _baselineScope = null;
+                    _baselineScopeLoader = null;
                 });
         }
 
-        public void OpenBaseline(IEnumerable<string> filenames)
+
+        /// <summary>
+        /// Complete when StartLoadBaselineScope has finished
+        /// </summary>
+        public async static Task<bool> EnsureBaselineScopeAsync()
         {
-            if (Manager.BaselineTypeSet != null)
+            if (_baselineScopeLoader == null)
             {
-                App.CloseBaselineScope();
+                // Already finished
+                return true;
             }
 
-            BaselineFilenames = filenames.ToArray();
-            StartLoadBaselineScope(BaselineFilenames);
+            // Wait for it to finish
+            return await _baselineScopeLoader.EnsureLoadedAsync("Loading baseline ...");
         }
+
+
 
         static void GoToWindowsScopeAndGoHome()
         {
@@ -1366,9 +1480,9 @@ namespace Tempo
         async public static Task<bool> EnsureApiScopeLoadedAsync()
         {
             // Regardless of what's selected, also ensure the baseline is selected
-            if (_baselineScope != null)
+            if (_baselineScopeLoader != null)
             {
-                await _baselineScope.EnsureLoadedAsync("Loading baseline");
+                await _baselineScopeLoader.EnsureLoadedAsync("Loading baseline");
             }
 
             if (_isWinAppScope)
@@ -1442,6 +1556,9 @@ namespace Tempo
 
         static void InternalNavigate(Type type, object parameter)
         {
+            // Disable the UI until ready
+            RootFrame.IsEnabled = false;
+
             RootFrame.Navigate(type, parameter);
         }
 
@@ -1815,7 +1932,10 @@ namespace Tempo
 
         static internal void ResetSettings()
         {
-            Manager.Settings = new Settings();
+            Manager.ResetSettings();
+            //var oldSettings = Manager.Settings;
+            //Manager.Settings = new Settings();
+            //Manager.Settings.TransferEvents(oldSettings);
         }
 
         bool? _usingCppProjections = null;
@@ -2048,7 +2168,7 @@ namespace Tempo
                         break;
 
                     default:
-                        IsSystemTheme = true; 
+                        IsSystemTheme = true;
                         break;
                 }
             }
@@ -2079,11 +2199,11 @@ namespace Tempo
         /// </summary>
         public void ToggleTheme()
         {
-            if(IsSystemTheme)
+            if (IsSystemTheme)
             {
                 IsLightTheme = true;
             }
-            else if(IsLightTheme)
+            else if (IsLightTheme)
             {
                 IsDarkTheme = true;
             }

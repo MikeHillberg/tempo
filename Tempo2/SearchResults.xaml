@@ -68,11 +68,24 @@
                 </Grid.Tag>
 
 
-                <local:SearchBox 
-                    Margin="10,15,10,20"
-                    x:Name="_searchBox"
-                    Grid.Row="1"
-                    PlaceholderText = "Search for anything (Ctrl+E)"/>
+                <StackPanel Grid.Row="1"
+                            Margin="10,15,10,20">
+
+                    <local:SearchBox 
+                        x:Name="_searchBox"
+                        Grid.Row="1"
+                        PlaceholderText = "Search for anything (Ctrl+E)"/>
+
+                    <!-- If in baseline mode, show an info tip to help me remember -->
+                    <StackPanel Margin="0,2,0,0" Orientation="Horizontal"
+                                Visibility="{x:Bind local:Utils.VisibleIf(Settings.CompareToBaseline), Mode=OneWay}">
+                        <TextBlock Text="Using baseline" FontStyle="Italic" />
+                        <local:InfoTip Margin="5,2,0,0"
+                                       ToolTipService.ToolTip="Only APIs new since the baseline are being shown. Update the baseline on the Home page."
+                                       />
+                    </StackPanel>
+
+                </StackPanel>
 
                 <!-- No Background here so that Mica can be seen -->
                 <ListView x:Name="_listView" Grid.Row="2"

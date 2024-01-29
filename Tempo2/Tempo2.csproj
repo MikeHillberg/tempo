@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0-windows10.0.19041</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -129,6 +129,7 @@
     <None Remove="FiltersFlyout.xaml" />
     <None Remove="FiltersFlyout3.xaml" />
     <None Remove="HelpPage.xaml" />
+    <None Remove="InfoTip.xaml" />
     <None Remove="LoadingDialog.xaml" />
     <None Remove="MemberMore.xaml" />
     <None Remove="ReferencingTypes.xaml" />
@@ -136,7 +137,6 @@
     <None Remove="SmokeLayer.xaml" />
     <None Remove="Smokey.xaml" />
     <None Remove="TimedTextBox.xaml" />
-    <None Remove="UserControl1.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="AllModelProperties.xaml">
@@ -154,13 +154,16 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="InfoTip.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="ReferencingTypes.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="RootFrame.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="UserControl1.xaml">
+    <Page Update="InfoTip.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="DocPageViewer.xaml">

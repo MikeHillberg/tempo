@@ -434,6 +434,11 @@ namespace Tempo
             }
         }
 
+        static public void ResetSettings()
+        {
+            Settings = new Settings();
+        }
+
         // Can't x:Bind to static members and get change notifications.  So create
         // an instance that can implement INPC
         static public SettingsHack SettingsHack { get; } = new SettingsHack();
@@ -704,6 +709,7 @@ namespace Tempo
                 && searchExpression.HasNoSearchString
                 && searchExpression.WhereCondition == null
                 && !searchExpression.HasAqsExpression
+                && !Settings.CompareToBaseline
                 && Settings.Contract == null)
             {
                 foreach (var type in CurrentTypeSet.Types)
@@ -768,6 +774,10 @@ namespace Tempo
                 var typeMatchesFilters = false;
 
                 LastType = types[i].Name;
+                if(LastType == "WidgetContract")
+                {
+                    int j = 1431;
+                }
 
                 if (iteration == RecalculateIteration)
                 {
@@ -905,6 +915,10 @@ namespace Tempo
                     membersChecked++;
 
                     LastMember = member.Name;
+                    if(LastMember == "CheckBoxDisabledBorderBrush")
+                    {
+                        int j = 1433;
+                    }
 
                     if (!CheckMemberCheckers(
                         member,

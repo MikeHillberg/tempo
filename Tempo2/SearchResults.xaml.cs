@@ -18,6 +18,7 @@ using CommunityToolkit.WinUI.UI.Controls;
 using Windows.Foundation;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Shapes;
+using NuGet.Configuration;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -378,6 +379,16 @@ namespace Tempo
                 return;
             }
 
+            // If we're in /diff mode, make sure the baseline files are loaded too
+            if (Manager.Settings.CompareToBaseline == true)
+            {
+                shouldContinue = await App.EnsureBaselineScopeAsync();
+                if (!shouldContinue)
+                {
+                    return;
+                }
+            }
+
             DebugLog.Append($"Searching: {_searchString}");
 
             SearchString = _searchString;
@@ -455,6 +466,30 @@ namespace Tempo
                 SearchDelay = (DateTime.Now - _startTime).Milliseconds;
                 Results = newResults;
                 NothingFound = (Results.Count == 0);
+
+                if(!NothingFound 
+                    && App.OfferToCopyResultsToClipboard 
+                    && Manager.Settings.CompareToBaseline)
+                {
+                    // When doing an API diff from the command line,
+                    // offer to put the results on the clipboard automatically
+                    // (rather than having to find the copy menu and figure it out)
+
+                    var result = await (new ContentDialog()
+                    {
+                        Content = "Copy diff to clipboard? \r\n(This can also be done from the Copy menu)",
+                        XamlRoot = this.XamlRoot,
+                        CloseButtonText = "Cancel",
+                        PrimaryButtonText = "Copy",
+                    }).ShowAsync();
+                    if(result == ContentDialogResult.Primary)
+                    {
+                        CommonCommandBar.CopyToClipboardCompactHelper(Results);
+                    }
+
+                }
+
+                App.OfferToCopyResultsToClipboard = false;
             }
         }
 
@@ -480,7 +515,7 @@ namespace Tempo
         public static readonly DependencyProperty SearchDelayProperty =
             DependencyProperty.Register("SearchDelay", typeof(int), typeof(SearchResults), new PropertyMetadata(0));
 
-
+        Settings Settings => Manager.Settings;
 
 
         static Stack<string> _relativeScrollPositions = new Stack<string>();
@@ -739,8 +774,22 @@ namespace Tempo
                 }
 
                 // Pick a type at random, so every time you see something new
-                var index = Random.Shared.Next(items.Count - 1);
-                targetItem = items[0] as MemberOrTypeViewModelBase;
+                // Try to avoid the Xaml Direct APIs because there's so many of them
+                int index = -1;
+                for (int i = 0; i <= 3; i++)
+                {
+                    index = Random.Shared.Next(items.Count - 1);
+                    targetItem = items[0] as MemberOrTypeViewModelBase;
+                    var typeName = targetItem.DeclaringType.Name;
+                    if(typeName != "XamlPropertyIndex" && typeName != "XamlEventIndex" && typeName != "XamlTypeIndex")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Debug.Assert(false);
+                    }
+                }
 
                 for (int i = index; i >= 0; i--)
                 {

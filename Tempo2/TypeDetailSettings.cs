@@ -68,7 +68,9 @@ namespace Tempo
             {
                 if (_filterBackground.Color == Colors.Transparent)
                 {
+                    // aka SystemAccentColorLight2
                     var color = (new UISettings()).GetColorValue(UIColorType.AccentLight2);
+
                     _filterBackground = new SolidColorBrush(color);
                     RaisePropertyChanged(nameof(FilterBackground));
                 }

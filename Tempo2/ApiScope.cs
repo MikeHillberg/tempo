@@ -18,7 +18,7 @@ namespace Tempo
         bool _isCanceled = false;
 
         ManualResetEvent _loadCompletedEvent = null;
-        ManualResetEvent _loadingEvent = null;
+        ManualResetEvent _loadingThreadEvent = null;
 
         /// <summary>
         /// Load the scope by running an action off thread
@@ -30,6 +30,8 @@ namespace Tempo
             Action uiThreadCompletedAction, // What to do when load completes (runs on UI thread)
             Action uiThreadCanceledAction)  // What to do if load is canceled (runs on UI thread)
         {
+            // At this point we're on the UI thread
+
             if(_isLoaded)
             {
                 return;
@@ -41,7 +43,10 @@ namespace Tempo
                 return;
             }
 
-            _loadingEvent = new ManualResetEvent(false);
+            // This is signaled when the loading worker thread finishes
+            _loadingThreadEvent = new ManualResetEvent(false);
+
+            // This is signaled when the load is complete (which happens on the UI thread)
             _loadCompletedEvent = new ManualResetEvent(false);
 
             _isCanceled = false;
@@ -49,12 +54,11 @@ namespace Tempo
             // Fork the load action
             _ = Task.Run(() =>
             {
+                // This is the loading thread
+
                 try
                 {
                     offThreadLoadAction();
-
-                    // Must set this before releasing the event
-                    _isLoaded = true;
                 }
                 catch(Exception)
                 {
@@ -63,27 +67,32 @@ namespace Tempo
                 }
 
                 // Run a completion on the UI thread
-                _loadingEvent.Set();
+                _loadingThreadEvent.Set();
             });
 
-            // The event will be released either by the load completing or by the Ensure method
+            // The event will be released either by the load completing or by the Ensure method canceling the load
             // bugbug: there must be a better way to do this than forking another thread?
-            await Task.Run(() => _loadingEvent.WaitOne());
+            await Task.Run(() => _loadingThreadEvent.WaitOne());
 
-            _loadingEvent = null;
+            // We're on the UI thread after the load thread has completed, or we're canceling
 
             if (_isCanceled)
             {
                 // The "loading ..." dialog was canceled
-                _isLoaded = false;
                 uiThreadCanceledAction();
             }
             else
             {
                 // Completed successfully
                 uiThreadCompletedAction();
+
+                // Now we're fully loaded
+                _isLoaded = true;
             }
 
+            _loadingThreadEvent = null;
+
+            // This will release Ensure()
             _loadCompletedEvent.Set();
             _loadCompletedEvent = null;
 
@@ -119,10 +128,15 @@ namespace Tempo
 
             if (!_isLoaded)
             {
+                // _contentDialogTask signaled, meaning that the dialog was canceled
                 _isCanceled = true;
 
                 // Complete the load call
-                _loadingEvent.Set();
+                // (Null check shouldn't be necessary)
+                if (_loadingThreadEvent != null)
+                {
+                    _loadingThreadEvent.Set();
+                }
 
                 return false;
             }

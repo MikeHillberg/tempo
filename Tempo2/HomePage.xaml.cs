@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Tempo
 {
@@ -39,6 +40,7 @@ namespace Tempo
         {
             this.InitializeComponent();
 
+            Debug.Assert(Instance == null);
             Instance = this;
 
             Loaded += DoLoaded;
@@ -157,26 +159,29 @@ namespace Tempo
                 _selectedIndexOnLoaded = -1;
             }
 
-            if (_initialLoad)
-            {
-                _initialLoad = false;
-            }
-
             // Signal that we're at the Home page so the nav stack can reset
             HomePageLoaded?.Invoke(this, null);
 
-            //_customFilesTip.IsOpen = true;
-
-
-            // Wait until now to process the command line, because until now we didn't have a XamlRoot,
-            // and without that we can't show an error dialog
-            // Check the AppActivationArguments first, and if it doesn't do anything then the command line
-            if (!App.Instance.ProcessActivationArgs())
-            {
-                App.Instance.ProcessCommandLine();
-            }
 
             MainWindow.Instance.SetMicaBackdrop();
+
+            if (_initialLoad)
+            {
+                _initialLoad = false;
+
+                // Wait until now to process the command line, because until now we didn't have a XamlRoot,
+                // and without that we can't show an error dialog
+                // Check the AppActivationArguments first, and if it doesn't do anything then the command line
+                App.Instance.ProcessActivationArgs();
+
+                if(Manager.Settings.CompareToBaseline == true)
+                {
+                    _baselineExpander.IsExpanded = true;
+                }
+
+                App.Instance.InitializeToPreviousScopeFromSettings();
+            }
+
 
             ShowTeachingTips();
         }
@@ -338,7 +343,8 @@ namespace Tempo
             }
 
             // Set them as the baseline
-            App.Instance.OpenBaseline(filenames);
+            //App.Instance.OpenBaseline(filenames);
+            App.StartLoadBaselineScope(filenames.ToArray());
         }
 
 
@@ -358,6 +364,21 @@ namespace Tempo
             //}
             App.Instance.BaselineFilenames = new string[0]; //null;
 
+        }
+
+        string BaselineHeaderText(bool isExpanded)
+        {
+            return isExpanded ? "" : "Expand to set APIs to compare against";
+        }
+
+        int OpaqueIf(bool b)
+        {
+            return b ? 1 : 0;
+        }
+
+        int TransparentIf(bool b)
+        {
+            return b ? 0 : 1;
         }
 
         /// <summary>
@@ -497,7 +518,7 @@ namespace Tempo
                         return;
                     }
 
-                    App.Instance.OpenBaseline(new string[] { storageFile.Path });
+                    App.StartLoadBaselineScope(new string[] { storageFile.Path });
                 }
             }
             finally
@@ -604,6 +625,10 @@ namespace Tempo
             App.Instance.GotoSearch();
         }
 
+        private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            _baseline.StartBringIntoView();
+        }
     }
 
     public class SplitFilename

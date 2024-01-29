@@ -31,13 +31,15 @@
 
             <DataTemplate x:DataType="local:AttributeTypeInfo">
                 <StackPanel Margin="1">
-                    <TextBlock Text="{x:Bind TypeName}" IsTextSelectionEnabled="True" />
+                    <TextBlock Text="{x:Bind TypeName}" IsTextSelectionEnabled="True"
+                               local:SearchHighlighter.IsEnabled="True" />
                     <TextBlock  
                                 Margin="5,0,0,0"
                                 Text="{x:Bind  Properties}" 
                                 TextWrapping="Wrap"
                                 local:CollapseIfEmpty.IsEnabledFor="{x:Bind Properties}"
-                                IsTextSelectionEnabled="True"/>
+                                IsTextSelectionEnabled="True"
+                                local:SearchHighlighter.IsEnabled="True" />
                 </StackPanel>
 
             </DataTemplate>

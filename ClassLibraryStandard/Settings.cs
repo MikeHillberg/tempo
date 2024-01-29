@@ -37,7 +37,6 @@ namespace Tempo
         // bugbug: This is wierd, what's it used for?
         public bool IsDefault
         {
-            set { _isDefault = value; }
             get
             {
                 if (_isDefault == null)
@@ -84,6 +83,15 @@ namespace Tempo
                     continue;
                 }
 
+                // This property _does_ affect search, but we don't want it to 
+                // make settings appear dirty, because it doesn't show up in the Filters dialog,
+                // so it shouldn't make the Filters button be highlighted
+
+                if(prop.Name == nameof(CompareToBaseline))
+                {
+                    continue;
+                }
+
                 var isSkipProperty = false;
                 foreach(var skip in skips)
                 {
@@ -116,33 +124,14 @@ namespace Tempo
 
         public Settings() 
         {
+            //System.Diagnostics.Debugger.Break();
+
             //if (_convertForJS)
             //    _isDefault = false;
             //else
             //    _isDefault = true;
         }
 
-        public void NotifyChange(bool isReset = false, [CallerMemberName] string name = null)
-        {
-            DebugLog.Append($"Settings change ({isReset}, {name})");
-            _isDefault = isReset ? (bool?)true : null;
-
-            var args = new PropertyChangedEventArgs(name);
-
-            // Instance changed event (for x:Bind)
-            if (PropertyChanged != null)
-            {
-                PropertyChanged.Invoke(this, args);
-            }
-
-            // Static changed event (because there's only one instance of Settings)
-            if (Changed != null)
-            {
-                Changed.Invoke(this, args);
-            }
-
-            Manager.SettingsHack.Reset();
-        }
 
         // Static version of PropertyChanged event
         static public event EventHandler<PropertyChangedEventArgs> Changed;
@@ -177,7 +166,49 @@ namespace Tempo
             }
         }
         public static event EventHandler ViewChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
+
+
+        static WeakEventHandler<PropertyChangedEventHandler> _propertyChanged 
+            = new WeakEventHandler<PropertyChangedEventHandler>();
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                _propertyChanged.Add(value);
+            }
+            remove 
+            {
+                if(Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+
+                _propertyChanged.Remove(value);
+
+            }
+        }
+
+
+        public void NotifyChange(bool isReset = false, [CallerMemberName] string name = null)
+        {
+            DebugLog.Append($"Settings change ({isReset}, {name})");
+            _isDefault = isReset ? (bool?)true : null;
+
+            var args = new PropertyChangedEventArgs(name);
+
+            // Instance changed event (for x:Bind)
+
+            _propertyChanged.Raise((handler) => (handler as PropertyChangedEventHandler).Invoke(this, args));
+
+            // Static changed event (because there's only one instance of Settings)
+            if (Changed != null)
+            {
+                Changed.Invoke(this, args);
+            }
+
+            Manager.SettingsHack.Reset();
+        }
 
         static public void RaiseViewChange()
         {
@@ -291,11 +322,16 @@ namespace Tempo
         }
 
         // Compare the current typeset to a baseline typeset (for finding deltas)
-        bool? _compareToBaseline = null;
-        public bool? CompareToBaseline
+        static bool _compareToBaselineStatic = false;
+        bool _compareToBaseline = _compareToBaselineStatic;
+        public bool CompareToBaseline
         {
             get { return _compareToBaseline; }
-            set { Set(ref _compareToBaseline, value); }
+            set 
+            {
+                _compareToBaselineStatic = value;
+                Set(ref _compareToBaseline, value); 
+            }
         }
 
         bool? _isAsync = null;

@@ -15,6 +15,7 @@
                   HorizontalAlignment="Center">
         
         <!-- Use the community toolkit's markdown reader -->
+        <!-- Help text is in help.md -->
         <controls:MarkdownTextBlock x:Name="_markdown" Background="Transparent"/>
     </ScrollViewer>
     

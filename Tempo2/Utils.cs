@@ -10,6 +10,10 @@ namespace Tempo
         {
             return b ? Visibility.Collapsed : Visibility.Visible;
         }
+        static public Visibility VisibleIf(bool? b)
+        {
+            return b == true ? Visibility.Visible : Visibility.Collapsed;
+        }
         static public Orientation HorizontalIf(bool b)
         {
             return b ? Orientation.Horizontal : Orientation.Vertical;
@@ -89,6 +93,16 @@ namespace Tempo
         public static bool IsntEmpty(string[] strings)
         {
             return !IsEmpty(strings);
+        }
+
+        public static bool TrueOnly(bool? b)
+        {
+            return b == true;
+        }
+
+        public static bool FalseOnly(bool? b)
+        {
+            return b == false;
         }
     }
 }

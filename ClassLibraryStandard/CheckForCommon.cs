@@ -84,7 +84,7 @@ namespace Tempo
 
             var settings = Manager.Settings;
 
-            if (settings.CompareToBaseline == null)
+            if (!settings.CompareToBaseline)
             {
                 return;
             }
@@ -101,8 +101,7 @@ namespace Tempo
             }
 
 
-            if (Manager.ThreeStateCheck(
-                Manager.Settings.CompareToBaseline, !inBaseline))
+            if(!inBaseline)
             {
                 matches = true;
                 meaningful = true;
@@ -131,7 +130,7 @@ namespace Tempo
 
             var settings = Manager.Settings;
 
-            if (settings.CompareToBaseline == null)
+            if (!settings.CompareToBaseline)
             {
                 return;
             }
@@ -195,7 +194,7 @@ namespace Tempo
                 }
             }
 
-            if (Manager.ThreeStateCheck(settings.CompareToBaseline, !inBaseline))
+            if(!inBaseline)
             {
                 matches = true;
                 meaningful = true;

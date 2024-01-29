@@ -144,7 +144,12 @@ namespace Tempo
 
         private void CopyToClipboardCompact(object sender, RoutedEventArgs e)
         {
-            var content = CopyExport.ConvertItemsToABigString(Results, asCsv: false, flat: false, groupByNamespace: true, compressTypes: true);
+            CopyToClipboardCompactHelper(Results);
+        }
+
+        public static void CopyToClipboardCompactHelper(IList<MemberOrTypeViewModelBase> results)
+        {
+            var content = CopyExport.ConvertItemsToABigString(results, asCsv: false, flat: false, groupByNamespace: true, compressTypes: true);
             var dataPackage = new DataPackage();
             dataPackage.SetText(content);
             Clipboard.SetContent(dataPackage);
