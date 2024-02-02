@@ -774,7 +774,7 @@ namespace Tempo
                 var typeMatchesFilters = false;
 
                 LastType = types[i].Name;
-                if(LastType == "WidgetContract")
+                if(LastType == "Button")
                 {
                     int j = 1431;
                 }

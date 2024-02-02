@@ -629,7 +629,11 @@ namespace Tempo
                 {
                     return false;
                 }
-                declaringObject = propInfo.GetValue(declaringObject);
+
+                // If this is the last iteration through the loop we'll return `value`
+                // Otherwise we'll use it in the next iteration
+                value = propInfo.GetValue(declaringObject);
+                declaringObject = value;
 
             }
 
