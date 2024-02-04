@@ -30,7 +30,7 @@ namespace Tempo
 
 
         // Bugbug: need to set this internally because UWP app gets confused by the type at build time
-        public static Dispatcher Dispatcher { get; set; }
+        //public static Dispatcher Dispatcher { get; set; }
 
         public static void Initialize(bool wpfApp)
         {

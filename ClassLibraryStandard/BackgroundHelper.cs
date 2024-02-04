@@ -21,21 +21,21 @@ namespace Tempo
             dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate { action(); });
         }
 
-        static public void DoWorkOnUIThreadAsync(
-                    DispatcherPriority priority,
-                    BackgroundHelperHandler worker)
-        {
-            if (DesktopManager2.SyncMode)
-            {
-                DoWorkAsyncOld(worker, null, true);
-            }
+        //static public void DoWorkOnUIThreadAsync(
+        //            DispatcherPriority priority,
+        //            BackgroundHelperHandler worker)
+        //{
+        //    if (DesktopManager2.SyncMode)
+        //    {
+        //        DoWorkAsyncOld(worker, null, true);
+        //    }
 
             
-            DesktopManager2.Dispatcher.BeginInvoke(
-                priority,
-                (ThreadStart)delegate { worker(); }
-                );
-        }
+        //    DesktopManager2.Dispatcher.BeginInvoke(
+        //        priority,
+        //        (ThreadStart)delegate { worker(); }
+        //        );
+        //}
 
 
         static public Task DoWorkAsync(BackgroundHelperHandler worker, bool sync = false)

@@ -351,6 +351,7 @@ namespace Tempo
         private void CloseBaseline(object sender, RoutedEventArgs e)
         {
             App.CloseBaselineScope();
+            Settings.CompareToBaseline = false;
 
             // bugbug: if you set this to null, the x:Bind for some reason ignores it
             // (note that it's a function xBind), due to this generated code.
