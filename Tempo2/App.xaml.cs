@@ -560,6 +560,9 @@ namespace Tempo
                     // We have a good /diff command line, we know the two filenames
                     useBaseline = true;
                     Manager.Settings.CompareToBaseline = true;
+
+                    // On the initial display of the diff, show a message box offering to copy to the clipboard
+                    OfferToCopyResultsToClipboard = true;
                 }
                 waitingForFirstDiff = waitingForSecondDiff = false;
 
@@ -599,13 +602,11 @@ namespace Tempo
             }
 
             // If we got custom filenames, start opening them
-            if (commandLineFilenames != null)
+            if (commandLineFilenames != null && commandLineFilenames.Count != 0)
             {
                 _initialScopeSet = true;
 
                 DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
-
-                OfferToCopyResultsToClipboard = true;
 
                 App.StartLoadCustomScope(
                     DesktopManager2.CustomApiScopeFileNames.Value,
