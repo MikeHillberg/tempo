@@ -565,7 +565,7 @@ namespace Tempo
                 }
             }
 
-            if (type.DllPath != null)
+            if (type.DllPath != null && settings.FilterOnDllPath)
             {
                 if (MatchesFilter(filter, type.DllPath, settings, ref abort, ref meaningfulMatch))
                 {
@@ -774,7 +774,7 @@ namespace Tempo
                 var typeMatchesFilters = false;
 
                 LastType = types[i].Name;
-                if(LastType == "Button")
+                if(LastType == "IActivatedEventArgsDeferral")
                 {
                     int j = 1431;
                 }
@@ -1120,8 +1120,19 @@ namespace Tempo
 
                 checker.TypeCheck(type, searchExpression, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
 
+                if(matchesT)
+                {
+                    int j = 2239;
+                }
+
                 matchesCheckers &= matchesT;
+
                 meaningfulMatch |= meaningfulMatchT;
+                if(meaningfulMatchT)
+                {
+                    int j = 2245;
+                }
+
                 abortType |= abortTypeT;
 
                 if (abortType)

@@ -782,6 +782,13 @@ namespace Tempo
             set { Set(ref _filterOnAttributes, value); }
         }
 
+        bool _filterOnDllPath = true;
+        public bool FilterOnDllPath
+        {
+            get { return _filterOnDllPath; }
+            set { Set(ref _filterOnDllPath, value); }
+        }
+
         bool _filterOnParameters = true;
         public bool FilterOnParameters
         {

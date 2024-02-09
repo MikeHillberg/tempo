@@ -104,7 +104,11 @@
                         <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnAttributes, Mode=TwoWay}" 
                                    Label="Attributes"    
                                    GroupName="Search on"                                     
-                                   Description="Look at attributes when checking types and members (this is a slower search)"/>
+                                   Description="Look at attributes when checking types and members"/>
+                        <local:BooleanSettingView Setting="{x:Bind Settings.FilterOnDllPath, Mode=TwoWay}" 
+                                   Label="DLL path"    
+                                   GroupName="Search on"                                     
+                                   Description="Look at DLL path when checking types and members. Note that DLL path is only available when looking at Windows types (DLL path is in the registry, not in metadata)."/>
 
                     </local:MyRibbonGroup2>
                 </local:MyRibbonTab>
