@@ -594,10 +594,10 @@ namespace Tempo
             }
 
             // If /diff was used on the command line, check for syntax errors
-            if(waitingForFirstDiff || waitingForSecondDiff)
+            if (waitingForFirstDiff || waitingForSecondDiff)
             {
                 _ = MyMessageBox.Show("Usage: Tempo /diff file1 file2\r\nFiles can be dll, winmd, or nupkg",
-                                      "Invalid paramters", 
+                                      "Invalid paramters",
                                       closeButtonText: "OK");
             }
 
@@ -621,9 +621,9 @@ namespace Tempo
             }
 
             // If this was a /diff command line, start opening the baseline filenames
-            if(baselineFilename != null)
+            if (baselineFilename != null)
             {
-                StartLoadBaselineScope(new string[] {baselineFilename});
+                StartLoadBaselineScope(new string[] { baselineFilename });
             }
 
         }
@@ -1269,7 +1269,7 @@ namespace Tempo
         /// </summary>
         public static void CloseBaselineScope()
         {
-            if(_baselineScopeLoader == null)
+            if (_baselineScopeLoader == null)
             {
                 return;
             }
@@ -2143,8 +2143,25 @@ namespace Tempo
         /// </summary>
         void SaveThemeSetting([CallerMemberName] string theme = null)
         {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-            localSettings.Values[_themeSettingName] = theme;
+            try
+            {
+                // bugbug:
+                // This call to the Values vector is frequently AV'ing, only in a Release build,
+                // at this call stack. Repro, just launch a bunch of times a Release build
+                //
+                //  System.Private.CoreLib.dll!System.Delegate.DynamicInvokeImpl(object[] args) Line 92 C#
+                // 	System.Private.CoreLib.dll!System.Delegate.DynamicInvoke(object[] args) Line 61 C#
+                // 	WinRT.Runtime.dll!WinRT.DelegateExtensions.DynamicInvokeAbi(System.Delegate del, object[] invoke_params)    Unknown
+                //  WinRT.Runtime.dll!ABI.Windows.Foundation.Collections.IMapMethods<string, object>.Insert(WinRT.IObjectReference obj, string key, object value)   Unknown
+                //  WinRT.Runtime.dll!ABI.System.Collections.Generic.IDictionaryMethods<string, object>.Indexer_Set(WinRT.IObjectReference obj, string key, object value)   Unknown
+                //  Microsoft.Windows.SDK.NET.dll!Windows.Storage.ApplicationDataContainerSettings.this[string].set(string key, object value)   Unknown
+                //  TempoUwp.dll!Tempo.App.SaveThemeSetting(string theme) Line 2149 C#
+
+                ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+                localSettings.Values[_themeSettingName] = theme;
+            }
+            catch (Exception)
+            { }
 
             RaisePropertyChange(nameof(ElementTheme));
         }

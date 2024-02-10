@@ -8,7 +8,7 @@
 		 xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
 		 xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
 		 IgnorableNamespaces="uap mp uap6 iot uap4 uap2">
-	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.50.0" />
+	<Identity Name="2775CoffeeZeit.TempoofUWP" Publisher="CN=1BD61FE2-F217-4D46-9A05-EE02A424756D" Version="1.0.51.0" />
 	<mp:PhoneIdentity PhoneProductId="3d53f57d-55be-4138-8dc5-e16a5a09388b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
 	<Properties>
 		<DisplayName>Tempo API Viewer</DisplayName>
