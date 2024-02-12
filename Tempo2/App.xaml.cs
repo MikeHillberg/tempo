@@ -2147,7 +2147,8 @@ namespace Tempo
             {
                 // bugbug:
                 // This call to the Values vector is frequently AV'ing, only in a Release build,
-                // at this call stack. Repro, just launch a bunch of times a Release build
+                // at this call stack. And only this use of ADC.
+                // Repro is to just launch the app a bunch of times
                 //
                 //  System.Private.CoreLib.dll!System.Delegate.DynamicInvokeImpl(object[] args) Line 92 C#
                 // 	System.Private.CoreLib.dll!System.Delegate.DynamicInvoke(object[] args) Line 61 C#
