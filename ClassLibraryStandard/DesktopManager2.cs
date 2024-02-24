@@ -64,26 +64,33 @@ namespace Tempo
         static public void LoadWindowsTypesWithMRAsync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
         {
             // Early out if already loaded
-            if (Manager.WindowsTypeSet?.Types != null && useWinRTProjections)
+            if (Manager.WindowsTypeSet?.Types != null 
+                && useWinRTProjections == Manager.WindowsTypeSet.UsesWinRTProjections)
             {
                 return;
             }
 
-            DebugLog.Append($"Loading from {_winMDDir}");
+            var typeSet = new MRTypeSet(
+                useWinRTProjections ? MRTypeSet.WindowsCSName : MRTypeSet.WindowsCppName, 
+                useWinRTProjections);
+            Manager.WindowsTypeSet = typeSet;
+
+            var projectionString = useWinRTProjections ? "c#" : "c++";
+            DebugLog.Append($"Loading from {_winMDDir} for {projectionString}");
 
             // Create a LoadContext and set the callbacks that it needs
             var loadContext = new MrLoadContext(useWinRTProjections);
             loadContext.AssemblyPathFromName = (assemblyName) => ResolveMRAssembly(assemblyName, assemblyLocator); // Find an assembly
             loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
-            TypeSet typeSet = null;
-            {
-                typeSet = Manager.WindowsTypeSet;
-                if(typeSet == null)
-                {
-                    Manager.WindowsTypeSet = typeSet = new MRTypeSet(MRTypeSet.WindowsCSName, useWinRTProjections);
-                }
-            }
+            //TypeSet typeSet = null;
+            //{
+            //    typeSet = Manager.WindowsTypeSet;
+            //    if(typeSet == null)
+            //    {
+            //        Manager.WindowsTypeSet = typeSet = new MRTypeSet(MRTypeSet.WindowsCSName, useWinRTProjections);
+            //    }
+            //}
 
             // Load from System32
             foreach (var winmdFile in Directory.EnumerateFiles(_winMDDir, @"*.winmd"))

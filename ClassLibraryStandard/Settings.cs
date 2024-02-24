@@ -179,13 +179,7 @@ namespace Tempo
             }
             remove 
             {
-                if(Debugger.IsAttached)
-                {
-                    Debugger.Break();
-                }
-
                 _propertyChanged.Remove(value);
-
             }
         }
 

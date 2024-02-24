@@ -294,6 +294,12 @@ namespace Tempo
             var ifaces = candidateType.GetAllInterfaces();
             foreach (var iface in ifaces)
             {
+                //bugbug: Seeing this with ReflectypTypeViewModel
+                if(iface == null)
+                {
+                    continue;
+                }
+
                 //if (candidateType == iface)
                 if (iface.IsPublic && check(iface, member))
                 {
@@ -608,6 +614,12 @@ namespace Tempo
 
             foreach (var field in findType.Fields)
             {
+                if(field.FieldType == null)
+                {
+                    // bugbug: global::ItemStructMap<T>.Value has a null FieldType
+                    // Global namespace in PresentationFramework.dll
+                    continue;
+                }
                 yield return new TypeAndSource(field.FieldType, "Field: " + field.Name + " (" + field.FieldType.Name + ")");
             }
 

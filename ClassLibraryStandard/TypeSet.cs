@@ -66,12 +66,14 @@ namespace Tempo
 
         public int TypeCount { get; private set; }
 
-        IList<TypeViewModel> _types;
-        public IList<TypeViewModel> Types
+        IReadOnlyList<TypeViewModel> _types;
+        public IReadOnlyList<TypeViewModel> Types
         {
             get { return _types; }
             set
             {
+                Debug.Assert(_types == null);
+
                 _types = value;
                 TypeCount = value == null ? 0 : value.Count;
 
@@ -384,7 +386,6 @@ namespace Tempo
             return null;
         }
 
-        object _async = null;
         public TypeViewModel GetFromCacheBase(object t, Func<TypeViewModel> create)
         {
             TypeViewModel vm = null;

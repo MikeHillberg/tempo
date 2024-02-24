@@ -436,8 +436,6 @@ namespace Tempo
                 ProcessCommandLine();
             }
         }
-        bool _activationArgsLoaded = false;
-
 
 
         /// <summary>
@@ -508,7 +506,6 @@ namespace Tempo
 
             var args = Environment.GetCommandLineArgs();
             string baselineFilename = null;
-            var useBaseline = false;
 
             // The first arg is the name of the exe
             if (args == null || args.Length == 1)
@@ -558,7 +555,6 @@ namespace Tempo
                 else if (waitingForSecondDiff)
                 {
                     // We have a good /diff command line, we know the two filenames
-                    useBaseline = true;
                     Manager.Settings.CompareToBaseline = true;
 
                     // On the initial display of the diff, show a message box offering to copy to the clipboard
