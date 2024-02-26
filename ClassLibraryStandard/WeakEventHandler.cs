@@ -40,7 +40,6 @@ namespace Tempo
 
         public void Remove(THandler value)
         {
-            Debugger.Break();
             if (_delegateAndTargets.TryGetValue(value.Target, out var handlers))
             {
                 handlers.Remove(value);

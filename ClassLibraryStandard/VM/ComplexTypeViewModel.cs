@@ -216,13 +216,13 @@ namespace Tempo
         public void SetName( string value ) { _name = value; }
         public override string Name {  get { return _name; } }
 
-        public override string Namespace
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        //public override string Namespace
+        //{
+        //    get
+        //    {
+        //        throw new NotImplementedException();
+        //    }
+        //}
 
         public override TypeViewModel ReturnType
         {

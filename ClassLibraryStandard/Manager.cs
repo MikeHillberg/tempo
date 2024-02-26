@@ -774,10 +774,6 @@ namespace Tempo
                 var typeMatchesFilters = false;
 
                 LastType = types[i].Name;
-                if(LastType == "IActivatedEventArgsDeferral")
-                {
-                    int j = 1431;
-                }
 
                 if (iteration == RecalculateIteration)
                 {
@@ -915,10 +911,6 @@ namespace Tempo
                     membersChecked++;
 
                     LastMember = member.Name;
-                    if(LastMember == "CheckBoxDisabledBorderBrush")
-                    {
-                        int j = 1433;
-                    }
 
                     if (!CheckMemberCheckers(
                         member,
@@ -1120,18 +1112,9 @@ namespace Tempo
 
                 checker.TypeCheck(type, searchExpression, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
 
-                if(matchesT)
-                {
-                    int j = 2239;
-                }
-
                 matchesCheckers &= matchesT;
 
                 meaningfulMatch |= meaningfulMatchT;
-                if(meaningfulMatchT)
-                {
-                    int j = 2245;
-                }
 
                 abortType |= abortTypeT;
 

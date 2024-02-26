@@ -276,7 +276,7 @@ namespace Tempo
         {
             get
             {
-                if (IsDelegate)
+                if (IsDelegate && Methods.Count != 0) // Count == 0 for System.Delegate itself
                 {
                     return Methods[0];
                 }
@@ -2313,7 +2313,7 @@ namespace Tempo
 
 
         //abstract public string FullName { get; }
-        abstract public string Namespace { get; }
+        //abstract public string Namespace { get; }
         abstract public Assembly Assembly { get; }
 
         abstract public string AssemblyLocation { get; }

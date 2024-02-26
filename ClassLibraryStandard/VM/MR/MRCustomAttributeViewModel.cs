@@ -60,42 +60,54 @@ namespace Tempo
             {
                 return;
             }
-            _ensuredArguments = true;
 
-            _namedArguments = new List<CustomAttributeNamedArgumentViewModel>();
-            _constructorArguments = new List<CustomAttributeTypedArgumentViewModel>();
-
-            _attribute.GetArguments(out var constructorArguments, out var namedArguments);
-
-            if (constructorArguments != null)
+            lock (this)
             {
-                foreach( var arg in constructorArguments)
+                if (_ensuredArguments)
                 {
-                    var value = arg.Value;
-                    if(arg.Type.GetFullName() == "System.Type")
+                    return;
+                }
+
+                //_ensuredArguments = true;
+
+                _namedArguments = new List<CustomAttributeNamedArgumentViewModel>();
+                _constructorArguments = new List<CustomAttributeTypedArgumentViewModel>();
+
+                _attribute.GetArguments(out var constructorArguments, out var namedArguments);
+
+                if (constructorArguments != null)
+                {
+                    foreach (var arg in constructorArguments)
                     {
-                        value = MRTypeViewModel.GetFromCache(arg.Value as MrType, _targetType.TypeSet);
+                        var value = arg.Value;
+                        if (arg.Type.GetFullName() == "System.Type")
+                        {
+                            value = MRTypeViewModel.GetFromCache(arg.Value as MrType, _targetType.TypeSet);
+                        }
+
+                        _constructorArguments.Add(new MRCustomAttributeTypedArgumentViewModel(
+                                                                    MRTypeViewModel.GetFromCache(arg.Type, _targetType.TypeSet) as MRTypeViewModel,
+                                                                    value)
+                                                                    as CustomAttributeTypedArgumentViewModel);
                     }
-
-                    _constructorArguments.Add(new MRCustomAttributeTypedArgumentViewModel(
-                                                                MRTypeViewModel.GetFromCache(arg.Type, _targetType.TypeSet) as MRTypeViewModel,
-                                                                value)
-                                                                as CustomAttributeTypedArgumentViewModel);
                 }
-            }
 
-            if(namedArguments != null)
-            {
-                foreach (var arg in namedArguments)
+                if (namedArguments != null)
                 {
-                    var value = arg.Value;
+                    foreach (var arg in namedArguments)
+                    {
+                        var value = arg.Value;
 
-                    _namedArguments.Add(new MRCustomAttributeNamedArgumentViewModel(
-                                                                arg.Name,
-                                                                MRTypeViewModel.GetFromCache(arg.Type, _targetType.TypeSet) as MRTypeViewModel,
-                                                                value)
-                                                                as CustomAttributeNamedArgumentViewModel);
+                        _namedArguments.Add(new MRCustomAttributeNamedArgumentViewModel(
+                                                                    arg.Name,
+                                                                    MRTypeViewModel.GetFromCache(arg.Type, _targetType.TypeSet) as MRTypeViewModel,
+                                                                    value)
+                                                                    as CustomAttributeNamedArgumentViewModel);
+                    }
                 }
+
+                _ensuredArguments = true;
+
             }
         }
 

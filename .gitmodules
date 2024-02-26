@@ -1,0 +1,3 @@
+[submodule "middleweight-reflection"]
+	path = middleweight-reflection
+	url = https://github.com/MikeHillberg/middleweight-reflection.git

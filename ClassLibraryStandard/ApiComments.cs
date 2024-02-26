@@ -179,7 +179,7 @@ namespace Tempo
             }
         }
 
-        public static void EnsureSync(IList<TypeViewModel> types)
+        public static void EnsureSync(IReadOnlyList<TypeViewModel> types)
         {
             foreach (var type in types)
             {

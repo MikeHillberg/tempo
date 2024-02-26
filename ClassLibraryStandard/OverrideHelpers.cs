@@ -24,12 +24,21 @@ namespace Tempo
             // GitHub APIs return 403 (Forbidden) if the request header doesn't have a user agent specified
             http.UserAgent = "Tempo";
 
-            var response = await http.GetResponseAsync();
-            var stream = response.GetResponseStream();
-            var streamReader = new StreamReader(stream);
-            var content = streamReader.ReadToEnd();
+            try
+            {
+                var response = await http.GetResponseAsync();
 
-            return new StringReader(content);
+                var stream = response.GetResponseStream();
+                var streamReader = new StreamReader(stream);
+                var content = streamReader.ReadToEnd();
+
+                return new StringReader(content);
+            }
+            catch (Exception e)
+            {
+                DebugLog.Append($"Can't get doc page: {e.GetType().ToString()}, '{e.Message}'");
+                return new StringReader("");
+            }
         }
 
         // Get the markdown filenames for method pages from a GitHub query. This is necessary because we have to search
