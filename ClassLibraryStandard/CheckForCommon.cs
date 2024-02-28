@@ -43,16 +43,16 @@ namespace Tempo
 
     public class CheckForFilterOnType : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, SearchExpression searchExpression, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, searchExpression, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.ShowTypes == false)
             {
                 // We're not supposed to check types, so we can skip this check. The exception is if we're doing a
-                // "type:member" search, like "Button:Click". In that case, still check the type name.
+                // "type::member" search, like "Button::Click". In that case, still check the type name.
 
-                if (!filter.IsTwoPart)
+                if (!searchExpression.IsTwoPart)
                 {
                     return;
                 }
@@ -60,7 +60,7 @@ namespace Tempo
 
 
             if (Manager.TypeMatchesFilters(
-                    t, filter.TypeRegex,
+                    t, searchExpression.TypeRegex,
                     Manager.Settings.FilterOnBaseType,
                     Manager.Settings,
                     ref abort,

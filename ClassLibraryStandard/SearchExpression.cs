@@ -691,7 +691,7 @@ namespace Tempo
                         foreach (var member in type.Members)
                         {
                             var filtersMatch = true;
-                            Manager.CheckMemberName(member, regex, ref abort, out filtersMatch, out meaningfulMatch);
+                            Manager.MemberMatchesFilters(member, regex, ref abort, out filtersMatch, out meaningfulMatch);
                             if (meaningfulMatch)
                                 return true;
                         }

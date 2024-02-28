@@ -223,10 +223,10 @@ namespace Tempo
                    || t.Namespace.StartsWith("Windows.Foundation") && !t.IsInterface;
         }
 
-        public static bool TypeIsPublicVolatile(TypeInfo ti)
-        {
-            return TypeIsPublicVolatileDynamic2(ti);
-        }
+        //public static bool TypeIsPublicVolatile(TypeInfo ti)
+        //{
+        //    return TypeIsPublicVolatileDynamic2(ti);
+        //}
 
 
         static public bool TypeIsPublicVolatileDynamic2(object t1)
@@ -242,15 +242,16 @@ namespace Tempo
         {
             return
                 TypeIsPublicVolatile(t)
-                   && (TypeMatchesFilterString(t, filter, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch)
+                   //&& (TypeMatchesFilterString(t, filter, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch)
+                   && MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch)
                 ||
                 MatchesAttributes(t, filter, settings, ref abort, ref meaningfulMatch));
         }
 
-        static bool TypeMatchesFilterString(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
-        {
-            return MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch);
-        }
+        //static bool TypeMatchesFilterString(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        //{
+        //    return MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch);
+        //}
 
         static bool MatchesFilter(Regex filter, string name, Settings settings, ref bool abort, ref bool meaningfulMatch)
         {
@@ -311,17 +312,17 @@ namespace Tempo
                 return MatchesSetting(setting, valueFunc(), ref meaningfulMatch);
         }
 
-        static bool MatchesProtected(dynamic method)//(bool isFamily, bool isPublic)
-        {
-            if (Settings.IsProtected == true && BaseViewModel.CheckProtected(method)//isFamily
-                || Settings.IsProtected == false && !BaseViewModel.CheckProtected(method)//!isFamily
-                || Settings.IsProtected == null)
-            {
-                return true;
-            }
+        //static bool MatchesProtected(dynamic method)//(bool isFamily, bool isPublic)
+        //{
+        //    if (Settings.IsProtected == true && BaseViewModel.CheckProtected(method)//isFamily
+        //        || Settings.IsProtected == false && !BaseViewModel.CheckProtected(method)//!isFamily
+        //        || Settings.IsProtected == null)
+        //    {
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
 
 
@@ -1294,7 +1295,7 @@ namespace Tempo
             bool filtersMatch = true;
             if (searchExpression.MemberRegex != null)
             {
-                CheckMemberName(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
+                MemberMatchesFilters(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
             }
 
             bool isMatch = filtersMatch;
@@ -1354,7 +1355,9 @@ namespace Tempo
             return true;
         }
 
-        public static void CheckMemberName(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
+        //         static public bool TypeMatchesFilters(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+
+        public static void MemberMatchesFilters(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
         {
             var method = new DuckMethod(member);
             filtersMatch = false;
