@@ -1089,6 +1089,13 @@ namespace Tempo
         /// </summary>
         void StartLoadWinAppScope(bool useWinRTProjections)
         {
+            // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
+            if(_winAppScopeLoader != null)
+            {
+                // Already a load in progress
+                return;
+            }
+
             _winAppScopeLoader = new ApiScopeLoader();
 
             _winAppScopeLoader.StartLoad(
@@ -1417,6 +1424,12 @@ namespace Tempo
         /// </summary>
         static void StartLoadWinPlatformScope(bool useWinRTProjections)
         {
+            if(_winPlatformScopeLoader != null)
+            {
+                // Already loading
+                return;
+            }
+
             _winPlatformScopeLoader = new ApiScopeLoader();
 
             _winPlatformScopeLoader.StartLoad(
