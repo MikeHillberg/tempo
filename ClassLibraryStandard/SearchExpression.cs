@@ -69,16 +69,17 @@ namespace Tempo
         /// Evaluate the AQS expression, if any.
         /// True if it matches, false if it doesn't, null if was uninteresting (like no AQS present)
         /// </summary>
-        /// <param name="propertyEvaluator"></param>
+        /// <param name="propertyEvaluator">Called to evaluate a key</param>
+        /// <param name="customEvaluator">Called to evaluate custom operand</param>
         /// <returns></returns>
-        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator)
+        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator, Func<Regex,bool> customEvaluator)
         {
             if (_aqsExpression == null)
             {
                 return null;
             }
 
-            return _aqsExpression.Evaluate(propertyEvaluator);
+            return _aqsExpression.Evaluate(propertyEvaluator, customEvaluator);
         }
 
         public Regex TypeRegex
@@ -135,7 +136,7 @@ namespace Tempo
             }
 
             // Testing aid
-            if(searchString.Contains("-slowly"))
+            if (searchString.Contains("-slowly"))
             {
                 SearchSlowly = true;
                 searchString = searchString.Replace("-slowly", "");
@@ -158,74 +159,38 @@ namespace Tempo
                 }
             }
 
-            // Check for AQS clause
-            if (searchString.Contains(':'))
+           
+
+            // Parse the search string
+            _aqsExpression = TryParseAqs(searchString);
+
+
+            // See if there's any custom operands in the parsed string.
+            // For example, for search string "button IsClass:true",
+            // "button" is the custom operand. This will parse to
+            // "CUSTOM:button AND IsClass:True", and "button"
+            // will be the customOperand.
+            // We want to find this so that we can hightlight "button" in the search results.
+
+            var searchSubstring = "";
+            var customOperands = _aqsExpression.CustomOperands;
+            if(customOperands != null && customOperands.Length > 0)
             {
-                // Looks like we have an AQS
-                
-                // The search term has to come before the AQS.
-                // Separate the search term out (into an updated `searchString`),
-                // and then parse the AQS
-
-                var searchStringBuilder = new StringBuilder();
-                StringBuilder queryStringBuilder = null;
-
-                var parts = searchString.Split(' ');
-                foreach (var part in parts)
-                {
-                    if (part == "")
-                    {
-                        // Skip redundant interior spaces
-                        continue;
-                    }
-
-                    if (queryStringBuilder == null)
-                    {
-                        // We haven't seen the beginning of the AQS part yet
-
-                        if (part.Contains(':') || part.Contains('(') || AqsExpression.IsOperator(part))
-                        {
-                            // We just transitioned to the AQS part
-                            queryStringBuilder = new StringBuilder();
-                            queryStringBuilder.Append($"{part}");
-                        }
-                        else
-                        {
-                            searchStringBuilder.Append($" {part}");
-                        }
-                    }
-                    else
-                    {
-                        // We're in the AQS part
-                        queryStringBuilder.Append($" {part}");
-                    }
-                }
-
-
-                // Parse the AQS into _aqsExpression
-                if (queryStringBuilder != null)
-                {
-                    // Might return null
-                    _aqsExpression = TryParseAqs(queryStringBuilder.ToString());
-                }
-
-                // Update the `searchString` to be minus the AQS part
-                searchString = searchStringBuilder.ToString().Trim();
+                // Bugbug: handle the multiple case.
+                // E.g. "button OR toggle"
+                searchSubstring = customOperands[0];
             }
-
-
-            //Build the regular expression(s) from `searchString`
-
-            if (!searchString.Contains("%"))
+            
+            if (!searchSubstring.Contains("%"))
             {
                 // Typical case, no "Type::Member" syntax
-                _typeRegex = string.IsNullOrEmpty(searchString) ? null : SplitFilterForGenerics(searchString);
+                _typeRegex = string.IsNullOrEmpty(searchSubstring) ? null : SplitFilterForGenerics(searchSubstring);
                 _memberRegex = _typeRegex;
             }
             else
             {
                 // "Type::Member" syntax
-                var split = searchString.Split('%');
+                var split = searchSubstring.Split('%');
                 _typeRegex = SplitFilterForGenerics(split[0]);
                 _memberRegex = CreateRegex(split[1]);
             }
@@ -244,8 +209,8 @@ namespace Tempo
             searchString = searchString.Replace("&&", " && ");
 
             return AqsExpression.TryParse(
-                searchString, 
-                Manager.Settings.CaseSensitive, 
+                searchString,
+                Manager.Settings.CaseSensitive,
                 Manager.Settings.IsWildcardSyntax,
                 AqsKeyValidator);
         }
@@ -529,7 +494,7 @@ namespace Tempo
         static internal Regex CreateRegex(string value)
         {
             return AqsExpression.CreateRegex(
-                value, 
+                value,
                 Manager.Settings.CaseSensitive,
                 Manager.Settings.IsWildcardSyntax);
         }
@@ -609,7 +574,7 @@ namespace Tempo
                 var first = true;
                 foreach (var item in list)
                 {
-                    if(!first)
+                    if (!first)
                     {
                         sb.Append(", ");
                     }
@@ -685,7 +650,7 @@ namespace Tempo
                         var abort = false;
                         var meaningfulMatch = false;
 
-                        if (Manager.MatchesFilterString(regex, type, true, true, Manager.Settings, ref abort, ref meaningfulMatch))
+                        if (Manager.MatchesFilterString(regex, type, true, true, Manager.Settings, ref meaningfulMatch))
                             return true;
 
                         foreach (var member in type.Members)

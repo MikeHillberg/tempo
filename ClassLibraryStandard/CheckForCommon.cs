@@ -6,9 +6,9 @@ namespace Tempo
 {
     public class CheckForNamespace : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.Namespace == null)
                 return;
@@ -41,46 +41,14 @@ namespace Tempo
     }
 
 
-    public class CheckForFilterOnType : CheckForMatch
-    {
-        public override void TypeCheck(TypeViewModel t, SearchExpression searchExpression, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
-        {
-            base.TypeCheck(t, searchExpression, out matches, out meaningful, out abortType, ref abort);
-
-            if (Manager.Settings.ShowTypes == false)
-            {
-                // We're not supposed to check types, so we can skip this check. The exception is if we're doing a
-                // "type::member" search, like "Button::Click". In that case, still check the type name.
-
-                if (!searchExpression.IsTwoPart)
-                {
-                    return;
-                }
-            }
-
-
-            if (Manager.TypeMatchesFilters(
-                    t, searchExpression.TypeRegex,
-                    Manager.Settings.FilterOnBaseType,
-                    Manager.Settings,
-                    ref abort,
-                    ref meaningful))
-            {
-                matches = true;
-            }
-            else
-                matches = false;
-
-        }
-    }
 
     // Compare APIs with a baseline set of APIs, for creating a delta list
     public class CheckForNotInBaseline : CheckForMatch
     {
 
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
 
@@ -101,7 +69,7 @@ namespace Tempo
             }
 
 
-            if(!inBaseline)
+            if (!inBaseline)
             {
                 matches = true;
                 meaningful = true;
@@ -115,7 +83,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -126,7 +93,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -160,7 +127,7 @@ namespace Tempo
                         IList<ParameterViewModel> aParameters = null;
                         IList<ParameterViewModel> parameters = null;
 
-                        if(constructorInfo != null)
+                        if (constructorInfo != null)
                         {
                             parameters = constructorInfo.Parameters;
                             aParameters = (aMember as ConstructorViewModel).Parameters;
@@ -171,20 +138,20 @@ namespace Tempo
                             aParameters = (aMember as MethodViewModel).Parameters;
                         }
 
-                        if(parameters.Count != aParameters.Count)
+                        if (parameters.Count != aParameters.Count)
                         {
                             continue;
                         }
 
                         int i;
-                        for(i = 0; i < parameters.Count; i++)
+                        for (i = 0; i < parameters.Count; i++)
                         {
                             if (parameters[i].ParameterType != aParameters[i].ParameterType)
                             {
                                 break;
                             }
                         }
-                        if(i == parameters.Count)
+                        if (i == parameters.Count)
                         {
                             inBaseline = true;
                         }
@@ -194,7 +161,7 @@ namespace Tempo
                 }
             }
 
-            if(!inBaseline)
+            if (!inBaseline)
             {
                 matches = true;
                 meaningful = true;

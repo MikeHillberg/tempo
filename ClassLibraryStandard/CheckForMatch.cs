@@ -12,7 +12,6 @@ namespace Tempo
     {
         public override void TypeCheck(
             TypeViewModel t,
-            SearchExpression filter,
             out bool matches,
             out bool meaningful,
             out bool abortType,
@@ -151,9 +150,9 @@ namespace Tempo
 
     public class CheckForDuplicateTypeName : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.DuplicateTypeName == false)
@@ -177,9 +176,9 @@ namespace Tempo
 
     public class CheckForMarshalingBehavior : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.MarshalingBehavior == Settings.MarshalingBehaviorDefault
@@ -260,9 +259,9 @@ namespace Tempo
 
     public class CheckForThreadingModel : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.ThreadingModel == Settings.ThreadingModelDefault
@@ -340,9 +339,9 @@ namespace Tempo
 
     public class CheckForPlatform : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.SdkPlatform == SdkPlatform.Any
@@ -369,9 +368,9 @@ namespace Tempo
 
     public class CheckForTrustLevel : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.TrustLevel == TrustLevel.Any
@@ -400,9 +399,9 @@ namespace Tempo
 
     public class CheckForVersion : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.VersionString == null)
@@ -425,7 +424,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -436,7 +434,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var versionString = Manager.Settings.VersionString;
 
@@ -468,9 +466,9 @@ namespace Tempo
 
     public class CheckForContract : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             var selectedContract = settings.Contract;
@@ -481,9 +479,9 @@ namespace Tempo
             matches = selectedContract.Contains(t.Contract);
         }
 
-        public override void MemberCheck(TypeViewModel t, SearchExpression filter, PropertyViewModel propertyInfo, EventViewModel eventInfo, FieldViewModel fieldInfo, ConstructorViewModel constructorInfo, MethodViewModel methodInfo, DuckMethod effectiveMethod, out bool matches, out bool meaningful, ref bool abort)
+        public override void MemberCheck(TypeViewModel t, PropertyViewModel propertyInfo, EventViewModel eventInfo, FieldViewModel fieldInfo, ConstructorViewModel constructorInfo, MethodViewModel methodInfo, DuckMethod effectiveMethod, out bool matches, out bool meaningful, ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
             var selectedContract = settings.Contract;
@@ -500,9 +498,9 @@ namespace Tempo
 
     public class CheckForOneWordName : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.OneWordName == null)
@@ -523,7 +521,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -534,7 +531,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
             if (settings.OneWordName == null)
@@ -558,9 +555,9 @@ namespace Tempo
 
     public class CheckForNameAndNamespaceConflict : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.NameAndNamespaceConflict == null)
@@ -592,9 +589,9 @@ namespace Tempo
 
     public class CheckForDualApi : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.DualApi == null)
@@ -633,9 +630,9 @@ namespace Tempo
 
     public class CheckForMuse : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.IsMuse == null)
@@ -658,9 +655,9 @@ namespace Tempo
 
     public class CheckForMutableType : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.IsMutableType == null)
@@ -683,9 +680,9 @@ namespace Tempo
 
     public class CheckForUac : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.IsUac == null)
@@ -711,9 +708,9 @@ namespace Tempo
     public class CheckForDeprecated : CheckForMatch
     {
 
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.Deprecated == null)
                 return;
@@ -730,7 +727,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -741,7 +737,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.Deprecated == null)
                 return;
@@ -764,9 +760,9 @@ namespace Tempo
         {
         }
 
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.Experimental == null)
@@ -785,7 +781,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -796,7 +791,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
             if (settings.Experimental == null)
@@ -817,9 +812,9 @@ namespace Tempo
 
     public class CheckForHasBaseType : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.HasBaseType == null)
@@ -842,9 +837,9 @@ namespace Tempo
 
     public class CheckForImplementsInternalInterface : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
             if (settings.ImplementsInternalInterface == null)
@@ -882,9 +877,9 @@ namespace Tempo
 
     public class CheckForActivatable : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsActivatable == null)
                 return;
@@ -909,9 +904,9 @@ namespace Tempo
 
     public class CheckForFlagsEnum : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsFlagsEnum == null)
                 return;
@@ -935,11 +930,11 @@ namespace Tempo
 
     public class CheckForMarkerInterface : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
             var isMarker = true;
 
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.MarkerInterfaces == null)
                 return;
@@ -1013,9 +1008,9 @@ namespace Tempo
 
     public class CheckForDelegateType : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsDelegateType == null)
                 return;
@@ -1038,9 +1033,9 @@ namespace Tempo
 
     public class CheckForEventArgsType : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsEventArgsType == null)
                 return;
@@ -1065,11 +1060,11 @@ namespace Tempo
 
     public class CheckForMultiVersion : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
             var isMultiVersion = false;
 
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsMultiVersion == null)
                 return;
@@ -1108,9 +1103,9 @@ namespace Tempo
 
     public class CheckForUnobtainableType : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.UnobtainableType == false)
                 return;
@@ -1188,7 +1183,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1199,7 +1193,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.IsRemoteAsync == null)
                 return;
@@ -1221,9 +1215,9 @@ namespace Tempo
 
     public class CheckForFirstWordIsVerb : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsFirstWordAVerb == null)
                 return;
@@ -1244,7 +1238,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1255,7 +1248,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.IsFirstWordAVerb == null)
                 return;
@@ -1276,9 +1269,9 @@ namespace Tempo
 
     public class CheckForIsRestricted : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var isRestrictedSetting = Manager.Settings.IsRestricted;
 
@@ -1301,7 +1294,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1312,7 +1304,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var isRestrictedSetting = Manager.Settings.IsRestricted;
 
@@ -1332,9 +1324,9 @@ namespace Tempo
 
     public class CheckForHasApiDesignNotes : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var setting = Manager.Settings.HasApiDesignNotes;
 
@@ -1359,7 +1351,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1370,7 +1361,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var setting = Manager.Settings.IsRestricted;
 
@@ -1392,7 +1383,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1403,7 +1393,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasInterfaceParameter == null)
                 return;
@@ -1436,7 +1426,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1447,7 +1436,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasDelegateParameter == null)
                 return;
@@ -1478,7 +1467,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1489,7 +1477,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasMutableParameter == null)
                 return;
@@ -1526,7 +1514,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1537,7 +1524,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasAgileParameter == null)
                 return;
@@ -1573,7 +1560,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1584,7 +1570,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.CustomInParameters == null)
                 return;
@@ -1654,7 +1640,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1665,7 +1650,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasMatchingPropertyAndSetMethod == null)
                 return;
@@ -1714,7 +1699,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1725,7 +1709,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.ConflictingOverrides == null)
                 return;
@@ -1775,7 +1759,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1786,7 +1769,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.DuplicateEnumValues == null)
                 return;
@@ -1827,9 +1810,9 @@ namespace Tempo
 
     public class CheckForWebHostHidden : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             if (Manager.Settings.IsWebHostHidden == null)
                 return;
@@ -1859,7 +1842,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1870,7 +1852,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasInParameter == null)
                 return;
@@ -1915,7 +1897,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1926,7 +1907,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
             
             if (Manager.Settings.HasReturnValue == null)
                 return;
@@ -1954,7 +1935,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -1965,7 +1945,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasPrimitiveReturnValue == null)
                 return;
@@ -2010,7 +1990,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2021,7 +2000,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.IsAddedMember == null)
                 return;
@@ -2056,7 +2035,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2067,7 +2045,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2123,7 +2101,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2134,7 +2111,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.IsStatic == null)
                 return;
@@ -2165,9 +2142,9 @@ namespace Tempo
     public class CheckForInWindows : CheckForMatch
     {
 
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2202,7 +2179,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2213,7 +2189,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2256,9 +2232,9 @@ namespace Tempo
     public class CheckForInCustom : CheckForMatch
     {
 
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2293,7 +2269,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2304,7 +2279,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2351,7 +2326,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2362,7 +2336,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2404,7 +2378,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2415,7 +2388,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2439,9 +2412,9 @@ namespace Tempo
     public class CheckForInWpf : CheckForMatch
     {
 
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2476,7 +2449,6 @@ namespace Tempo
 
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2487,7 +2459,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2532,7 +2504,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2543,7 +2514,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             var settings = Manager.Settings;
 
@@ -2581,7 +2552,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2592,7 +2562,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.HasInterfaceParameter == null)
                 return;
@@ -2657,7 +2627,6 @@ namespace Tempo
     {
         public override void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -2668,7 +2637,7 @@ namespace Tempo
             out bool meaningful,
             ref bool abort)
         {
-            base.MemberCheck(t, filter, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
+            base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
 
             if (Manager.Settings.ReturnsHostType == null)
                 return;
