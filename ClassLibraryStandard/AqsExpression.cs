@@ -43,11 +43,12 @@ namespace Tempo
             string s, 
             bool caseSensitive, 
             bool isWildcardSyntax,
-            Func<string,bool> keyValidator)
+            Func<string,bool> keyValidator,
+            Func<string,object> customOperandCallback)
         {
             var expression = new AqsExpression(caseSensitive, isWildcardSyntax);
             int i = 0;
-            if (expression.TryParse(s.Split(' '), ref i, keyValidator))
+            if (expression.TryParse(s.Split(' '), ref i, keyValidator, customOperandCallback))
             {
                 return expression;
             }
@@ -67,6 +68,7 @@ namespace Tempo
             string[] tokenStrings, 
             ref int tokenIndex, 
             Func<string,bool> keyValidator,
+            Func<string,object> customOperandCallback,
             string propagatingKey = null)
         {
             // General structure is to convert the expression into post-fix notation.
@@ -164,12 +166,15 @@ namespace Tempo
                             }
                             else
                             {
-                                // What should be an LHS isn't recognized, so assume it's a custom operand
+                                // What was expected to be an LHS isn't recognized, so assume it's a custom operand
                                 // Add the (unary) operand and insert a "Custom" operator
-                                // For example "A:Foo && B && !C:Bar" becomes
-                                // A MATCHES Foo && CUSTOM B && NOT C"
+                                // For example "a:foo && b && !c:bar" becomes
+                                // a MATCHES foo && CUSTOM b && NOT (c MATCHES bar)"
 
-                                _expression.Add(new AqsToken(CreateRegex(tokenString)));
+                                // Let the caller modify the operand first
+                                var convertedOperand = customOperandCallback(tokenString);
+
+                                _expression.Add(new AqsToken(new CustomOperandHolder(convertedOperand)));
                                 _expression.Add(new AqsToken(AqsOperator.Custom));
 
                                 // Just like after a "NOT C" we expect an operator after a
@@ -249,7 +254,7 @@ namespace Tempo
 
                         // Advance past the open paren and recurse
                         ++tokenIndex;
-                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, operandToPropagate))
+                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, customOperandCallback, operandToPropagate))
                         {
                             return false;
                         }
@@ -357,7 +362,7 @@ namespace Tempo
         /// </summary>
         /// <param name="propertyEvaluator">Look up a property value given its name</param>
         /// <param name="customEvaluator">Look up custom operands</param>
-        internal bool Evaluate(Func<string, string> propertyEvaluator, Func<Regex,bool> customEvaluator)
+        internal bool Evaluate(Func<string, string> propertyEvaluator, Func<object,bool> customEvaluator)
         {
             if(_expression == null || _expression.Count == 0)
             {
@@ -394,9 +399,8 @@ namespace Tempo
                         throw new AqsException("no value for custom operator");
                     }
 
-                    // This is a unary operator, so there's no left- or right-hand side
-                    // But the value is a Regex here, which is the type of Rhs
-                    calculation.Push(new AqsToken(customEvaluator(custom.Rhs)));
+                    // Call back to evaluate the custom operaror on this operand
+                    calculation.Push(new AqsToken(customEvaluator(custom.CustomOperand)));
                 }
 
                 else if (token.Operator == AqsOperator.Not)
@@ -563,6 +567,22 @@ namespace Tempo
         }
 
         /// <summary>
+        /// A custom operand is wrapped in this Holder, which can then
+        /// be put into an AqsToken
+        /// </summary>
+        internal class CustomOperandHolder
+        {
+            internal CustomOperandHolder(object customOperand)
+            {
+                CustomOperand = customOperand;
+            }
+
+            internal object CustomOperand { get; }
+        }
+            
+
+
+        /// <summary>
         /// Operators, operands, or boolean values that are entries in the expression or evaluation
         /// </summary>
         class AqsToken
@@ -593,10 +613,19 @@ namespace Tempo
                 Boolean = value;
             }
 
+            public AqsToken(CustomOperandHolder customOperandHolder)
+            {
+                _customOperandHolder = customOperandHolder;
+            }
 
-            public bool IsOperand { get { return Lhs != null || Rhs != null; } }
+            public object CustomOperand => _customOperandHolder?.CustomOperand;
+
+
+            public bool IsOperand { get { return Lhs != null || Rhs != null || IsCustomOperand; } }
             public bool IsOperator => Operator != AqsOperator.None;
             public bool IsBoolean => !IsOperand && !IsOperator;
+            public bool IsCustomOperand => _customOperandHolder != null;
+
 
             public override string ToString()
             {
@@ -627,6 +656,7 @@ namespace Tempo
             public Regex Rhs = null;
             public bool? Boolean = null;
             public AqsOperator Operator = AqsOperator.None;
+            private CustomOperandHolder _customOperandHolder;
         }
 
     }

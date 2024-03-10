@@ -874,6 +874,10 @@ namespace Tempo
                     }
                 }
 
+                
+                    // "color namespace:widget" in wasdk isn't working
+                    // bugbug
+
 
                 else if (typeMatches)
                 {
@@ -883,22 +887,15 @@ namespace Tempo
                     var aqsResult = EvaluateAqsExpression(
                         searchExpression,
                         types[i],
-                        (Regex regex) =>
+                        (SearchExpression.CustomOperand customOperandObject) =>
                         {
                             if (Manager.Settings.ShowTypes || searchExpression.IsTwoPart)
                             {
-                                //var meaningfulMatchT = false;
-
                                 return TypeMatchesSearchHelper(
                                     types[i],
-                                    regex,
+                                    customOperandObject.TypeRegex,
                                     searchExpression.IsTwoPart,
                                     ref abortType);
-
-                                //Manager.Settings.FilterOnBaseType,
-                                //Manager.Settings,
-                                //ref abortType,
-                                //ref meaningfulMatchT);
                             }
 
                             return false;
@@ -1003,10 +1000,10 @@ namespace Tempo
                         var aqsResult = EvaluateAqsExpression(
                             searchExpression,
                             member,
-                            (Regex regex) =>
+                            (SearchExpression.CustomOperand customOperandObject) =>
                             {
                                 var filtersMatch = true;
-                                MemberMatchesFilters(member, regex, ref abort, out filtersMatch, out meaningfulMatch);
+                                MemberMatchesFilters(member, customOperandObject.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
                                 return filtersMatch;
                             });
 
@@ -1133,9 +1130,12 @@ namespace Tempo
         /// Helper to call SearchExpression.EvaluateAqsExpression and implement the callback
         /// </summary>
         /// <returns>True if it matches, false if it doesn't, and null if there was no (meaningful) AQS</returns>
-        static bool? EvaluateAqsExpression(SearchExpression searchExpression, MemberOrTypeViewModelBase memberVM, Func<Regex, bool> customEvaluator)
+        static bool? EvaluateAqsExpression(
+            SearchExpression searchExpression, 
+            MemberOrTypeViewModelBase memberVM,
+            Func<SearchExpression.CustomOperand,bool> customEvaluator)
         {
-            var keyUsed = false;
+            //var keyUsed = false;
             bool? result = null;
 
             // Any query syntax errors should get caught during parse. But just in case,
@@ -1155,8 +1155,8 @@ namespace Tempo
                             return null;
                         }
 
-                        // Remember that something was able to evaluate
-                        keyUsed = true;
+                        //// Remember that something was able to evaluate
+                        //keyUsed = true;
 
                         // String-ize the result
                         if (value == null)

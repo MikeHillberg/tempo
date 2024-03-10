@@ -72,14 +72,14 @@ namespace Tempo
         /// <param name="propertyEvaluator">Called to evaluate a key</param>
         /// <param name="customEvaluator">Called to evaluate custom operand</param>
         /// <returns></returns>
-        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator, Func<Regex,bool> customEvaluator)
+        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator, Func<CustomOperand,bool> customEvaluator)
         {
             if (_aqsExpression == null)
             {
                 return null;
             }
 
-            return _aqsExpression.Evaluate(propertyEvaluator, customEvaluator);
+            return _aqsExpression.Evaluate(propertyEvaluator, (o) => customEvaluator(o as CustomOperand));
         }
 
         public Regex TypeRegex
@@ -159,10 +159,10 @@ namespace Tempo
                 }
             }
 
-           
+
 
             // Parse the search string
-            _aqsExpression = TryParseAqs(searchString);
+            _aqsExpression = TryParseAqs(searchString, CustomOperandCallback);
 
 
             // See if there's any custom operands in the parsed string.
@@ -174,13 +174,13 @@ namespace Tempo
 
             var searchSubstring = "";
             var customOperands = _aqsExpression.CustomOperands;
-            if(customOperands != null && customOperands.Length > 0)
+            if (customOperands != null && customOperands.Length > 0)
             {
                 // Bugbug: handle the multiple case.
                 // E.g. "button OR toggle"
                 searchSubstring = customOperands[0];
             }
-            
+
             if (!searchSubstring.Contains("%"))
             {
                 // Typical case, no "Type::Member" syntax
@@ -197,8 +197,32 @@ namespace Tempo
 
         }
 
+        object CustomOperandCallback(string operand)
+        {
+            if (!operand.Contains("%"))
+            {
+                var regex = CreateRegex(operand);
+                return new CustomOperand(regex, regex);
+            }
 
-        AqsExpression TryParseAqs(string searchString)
+            var parts = operand.Split('%');
+            return new CustomOperand(CreateRegex(parts[0]), CreateRegex(parts[1]));
+        }
+
+        public class CustomOperand
+        {
+            public CustomOperand(Regex typeRegex, Regex memberRegex)
+            {
+                this.TypeRegex = typeRegex;
+                this.MemberRegex = memberRegex;
+            }
+
+            public Regex TypeRegex { get; }
+            public Regex MemberRegex { get; }
+        }
+
+
+        AqsExpression TryParseAqs(string searchString, Func<string,object> customOperandCallback)
         {
             // Make sure that all AQS operators are space-separated
             searchString = searchString.Replace(":", " : ");
@@ -212,8 +236,10 @@ namespace Tempo
                 searchString,
                 Manager.Settings.CaseSensitive,
                 Manager.Settings.IsWildcardSyntax,
-                AqsKeyValidator);
+                AqsKeyValidator,
+                customOperandCallback);
         }
+
 
         IList<string> _validAqsKeys = null;
 
