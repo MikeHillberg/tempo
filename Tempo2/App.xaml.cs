@@ -1415,8 +1415,6 @@ namespace Tempo
             }
         }
 
-
-
         static ApiScopeLoader _winPlatformScopeLoader = null;
 
         /// <summary>
@@ -1424,7 +1422,7 @@ namespace Tempo
         /// </summary>
         static void StartLoadWinPlatformScope(bool useWinRTProjections)
         {
-            if(_winPlatformScopeLoader != null)
+            if (_winPlatformScopeLoader != null)
             {
                 // Already loading
                 return;

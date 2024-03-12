@@ -70,12 +70,19 @@ namespace Tempo
                 new System.Xml.XmlDictionaryReaderQuotas());
 
             // Convert Json to XML
-            var root = XElement.Load(jsonReader);
-
-            // Return the 'name' element for each item in the 'items' array
-            foreach (var element in root.Elements("items").First().Elements())
+            if (!string.IsNullOrEmpty(jsonReader.Value))
             {
-                yield return element.Elements("name").First().Value;
+                var root = XElement.Load(jsonReader);
+
+                // Return the 'name' element for each item in the 'items' array
+                foreach (var element in root.Elements("items").First().Elements())
+                {
+                    yield return element.Elements("name").First().Value;
+                }
+            }
+            else
+            {
+                yield return null;
             }
         }
 
