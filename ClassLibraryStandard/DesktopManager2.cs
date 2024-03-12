@@ -92,6 +92,8 @@ namespace Tempo
             //    }
             //}
 
+            loadContext.LoadAssemblyFromPath(@"C:\Users\Mike\source\repos\TempoOnline\TempoPSProvider\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll");
+
             // Load from System32
             foreach (var winmdFile in Directory.EnumerateFiles(_winMDDir, @"*.winmd"))
             {
