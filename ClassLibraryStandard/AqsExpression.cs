@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -40,20 +41,26 @@ namespace Tempo
         /// Parse an AQS string. Returns null if invalid
         /// </summary>
         internal static AqsExpression TryParse(
-            string s, 
-            bool caseSensitive, 
+            string s,
+            bool caseSensitive,
             bool isWildcardSyntax,
-            Func<string,bool> keyValidator,
-            Func<string,object> customOperandCallback)
+            Func<string, bool> keyValidator,
+            Func<string, object> customOperandCallback)
         {
             var expression = new AqsExpression(caseSensitive, isWildcardSyntax);
             int i = 0;
-            if (expression.TryParse(s.Split(' '), ref i, keyValidator, customOperandCallback))
+            if (expression.TryParse(
+                s.MyCompressSpaces().Split(' '),
+                ref i,
+                keyValidator,
+                customOperandCallback,
+                out var errorMessage))
             {
                 return expression;
             }
             else
             {
+                DebugLog.Append("AQS parse error: " + errorMessage);
                 return null;
             }
         }
@@ -65,10 +72,11 @@ namespace Tempo
         /// <param name="propagatingKey">Used by recursive calls from this method</param>
         /// <returns></returns>
         bool TryParse(
-            string[] tokenStrings, 
-            ref int tokenIndex, 
-            Func<string,bool> keyValidator,
-            Func<string,object> customOperandCallback,
+            string[] tokenStrings,
+            ref int tokenIndex,
+            Func<string, bool> keyValidator,
+            Func<string, object> customOperandCallback,
+            out string errorMessage,
             string propagatingKey = null)
         {
             // General structure is to convert the expression into post-fix notation.
@@ -94,9 +102,15 @@ namespace Tempo
 
             List<string> customOperands = null;
 
+            errorMessage = null;
+
             for (; tokenIndex < tokenStrings.Length; tokenIndex++)
             {
                 var tokenString = tokenStrings[tokenIndex];
+
+                // If the original string had multiple spaces in it we'll get an
+                // empty string, which will break things if we try to Peek() ahead
+                Debug.Assert(!string.IsNullOrEmpty(tokenString));
 
                 if (tokenString == "")
                 {
@@ -129,21 +143,37 @@ namespace Tempo
                             // Set this to indicate that if the next thing isn't an operator, to add an implicit AND
                             expectingAndor = true;
                         }
+
                         else
                         {
-                            // This is a left-hand side. Break down the property path and validate each part.
-                            // This could be "key:value" or just "value". In the latter case the call to get the
-                            // value will fail.
+                            // This is a left-hand side. It could be the "a" in "a:1",
+                            // or could be in just "a". To figure out, peek ahead to see if there's a ":"
+                            // (If not it's treated as a Custom operand
+
                             var customOperand = false;
-                            foreach (var part in tokenString.Split('.'))
+
+                            var next = tokenStrings.MyPeekNext(tokenIndex);
+                            var nextOp = ParseAqsOperator(next);
+                            if (nextOp != AqsOperator.Matches)
                             {
-                                if (!keyValidator(part))
+                                // What we have is just an operand, no operator coming up,
+                                // treat it as if ":Custom" is coming up
+                                customOperand = true;
+                            }
+                            else
+                            {
+                                // This is the left-hand side of "a:1"
+                                // Break down the property path and validate each part.
+                                // This could be "key:value" or just "value". In the latter case the call to get the
+                                // value will fail.
+                                foreach (var part in tokenString.Split('.'))
                                 {
-                                    // The key isn't valid. We'll assume that rather than "Key:Value"
-                                    // we have "Foo". During evaluation we'll defer this to the caller.
-                                    // Below we'll add this and "custom" operator to the _expression
-                                    customOperand = true;
-                                    break;
+                                    if (!keyValidator(part))
+                                    {
+                                        SearchExpression.RaiseSearchExpressionError();
+                                        errorMessage = $"Unknown key: {tokenString}";
+                                        return false;
+                                    }
                                 }
                             }
 
@@ -159,7 +189,7 @@ namespace Tempo
 
                             // Add the LHS to the expression
 
-                            if(!customOperand)
+                            if (!customOperand)
                             {
                                 // Normal case of a lef-hand side
                                 _expression.Add(new AqsToken(tokenString));
@@ -212,9 +242,9 @@ namespace Tempo
                 else
                 {
                     // This token is some kind of operator
-                    
+
                     // If this is a NOT or open paren, we still need to inject an AND
-                    if(expectingAndor 
+                    if(expectingAndor
                         && (op == AqsOperator.Not || op == AqsOperator.OpenParen))
                     {
                         PushOperator(operatorStack, AqsOperator.And);
@@ -227,6 +257,7 @@ namespace Tempo
                         // No support yet for nested parens (but should be easy?)
                         if (propagatingKey != null)
                         {
+                            errorMessage = "nested parens not supported";
                             return false;
                         }
 
@@ -254,7 +285,7 @@ namespace Tempo
 
                         // Advance past the open paren and recurse
                         ++tokenIndex;
-                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, customOperandCallback, operandToPropagate))
+                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, customOperandCallback, out errorMessage, operandToPropagate))
                         {
                             return false;
                         }
@@ -288,7 +319,7 @@ namespace Tempo
             }
 
             // Provide the caller with the list of custom operands that were found during parse
-            if(customOperands != null)
+            if (customOperands != null)
             {
                 _customOperands = customOperands.ToArray();
             }
@@ -332,7 +363,7 @@ namespace Tempo
         /// </summary>
         public static Regex CreateRegex(string value, bool caseSensitive, bool isWildcardSyntax)
         {
-            if(isWildcardSyntax)
+            if (isWildcardSyntax)
             {
                 // Convert wildcard syntax to regex syntax
 
@@ -362,9 +393,9 @@ namespace Tempo
         /// </summary>
         /// <param name="propertyEvaluator">Look up a property value given its name</param>
         /// <param name="customEvaluator">Look up custom operands</param>
-        internal bool Evaluate(Func<string, string> propertyEvaluator, Func<object,bool> customEvaluator)
+        internal bool Evaluate(Func<string, string> propertyEvaluator, Func<object, bool> customEvaluator)
         {
-            if(_expression == null || _expression.Count == 0)
+            if (_expression == null || _expression.Count == 0)
             {
                 return true;
             }
@@ -389,7 +420,7 @@ namespace Tempo
                 // !b and a:1
                 // becomes
                 // (NOT (CUSTOM b)) && a:1
-                if(token.Operator == AqsOperator.Custom)
+                if (token.Operator == AqsOperator.Custom)
                 {
                     // An expression of "a:Foo && a" becomes
                     // "a MATCHES foo && CUSTOM b"
@@ -460,7 +491,7 @@ namespace Tempo
                             result = bool1 == null ? bool2 : bool1;
                         }
 
-                        else if(token.Operator == AqsOperator.And)
+                        else if (token.Operator == AqsOperator.And)
                         {
                             result = (bool1 == true) && (bool2 == true);
                         }
@@ -476,7 +507,7 @@ namespace Tempo
                     else if (token.Operator == AqsOperator.Matches)
                     {
                         // Use the callback to get the value
-                        if(operand2.Lhs == null)
+                        if (operand2.Lhs == null)
                         {
                             throw new AqsException("missing lhs");
                         }
@@ -505,7 +536,7 @@ namespace Tempo
             else
             {
                 // Verbose code to enable easier breakpoints
-                if(calculation.Pop().Boolean == true)
+                if (calculation.Pop().Boolean == true)
                 {
                     return true;
                 }
@@ -579,7 +610,7 @@ namespace Tempo
 
             internal object CustomOperand { get; }
         }
-            
+
 
 
         /// <summary>
@@ -667,5 +698,9 @@ namespace Tempo
             : base($"AQS evaluation error: {message}")
         {
         }
+        //internal AqsException(string message, string tokenString)
+        //    : base($"AQS evaluation error: {message}\nAt: '{tokenString}'")
+        //{
+        //}
     }
 }

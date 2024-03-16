@@ -197,6 +197,8 @@ namespace Tempo
 
         }
 
+        // This is called by the AQS expression parser when it sees a custom operand.
+        // Return it as a regex, or two regex in the case of type::member syntax
         object CustomOperandCallback(string operand)
         {
             if (!operand.Contains("%"))

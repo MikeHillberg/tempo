@@ -916,6 +916,13 @@ namespace Tempo
                         meaningfulMatch = true;
                         typeMatchesFilters = true;
                     }
+                    else
+                    {
+                        // Null coming back means that the expression is bad
+                        // (bugbug: that's odd)
+                        // Abandon ship
+                        break;
+                    }
                 }
 
 
@@ -1019,6 +1026,13 @@ namespace Tempo
 
                             // Move on to the next member
                             continue;
+                        }
+                        else
+                        {
+                            // Null coming back means that the expression is bad
+                            // (bugbug: that's odd)
+                            // Abandon ship
+                            break;
                         }
                     }
 
@@ -1178,6 +1192,7 @@ namespace Tempo
 
             if (result == null)// || !keyUsed)
             {
+                // bugbug: returning null for an error is kind of an odd pattern
                 return null;
             }
 

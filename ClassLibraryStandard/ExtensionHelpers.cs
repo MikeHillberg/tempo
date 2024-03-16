@@ -58,6 +58,23 @@ namespace Tempo
             return sb.ToString();
         }
 
+
+        /// <summary>
+        /// Get the next item in an array or default(T)
+        /// </summary>
+        public static T MyPeekNext<T>(this T[] tokenStrings, int tokenIndex)
+        {
+            if (tokenIndex + 1 < tokenStrings.Length)
+            {
+                return tokenStrings[tokenIndex + 1];
+            }
+            else
+            {
+                return default(T);
+            }
+        }
+
+
         public static bool MyEqualsInsensitive(this string str1, string str2)
         {
             return 0 == String.Compare(str1, str2, StringComparison.OrdinalIgnoreCase);
