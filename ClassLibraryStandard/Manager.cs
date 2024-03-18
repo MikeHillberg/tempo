@@ -854,32 +854,28 @@ namespace Tempo
                 //}
 
 
-                // Check for -where queries
-                // Bugbug: remove this? Just rely on AQS queries
-                if (searchExpression.WhereCondition != null)
-                {
-                    if (typeMatches && meaningfulMatch || searchExpression.HasNoSearchString && searchExpression.WhereCondition != null)
-                    {
-                        if (EvaluateWhere.TypeCheck(types[i], searchExpression))
-                        {
-                            typeMatches = true;
-                            meaningfulMatch = true;
-                            typeMatchesFilters = true;
-                        }
-                        else
-                        {
-                            meaningfulMatch = false;
-                            typeMatches = false;
-                        }
-                    }
-                }
-
-                
-                    // "color namespace:widget" in wasdk isn't working
-                    // bugbug
+                //// Check for -where queries
+                //// Bugbug: remove this? Just rely on AQS queries
+                //if (searchExpression.WhereCondition != null)
+                //{
+                //    if (typeMatches && meaningfulMatch || searchExpression.HasNoSearchString && searchExpression.WhereCondition != null)
+                //    {
+                //        if (EvaluateWhere.TypeCheck(types[i], searchExpression))
+                //        {
+                //            typeMatches = true;
+                //            meaningfulMatch = true;
+                //            typeMatchesFilters = true;
+                //        }
+                //        else
+                //        {
+                //            meaningfulMatch = false;
+                //            typeMatches = false;
+                //        }
+                //    }
+                //}
 
 
-                else if (typeMatches)
+                if (typeMatches)
                 {
                     // Check for AQS queries
 
@@ -915,13 +911,6 @@ namespace Tempo
                         // So worthy of attention (like the count of matches)
                         meaningfulMatch = true;
                         typeMatchesFilters = true;
-                    }
-                    else
-                    {
-                        // Null coming back means that the expression is bad
-                        // (bugbug: that's odd)
-                        // Abandon ship
-                        break;
                     }
                 }
 
@@ -965,7 +954,7 @@ namespace Tempo
 
                     LastMember = member.Name;
 
-                    if (!CheckMemberCheckers(
+                    if (!RunMemberCheckers(
                         member,
                         types[i],
                         ref membersChecked,
@@ -976,30 +965,31 @@ namespace Tempo
                         continue;
                     }
 
-                    if (searchExpression.MemberRegex != null)
-                    {
-                        var filtersMatch = true;
-                        MemberMatchesFilters(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
+                    //// Check for -where queries
+                    //// Bugbug: remove this? Just rely on AQS queries
+                    //if (searchExpression.WhereCondition != null)
+                    //{
+                    //    if (searchExpression.MemberRegex != null)
+                    //    {
+                    //        var filtersMatch = true;
+                    //        MemberMatchesFilters(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
 
-                        if (!filtersMatch || abort)
-                        {
-                            continue;
-                        }
-                    }
+                    //        if (!filtersMatch || abort)
+                    //        {
+                    //            continue;
+                    //        }
+                    //    }
 
-                    // Check for -where queries
-                    // Bugbug: remove this? Just rely on AQS queries
-                    if (searchExpression.WhereCondition != null)
-                    {
-                        if (meaningfulMatch || searchExpression.MemberRegex == null)
-                        {
-                            if (!EvaluateWhere.MemberCheck(types[i], member, searchExpression))
-                            {
-                                meaningfulMatch = false;
-                                continue;
-                            }
-                        }
-                    }
+
+                    //    if (meaningfulMatch || searchExpression.MemberRegex == null)
+                    //    {
+                    //        if (!EvaluateWhere.MemberCheck(types[i], member, searchExpression))
+                    //        {
+                    //            meaningfulMatch = false;
+                    //            continue;
+                    //        }
+                    //    }
+                    //}
 
                     else
                     {
@@ -1026,13 +1016,6 @@ namespace Tempo
 
                             // Move on to the next member
                             continue;
-                        }
-                        else
-                        {
-                            // Null coming back means that the expression is bad
-                            // (bugbug: that's odd)
-                            // Abandon ship
-                            break;
                         }
                     }
 
@@ -1145,11 +1128,11 @@ namespace Tempo
         /// </summary>
         /// <returns>True if it matches, false if it doesn't, and null if there was no (meaningful) AQS</returns>
         static bool? EvaluateAqsExpression(
-            SearchExpression searchExpression, 
+            SearchExpression searchExpression,
             MemberOrTypeViewModelBase memberVM,
-            Func<SearchExpression.CustomOperand,bool> customEvaluator)
+            Func<SearchExpression.CustomOperand, bool> customEvaluator)
         {
-            //var keyUsed = false;
+            var keyUsed = false;
             bool? result = null;
 
             // Any query syntax errors should get caught during parse. But just in case,
@@ -1161,6 +1144,10 @@ namespace Tempo
                     {
                         // The evaluator wants to know the value of a property name
 
+                        // Remember that something was able to evaluate
+                        // (In the case of a custom operator, it won't exist, but it still counts)
+                        keyUsed = true;
+
                         var tryGet = memberVM.TryGetVMProperty(key, out var value);
 
                         if (!tryGet)
@@ -1169,8 +1156,6 @@ namespace Tempo
                             return null;
                         }
 
-                        //// Remember that something was able to evaluate
-                        //keyUsed = true;
 
                         // String-ize the result
                         if (value == null)
@@ -1187,12 +1172,11 @@ namespace Tempo
             catch (Exception e)
             {
                 DebugLog.Append(e.Message);
-                SearchExpression.RaiseSearchExpressionError();
+                SearchExpression.RaiseSearchExpressionError($"{e.GetType()}: {e.Message}");
             }
 
-            if (result == null)// || !keyUsed)
+            if (result == null || !keyUsed)
             {
-                // bugbug: returning null for an error is kind of an odd pattern
                 return null;
             }
 
@@ -1236,7 +1220,7 @@ namespace Tempo
             }
         }
 
-        static bool CheckMemberCheckers(
+        static bool RunMemberCheckers(
             MemberOrTypeViewModelBase member,
             TypeViewModel typeOfMember,
             ref int membersChecked,

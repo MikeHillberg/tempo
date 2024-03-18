@@ -100,6 +100,9 @@ namespace Tempo
             // When we're expecting an AND or an OR, if we don't get one, implicitly add an AND
             var expectingAndor = false;
 
+            // After an operator we're expecting an operand
+            var expectingOperand = false;
+
             List<string> customOperands = null;
 
             errorMessage = null;
@@ -112,18 +115,13 @@ namespace Tempo
                 // empty string, which will break things if we try to Peek() ahead
                 Debug.Assert(!string.IsNullOrEmpty(tokenString));
 
-                if (tokenString == "")
-                {
-                    // Extra spaces, ignore
-                    continue;
-                }
-
                 // Try to parse this as an operator
                 var op = ParseAqsOperator(tokenString);
 
                 if (op == AqsOperator.None)
                 {
                     // It's not an operator, so it's an operand
+                    expectingOperand = false;
 
                     // Typical case, no `propagatingKey`
                     if (propagatingKey == null)
@@ -170,8 +168,8 @@ namespace Tempo
                                 {
                                     if (!keyValidator(part))
                                     {
-                                        SearchExpression.RaiseSearchExpressionError();
                                         errorMessage = $"Unknown key: {tokenString}";
+                                        SearchExpression.RaiseSearchExpressionError(errorMessage);
                                         return false;
                                     }
                                 }
@@ -242,10 +240,20 @@ namespace Tempo
                 else
                 {
                     // This token is some kind of operator
+                    if(expectingOperand)
+                    {
+                        errorMessage = $"expected operand at {tokenString}";
+                        SearchExpression.RaiseSearchExpressionError(errorMessage);
+                        return false;
+                    }
+
+                    // All operators have a following operand
+                    expectingOperand = true;
 
                     // If this is a NOT or open paren, we still need to inject an AND
                     if(expectingAndor
-                        && (op == AqsOperator.Not || op == AqsOperator.OpenParen))
+                        && op != AqsOperator.And
+                        && op != AqsOperator.Or)
                     {
                         PushOperator(operatorStack, AqsOperator.And);
                     }
@@ -258,6 +266,7 @@ namespace Tempo
                         if (propagatingKey != null)
                         {
                             errorMessage = "nested parens not supported";
+                            SearchExpression.RaiseSearchExpressionError(errorMessage);
                             return false;
                         }
 
@@ -307,6 +316,14 @@ namespace Tempo
 
                 }
 
+            }
+
+            // An expression can't end with an operator, e.g. "a AND" is invalid
+            if(expectingOperand)
+            {
+                errorMessage = "expression end with an open operator";
+                SearchExpression.RaiseSearchExpressionError(errorMessage);
+                return false;
             }
 
             // Any remaining operators on the stack pop off and get added to the expression

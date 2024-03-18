@@ -41,14 +41,14 @@ namespace Tempo
         /// <summary>
         /// Indicates that the search expression has a syntax error
         /// </summary>
-        static public event EventHandler SearchExpressionError;
+        static public event EventHandler<string> SearchExpressionError;
 
         /// <summary>
         /// Raise `SearchExpressionError` event
         /// </summary>
-        static public void RaiseSearchExpressionError()
+        static public void RaiseSearchExpressionError(string message)
         {
-            SearchExpressionError?.Invoke(null, null);
+            SearchExpressionError?.Invoke(null, message);
         }
 
         public bool HasNoSearchString
@@ -71,7 +71,7 @@ namespace Tempo
         /// </summary>
         /// <param name="propertyEvaluator">Called to evaluate a key</param>
         /// <param name="customEvaluator">Called to evaluate custom operand</param>
-        /// <returns></returns>
+        /// <returns>Boolean evaluation of the AQS</returns>
         public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator, Func<CustomOperand,bool> customEvaluator)
         {
             if (_aqsExpression == null)
@@ -146,23 +146,27 @@ namespace Tempo
             // To avoid confusion, convert "::" to "%"
             searchString = searchString.Replace("::", "%");
 
-            // Check for -where clause
-            if (!string.IsNullOrEmpty(searchString) && _rawValue.Contains("-where"))
-            {
-                var split = searchString.MySplit("-where");
-                if (split.Length > 1)
-                {
-                    WhereCondition = null;
-                    searchString = split[0].Trim();
+            //// Check for -where clause
+            //if (!string.IsNullOrEmpty(searchString) && _rawValue.Contains("-where"))
+            //{
+            //    var split = searchString.MySplit("-where");
+            //    if (split.Length > 1)
+            //    {
+            //        WhereCondition = null;
+            //        searchString = split[0].Trim();
 
-                    WhereCondition = TryParseExpression(split[1]);
-                }
-            }
+            //        WhereCondition = TryParseExpression(split[1]);
+            //    }
+            //}
 
 
 
             // Parse the search string
             _aqsExpression = TryParseAqs(searchString, CustomOperandCallback);
+            if (_aqsExpression == null) 
+            {
+                return;
+            }
 
 
             // See if there's any custom operands in the parsed string.
