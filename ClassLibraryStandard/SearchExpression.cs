@@ -33,6 +33,8 @@ namespace Tempo
 
         public event EventHandler Changed;
 
+        public bool HasCustomOperands => _aqsExpression != null && _aqsExpression.CustomOperands != null && _aqsExpression.CustomOperands.Length > 0;
+
         public bool IsTwoPart
         {
             get { return TypeRegex != MemberRegex; }

@@ -1175,7 +1175,10 @@ namespace Tempo
                 SearchExpression.RaiseSearchExpressionError($"{e.GetType()}: {e.Message}");
             }
 
-            if (result == null || !keyUsed)
+            // The expression might be a no op. This happens if there is no expression.
+            // And it happens if you use type keys on a member or vice versa,
+            // in which case `keyUsed` won't be set.
+            if (result == null || !(keyUsed || searchExpression.HasCustomOperands))
             {
                 return null;
             }
