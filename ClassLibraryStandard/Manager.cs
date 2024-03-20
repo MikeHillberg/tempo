@@ -525,7 +525,7 @@ namespace Tempo
             if (filter == null)
                 s = t.PrettyName;
             else if (settings != null && settings.FilterOnFullName)
-                s = t.FullName;
+                s = t.PrettyFullName;
             else
                 s = t.PrettyName;
 

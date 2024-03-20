@@ -187,6 +187,7 @@ namespace Tempo
                 searchSubstring = customOperands[0];
             }
 
+            // bugbug: combine this with code in `CustomOperandCallback`
             if (!searchSubstring.Contains("%"))
             {
                 // Typical case, no "Type::Member" syntax
@@ -209,12 +210,14 @@ namespace Tempo
         {
             if (!operand.Contains("%"))
             {
-                var regex = CreateRegex(operand);
+                var regex = SplitFilterForGenerics(operand);
                 return new CustomOperand(regex, regex);
             }
 
             var parts = operand.Split('%');
-            return new CustomOperand(CreateRegex(parts[0]), CreateRegex(parts[1]));
+            return new CustomOperand(
+                SplitFilterForGenerics(parts[0]),
+                CreateRegex(parts[1]));
         }
 
         public class CustomOperand
