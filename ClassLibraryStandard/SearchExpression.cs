@@ -33,6 +33,8 @@ namespace Tempo
 
         public event EventHandler Changed;
 
+        public bool HasCustomOperands => _aqsExpression != null && _aqsExpression.CustomOperands != null && _aqsExpression.CustomOperands.Length > 0;
+
         public bool IsTwoPart
         {
             get { return TypeRegex != MemberRegex; }
@@ -41,14 +43,14 @@ namespace Tempo
         /// <summary>
         /// Indicates that the search expression has a syntax error
         /// </summary>
-        static public event EventHandler SearchExpressionError;
+        static public event EventHandler<string> SearchExpressionError;
 
         /// <summary>
         /// Raise `SearchExpressionError` event
         /// </summary>
-        static public void RaiseSearchExpressionError()
+        static public void RaiseSearchExpressionError(string message)
         {
-            SearchExpressionError?.Invoke(null, null);
+            SearchExpressionError?.Invoke(null, message);
         }
 
         public bool HasNoSearchString
@@ -69,16 +71,17 @@ namespace Tempo
         /// Evaluate the AQS expression, if any.
         /// True if it matches, false if it doesn't, null if was uninteresting (like no AQS present)
         /// </summary>
-        /// <param name="propertyEvaluator"></param>
-        /// <returns></returns>
-        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator)
+        /// <param name="propertyEvaluator">Called to evaluate a key</param>
+        /// <param name="customEvaluator">Called to evaluate custom operand</param>
+        /// <returns>Boolean evaluation of the AQS</returns>
+        public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator, Func<CustomOperand,bool> customEvaluator)
         {
             if (_aqsExpression == null)
             {
                 return null;
             }
 
-            return _aqsExpression.Evaluate(propertyEvaluator);
+            return _aqsExpression.Evaluate(propertyEvaluator, (o) => customEvaluator(o as CustomOperand));
         }
 
         public Regex TypeRegex
@@ -135,7 +138,7 @@ namespace Tempo
             }
 
             // Testing aid
-            if(searchString.Contains("-slowly"))
+            if (searchString.Contains("-slowly"))
             {
                 SearchSlowly = true;
                 searchString = searchString.Replace("-slowly", "");
@@ -145,95 +148,92 @@ namespace Tempo
             // To avoid confusion, convert "::" to "%"
             searchString = searchString.Replace("::", "%");
 
-            // Check for -where clause
-            if (!string.IsNullOrEmpty(searchString) && _rawValue.Contains("-where"))
+            //// Check for -where clause
+            //if (!string.IsNullOrEmpty(searchString) && _rawValue.Contains("-where"))
+            //{
+            //    var split = searchString.MySplit("-where");
+            //    if (split.Length > 1)
+            //    {
+            //        WhereCondition = null;
+            //        searchString = split[0].Trim();
+
+            //        WhereCondition = TryParseExpression(split[1]);
+            //    }
+            //}
+
+
+
+            // Parse the search string
+            _aqsExpression = TryParseAqs(searchString, CustomOperandCallback);
+            if (_aqsExpression == null) 
             {
-                var split = searchString.MySplit("-where");
-                if (split.Length > 1)
-                {
-                    WhereCondition = null;
-                    searchString = split[0].Trim();
-
-                    WhereCondition = TryParseExpression(split[1]);
-                }
-            }
-
-            // Check for AQS clause
-            if (searchString.Contains(':'))
-            {
-                // Looks like we have an AQS
-                
-                // The search term has to come before the AQS.
-                // Separate the search term out (into an updated `searchString`),
-                // and then parse the AQS
-
-                var searchStringBuilder = new StringBuilder();
-                StringBuilder queryStringBuilder = null;
-
-                var parts = searchString.Split(' ');
-                foreach (var part in parts)
-                {
-                    if (part == "")
-                    {
-                        // Skip redundant interior spaces
-                        continue;
-                    }
-
-                    if (queryStringBuilder == null)
-                    {
-                        // We haven't seen the beginning of the AQS part yet
-
-                        if (part.Contains(':') || part.Contains('(') || AqsExpression.IsOperator(part))
-                        {
-                            // We just transitioned to the AQS part
-                            queryStringBuilder = new StringBuilder();
-                            queryStringBuilder.Append($"{part}");
-                        }
-                        else
-                        {
-                            searchStringBuilder.Append($" {part}");
-                        }
-                    }
-                    else
-                    {
-                        // We're in the AQS part
-                        queryStringBuilder.Append($" {part}");
-                    }
-                }
-
-
-                // Parse the AQS into _aqsExpression
-                if (queryStringBuilder != null)
-                {
-                    // Might return null
-                    _aqsExpression = TryParseAqs(queryStringBuilder.ToString());
-                }
-
-                // Update the `searchString` to be minus the AQS part
-                searchString = searchStringBuilder.ToString().Trim();
+                return;
             }
 
 
-            //Build the regular expression(s) from `searchString`
+            // See if there's any custom operands in the parsed string.
+            // For example, for search string "button IsClass:true",
+            // "button" is the custom operand. This will parse to
+            // "CUSTOM:button AND IsClass:True", and "button"
+            // will be the customOperand.
+            // We want to find this so that we can hightlight "button" in the search results.
 
-            if (!searchString.Contains("%"))
+            var searchSubstring = "";
+            var customOperands = _aqsExpression.CustomOperands;
+            if (customOperands != null && customOperands.Length > 0)
+            {
+                // Bugbug: handle the multiple case.
+                // E.g. "button OR toggle"
+                searchSubstring = customOperands[0];
+            }
+
+            // bugbug: combine this with code in `CustomOperandCallback`
+            if (!searchSubstring.Contains("%"))
             {
                 // Typical case, no "Type::Member" syntax
-                _typeRegex = string.IsNullOrEmpty(searchString) ? null : SplitFilterForGenerics(searchString);
+                _typeRegex = string.IsNullOrEmpty(searchSubstring) ? null : SplitFilterForGenerics(searchSubstring);
                 _memberRegex = _typeRegex;
             }
             else
             {
                 // "Type::Member" syntax
-                var split = searchString.Split('%');
+                var split = searchSubstring.Split('%');
                 _typeRegex = SplitFilterForGenerics(split[0]);
                 _memberRegex = CreateRegex(split[1]);
             }
 
         }
 
+        // This is called by the AQS expression parser when it sees a custom operand.
+        // Return it as a regex, or two regex in the case of type::member syntax
+        object CustomOperandCallback(string operand)
+        {
+            if (!operand.Contains("%"))
+            {
+                var regex = SplitFilterForGenerics(operand);
+                return new CustomOperand(regex, regex);
+            }
 
-        AqsExpression TryParseAqs(string searchString)
+            var parts = operand.Split('%');
+            return new CustomOperand(
+                SplitFilterForGenerics(parts[0]),
+                CreateRegex(parts[1]));
+        }
+
+        public class CustomOperand
+        {
+            public CustomOperand(Regex typeRegex, Regex memberRegex)
+            {
+                this.TypeRegex = typeRegex;
+                this.MemberRegex = memberRegex;
+            }
+
+            public Regex TypeRegex { get; }
+            public Regex MemberRegex { get; }
+        }
+
+
+        AqsExpression TryParseAqs(string searchString, Func<string,object> customOperandCallback)
         {
             // Make sure that all AQS operators are space-separated
             searchString = searchString.Replace(":", " : ");
@@ -244,11 +244,13 @@ namespace Tempo
             searchString = searchString.Replace("&&", " && ");
 
             return AqsExpression.TryParse(
-                searchString, 
-                Manager.Settings.CaseSensitive, 
+                searchString,
+                Manager.Settings.CaseSensitive,
                 Manager.Settings.IsWildcardSyntax,
-                AqsKeyValidator);
+                AqsKeyValidator,
+                customOperandCallback);
         }
+
 
         IList<string> _validAqsKeys = null;
 
@@ -529,7 +531,7 @@ namespace Tempo
         static internal Regex CreateRegex(string value)
         {
             return AqsExpression.CreateRegex(
-                value, 
+                value,
                 Manager.Settings.CaseSensitive,
                 Manager.Settings.IsWildcardSyntax);
         }
@@ -609,7 +611,7 @@ namespace Tempo
                 var first = true;
                 foreach (var item in list)
                 {
-                    if(!first)
+                    if (!first)
                     {
                         sb.Append(", ");
                     }
@@ -685,13 +687,13 @@ namespace Tempo
                         var abort = false;
                         var meaningfulMatch = false;
 
-                        if (Manager.MatchesFilterString(regex, type, true, true, Manager.Settings, ref abort, ref meaningfulMatch))
+                        if (Manager.MatchesFilterString(regex, type, true, true, Manager.Settings, ref meaningfulMatch))
                             return true;
 
                         foreach (var member in type.Members)
                         {
                             var filtersMatch = true;
-                            Manager.CheckMemberName(member, regex, ref abort, out filtersMatch, out meaningfulMatch);
+                            Manager.MemberMatchesFilters(member, regex, ref abort, out filtersMatch, out meaningfulMatch);
                             if (meaningfulMatch)
                                 return true;
                         }

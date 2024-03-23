@@ -64,14 +64,14 @@ namespace Tempo
         static public void LoadWindowsTypesWithMRAsync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
         {
             // Early out if already loaded
-            if (Manager.WindowsTypeSet?.Types != null 
+            if (Manager.WindowsTypeSet?.Types != null
                 && useWinRTProjections == Manager.WindowsTypeSet.UsesWinRTProjections)
             {
                 return;
             }
 
             var typeSet = new MRTypeSet(
-                useWinRTProjections ? MRTypeSet.WindowsCSName : MRTypeSet.WindowsCppName, 
+                useWinRTProjections ? MRTypeSet.WindowsCSName : MRTypeSet.WindowsCppName,
                 useWinRTProjections);
             Manager.WindowsTypeSet = typeSet;
 
@@ -155,9 +155,13 @@ namespace Tempo
                 {
                     var parts = winUIWinMDFilename.Split('\\');
                     winUIVersion = parts[parts.Length - 2];
+
                     parts = winUIVersion.Split('.');
-                    var parts2 = parts[4].Split('_');
-                    winUIVersion = $"WinUI {parts[3]}.{parts2[0]}";
+                    if (parts.Length >= 5)
+                    {
+                        var parts2 = parts[4].Split('_');
+                        winUIVersion = $"WinUI {parts[3]}.{parts2[0]}";
+                    }
                 }
                 catch (Exception)
                 {
@@ -183,7 +187,7 @@ namespace Tempo
         // Sync helper for the async version
         static public void LoadWindowsTypesWithMRSync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winuiWinMDFilename = null)
         {
-            if (Manager.WindowsTypeSet?.Types != null 
+            if (Manager.WindowsTypeSet?.Types != null
                 && Manager.WindowsTypeSet.UsesWinRTProjections == useWinRTProjections)
             {
                 return;
@@ -387,7 +391,7 @@ namespace Tempo
                     var entry = packageZip.GetEntry(entryName);
                     using (var entryStream = entry.Open())
                     {
-                        var length = (int) entry.Length;
+                        var length = (int)entry.Length;
                         var buffer = new byte[length];
 
                         // In .Net5 the entryStream.Read doesn't return all the bytes requested,
@@ -395,11 +399,11 @@ namespace Tempo
 
                         var totalBytesRead = 0;
                         var bytesRead = -1;
-                        while(bytesRead != 0)
+                        while (bytesRead != 0)
                         {
                             bytesRead = entryStream.Read(buffer, totalBytesRead, length - totalBytesRead);
                             totalBytesRead += bytesRead;
-                            if(totalBytesRead == length)
+                            if (totalBytesRead == length)
                             {
                                 break;
                             }
@@ -655,7 +659,7 @@ namespace Tempo
         {
             CustomApiScopeFileNames.Value = null;
             var key = Registry.CurrentUser.CreateSubKey(DesktopManager2._regKeyName);
-            
+
             // bugbug: In .Net6 this throws not-found even though it's there in regedit
             key.DeleteValue(_customWinMDRegKeyValue);
         }
@@ -764,7 +768,7 @@ namespace Tempo
             }
 
             //foreach (var iface in Type2Interfaces.GetInterfaces(Type))
-            foreach(var iface in type.Interfaces)
+            foreach (var iface in type.Interfaces)
             {
                 if (!finishedFirstLine)
                 {

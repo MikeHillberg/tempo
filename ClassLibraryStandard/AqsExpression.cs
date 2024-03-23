@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -23,6 +24,12 @@ namespace Tempo
         List<AqsToken> _expression = new List<AqsToken>();
         bool _caseSensitive;
         bool _isWildcardSyntax;
+        private string[] _customOperands;
+
+        /// <summary>
+        /// Custom operands in the parsed output. For example in "a OR b:True", "a" is a custom operand
+        /// </summary>
+        public string[] CustomOperands => _customOperands;
 
         private AqsExpression(bool caseSensitive, bool isWildcardSyntax)
         {
@@ -34,19 +41,26 @@ namespace Tempo
         /// Parse an AQS string. Returns null if invalid
         /// </summary>
         internal static AqsExpression TryParse(
-            string s, 
-            bool caseSensitive, 
+            string s,
+            bool caseSensitive,
             bool isWildcardSyntax,
-            Func<string,bool> keyValidator)
+            Func<string, bool> keyValidator,
+            Func<string, object> customOperandCallback)
         {
             var expression = new AqsExpression(caseSensitive, isWildcardSyntax);
             int i = 0;
-            if (expression.TryParse(s.Split(' '), ref i, keyValidator))
+            if (expression.TryParse(
+                s.MyCompressSpaces().Split(' '),
+                ref i,
+                keyValidator,
+                customOperandCallback,
+                out var errorMessage))
             {
                 return expression;
             }
             else
             {
+                DebugLog.Append("AQS parse error: " + errorMessage);
                 return null;
             }
         }
@@ -58,9 +72,11 @@ namespace Tempo
         /// <param name="propagatingKey">Used by recursive calls from this method</param>
         /// <returns></returns>
         bool TryParse(
-            string[] tokenStrings, 
-            ref int tokenIndex, 
-            Func<string,bool> keyValidator,
+            string[] tokenStrings,
+            ref int tokenIndex,
+            Func<string, bool> keyValidator,
+            Func<string, object> customOperandCallback,
+            out string errorMessage,
             string propagatingKey = null)
         {
             // General structure is to convert the expression into post-fix notation.
@@ -84,15 +100,20 @@ namespace Tempo
             // When we're expecting an AND or an OR, if we don't get one, implicitly add an AND
             var expectingAndor = false;
 
+            // After an operator we're expecting an operand
+            var expectingOperand = false;
+
+            List<string> customOperands = null;
+
+            errorMessage = null;
+
             for (; tokenIndex < tokenStrings.Length; tokenIndex++)
             {
                 var tokenString = tokenStrings[tokenIndex];
 
-                if (tokenString == "")
-                {
-                    // Extra spaces, ignore
-                    continue;
-                }
+                // If the original string had multiple spaces in it we'll get an
+                // empty string, which will break things if we try to Peek() ahead
+                Debug.Assert(!string.IsNullOrEmpty(tokenString));
 
                 // Try to parse this as an operator
                 var op = ParseAqsOperator(tokenString);
@@ -100,6 +121,7 @@ namespace Tempo
                 if (op == AqsOperator.None)
                 {
                     // It's not an operator, so it's an operand
+                    expectingOperand = false;
 
                     // Typical case, no `propagatingKey`
                     if (propagatingKey == null)
@@ -119,16 +141,37 @@ namespace Tempo
                             // Set this to indicate that if the next thing isn't an operator, to add an implicit AND
                             expectingAndor = true;
                         }
+
                         else
                         {
-                            // This is a left-hand side. Break down the property path
-                            // and validate each part
-                            foreach (var part in tokenString.Split('.'))
+                            // This is a left-hand side. It could be the "a" in "a:1",
+                            // or could be in just "a". To figure out, peek ahead to see if there's a ":"
+                            // (If not it's treated as a Custom operand
+
+                            var customOperand = false;
+
+                            var next = tokenStrings.MyPeekNext(tokenIndex);
+                            var nextOp = ParseAqsOperator(next);
+                            if (nextOp != AqsOperator.Matches)
                             {
-                                if (!keyValidator(part))
+                                // What we have is just an operand, no operator coming up,
+                                // treat it as if ":Custom" is coming up
+                                customOperand = true;
+                            }
+                            else
+                            {
+                                // This is the left-hand side of "a:1"
+                                // Break down the property path and validate each part.
+                                // This could be "key:value" or just "value". In the latter case the call to get the
+                                // value will fail.
+                                foreach (var part in tokenString.Split('.'))
                                 {
-                                    SearchExpression.RaiseSearchExpressionError();
-                                    return false;
+                                    if (!keyValidator(part))
+                                    {
+                                        errorMessage = $"Unknown key: {tokenString}";
+                                        SearchExpression.RaiseSearchExpressionError(errorMessage);
+                                        return false;
+                                    }
                                 }
                             }
 
@@ -143,7 +186,36 @@ namespace Tempo
                             }
 
                             // Add the LHS to the expression
-                            _expression.Add(new AqsToken(tokenString));
+
+                            if (!customOperand)
+                            {
+                                // Normal case of a lef-hand side
+                                _expression.Add(new AqsToken(tokenString));
+                            }
+                            else
+                            {
+                                // What was expected to be an LHS isn't recognized, so assume it's a custom operand
+                                // Add the (unary) operand and insert a "Custom" operator
+                                // For example "a:foo && b && !c:bar" becomes
+                                // a MATCHES foo && CUSTOM b && NOT (c MATCHES bar)"
+
+                                // Let the caller modify the operand first
+                                var convertedOperand = customOperandCallback(tokenString);
+
+                                _expression.Add(new AqsToken(new CustomOperandHolder(convertedOperand)));
+                                _expression.Add(new AqsToken(AqsOperator.Custom));
+
+                                // Just like after a "NOT C" we expect an operator after a
+                                // "CUSTOM B"
+                                expectingAndor = true;
+
+                                // Remember the custom operands for the CustomOperands property
+                                if (customOperands == null)
+                                {
+                                    customOperands = new List<string>();
+                                }
+                                customOperands.Add(tokenString);
+                            }
                         }
                     }
 
@@ -168,10 +240,20 @@ namespace Tempo
                 else
                 {
                     // This token is some kind of operator
-                    
+                    if(expectingOperand)
+                    {
+                        errorMessage = $"expected operand at {tokenString}";
+                        SearchExpression.RaiseSearchExpressionError(errorMessage);
+                        return false;
+                    }
+
+                    // All operators have a following operand
+                    expectingOperand = true;
+
                     // If this is a NOT or open paren, we still need to inject an AND
-                    if(expectingAndor 
-                        && (op == AqsOperator.Not || op == AqsOperator.OpenParen))
+                    if(expectingAndor
+                        && op != AqsOperator.And
+                        && op != AqsOperator.Or)
                     {
                         PushOperator(operatorStack, AqsOperator.And);
                     }
@@ -183,6 +265,8 @@ namespace Tempo
                         // No support yet for nested parens (but should be easy?)
                         if (propagatingKey != null)
                         {
+                            errorMessage = "nested parens not supported";
+                            SearchExpression.RaiseSearchExpressionError(errorMessage);
                             return false;
                         }
 
@@ -210,7 +294,7 @@ namespace Tempo
 
                         // Advance past the open paren and recurse
                         ++tokenIndex;
-                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, operandToPropagate))
+                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, customOperandCallback, out errorMessage, operandToPropagate))
                         {
                             return false;
                         }
@@ -234,6 +318,14 @@ namespace Tempo
 
             }
 
+            // An expression can't end with an operator, e.g. "a AND" is invalid
+            if(expectingOperand)
+            {
+                errorMessage = "expression end with an open operator";
+                SearchExpression.RaiseSearchExpressionError(errorMessage);
+                return false;
+            }
+
             // Any remaining operators on the stack pop off and get added to the expression
             // E.g. if we started with `a OR b AND c`, the expression right now will be
             // "a, b, c" and the operator stack will be "AND, OR" (the AND pops first)
@@ -241,6 +333,12 @@ namespace Tempo
             {
                 var op = operatorStack.Pop();
                 _expression.Add(new AqsToken(op));
+            }
+
+            // Provide the caller with the list of custom operands that were found during parse
+            if (customOperands != null)
+            {
+                _customOperands = customOperands.ToArray();
             }
 
             return true;
@@ -282,7 +380,7 @@ namespace Tempo
         /// </summary>
         public static Regex CreateRegex(string value, bool caseSensitive, bool isWildcardSyntax)
         {
-            if(isWildcardSyntax)
+            if (isWildcardSyntax)
             {
                 // Convert wildcard syntax to regex syntax
 
@@ -308,10 +406,17 @@ namespace Tempo
         /// If a property can't be evaluated, the condition it's in is assumed to be true.
         /// For example, if you have HasParameters:Foo in the expression, which doesn't have meaning
         /// for an event, it will evaluate to true.
+        /// If a key isn't recognized, the customEvaluator will be called
         /// </summary>
         /// <param name="propertyEvaluator">Look up a property value given its name</param>
-        internal bool Evaluate(Func<string, string> propertyEvaluator)
+        /// <param name="customEvaluator">Look up custom operands</param>
+        internal bool Evaluate(Func<string, string> propertyEvaluator, Func<object, bool> customEvaluator)
         {
+            if (_expression == null || _expression.Count == 0)
+            {
+                return true;
+            }
+
             // `calculation` is the state of the calculation. Operands get pushed onto it, then
             // when an operator shows up pop the operands off the calculation, execute the operator, then
             // put the result back.
@@ -327,7 +432,26 @@ namespace Tempo
                     continue;
                 }
 
-                if (token.Operator == AqsOperator.Not)
+                // First check the two unary operators: CUSTOM and NOT
+                // Custom is higher precedence, so that 
+                // !b and a:1
+                // becomes
+                // (NOT (CUSTOM b)) && a:1
+                if (token.Operator == AqsOperator.Custom)
+                {
+                    // An expression of "a:Foo && a" becomes
+                    // "a MATCHES foo && CUSTOM b"
+                    // So we're on "CUSTOM" now and the top of 'calculation' is "b"
+                    if (!calculation.MyTryPop(out var custom))
+                    {
+                        throw new AqsException("no value for custom operator");
+                    }
+
+                    // Call back to evaluate the custom operaror on this operand
+                    calculation.Push(new AqsToken(customEvaluator(custom.CustomOperand)));
+                }
+
+                else if (token.Operator == AqsOperator.Not)
                 {
                     // An expression of
                     // "a:foo AND NOT b:bar"
@@ -340,7 +464,7 @@ namespace Tempo
                     if (!calculation.MyTryPop(out var operand)
                         || !operand.IsBoolean)
                     {
-                        throw new Exception("AQS evaluation error (misapplied not)");
+                        throw new AqsException("misapplied not");
                     }
 
                     operand.Boolean = !operand.Boolean;
@@ -357,7 +481,7 @@ namespace Tempo
                         || !operand1.IsOperand && !operand1.IsBoolean
                         || !operand2.IsOperand && !operand2.IsBoolean)
                     {
-                        throw new Exception("AQS evaluation error (operator applied but not to operands)");
+                        throw new AqsException("operator applied but not to operands");
                     }
 
 
@@ -384,7 +508,7 @@ namespace Tempo
                             result = bool1 == null ? bool2 : bool1;
                         }
 
-                        else if(token.Operator == AqsOperator.And)
+                        else if (token.Operator == AqsOperator.And)
                         {
                             result = (bool1 == true) && (bool2 == true);
                         }
@@ -400,7 +524,12 @@ namespace Tempo
                     else if (token.Operator == AqsOperator.Matches)
                     {
                         // Use the callback to get the value
+                        if (operand2.Lhs == null)
+                        {
+                            throw new AqsException("missing lhs");
+                        }
                         var actualValue = propertyEvaluator(operand2.Lhs);
+
                         if (actualValue != null)
                         {
                             var match = operand1.Rhs.Match(actualValue);
@@ -419,12 +548,12 @@ namespace Tempo
             // By the time we get here there should be one entry in `calculation`, a boolean
             if (calculation.Count != 1 || !calculation.Peek().IsBoolean)
             {
-                throw new Exception("AQS evaluation error (ended with bad calculation)");
+                throw new AqsException("ended with bad calculation");
             }
             else
             {
                 // Verbose code to enable easier breakpoints
-                if(calculation.Pop().Boolean == true)
+                if (calculation.Pop().Boolean == true)
                 {
                     return true;
                 }
@@ -479,10 +608,27 @@ namespace Tempo
             Or,
             And,
             Not,
+            Custom, // Case where no operator was given for an operand. (Unary operator)
             OpenParen,
             CloseParen,
             Matches
         }
+
+        /// <summary>
+        /// A custom operand is wrapped in this Holder, which can then
+        /// be put into an AqsToken
+        /// </summary>
+        internal class CustomOperandHolder
+        {
+            internal CustomOperandHolder(object customOperand)
+            {
+                CustomOperand = customOperand;
+            }
+
+            internal object CustomOperand { get; }
+        }
+
+
 
         /// <summary>
         /// Operators, operands, or boolean values that are entries in the expression or evaluation
@@ -515,10 +661,19 @@ namespace Tempo
                 Boolean = value;
             }
 
+            public AqsToken(CustomOperandHolder customOperandHolder)
+            {
+                _customOperandHolder = customOperandHolder;
+            }
 
-            public bool IsOperand { get { return Lhs != null || Rhs != null; } }
+            public object CustomOperand => _customOperandHolder?.CustomOperand;
+
+
+            public bool IsOperand { get { return Lhs != null || Rhs != null || IsCustomOperand; } }
             public bool IsOperator => Operator != AqsOperator.None;
             public bool IsBoolean => !IsOperand && !IsOperator;
+            public bool IsCustomOperand => _customOperandHolder != null;
+
 
             public override string ToString()
             {
@@ -549,7 +704,20 @@ namespace Tempo
             public Regex Rhs = null;
             public bool? Boolean = null;
             public AqsOperator Operator = AqsOperator.None;
+            private CustomOperandHolder _customOperandHolder;
         }
 
+    }
+
+    public class AqsException : Exception
+    {
+        internal AqsException(string message)
+            : base($"AQS evaluation error: {message}")
+        {
+        }
+        //internal AqsException(string message, string tokenString)
+        //    : base($"AQS evaluation error: {message}\nAt: '{tokenString}'")
+        //{
+        //}
     }
 }

@@ -149,7 +149,7 @@ namespace Tempo
 
         }
 
-        static bool MatchesAttributes(BaseViewModel t, Regex filter, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        static bool MatchesAttributes(BaseViewModel t, Regex filter, ref bool meaningfulMatch)
         {
             if (Settings.FilterOnAttributes == false)
                 return false;
@@ -182,17 +182,17 @@ namespace Tempo
 
                 // ((System.Reflection.RuntimeConstructorInfo)(attr.m_ctor)).DeclaringType
                 var attributeClassName = attr.Name;// attr.Constructor.DeclaringType.Name;
-                if (MatchesFilter(filter, attributeClassName, settings, ref abort, ref meaningfulMatch))
+                if (MatchesFilter(filter, attributeClassName, ref meaningfulMatch))
                     return true;
 
                 foreach (var parameter in attr.ConstructorArguments)// AttributeView.SafeGetCustomAttributeConstructorArguments(attr))
                 {
-                    if (MatchesFilter(filter, parameter.ArgumentType.Name, settings, ref abort, ref meaningfulMatch))
+                    if (MatchesFilter(filter, parameter.ArgumentType.Name, ref meaningfulMatch))
                         return true;
 
                     if (parameter.Value != null)
                     {
-                        if (MatchesFilter(filter, parameter.Value.ToString(), settings, ref abort, ref meaningfulMatch))
+                        if (MatchesFilter(filter, parameter.Value.ToString(), ref meaningfulMatch))
                             return true;
                     }
                 }
@@ -223,10 +223,10 @@ namespace Tempo
                    || t.Namespace.StartsWith("Windows.Foundation") && !t.IsInterface;
         }
 
-        public static bool TypeIsPublicVolatile(TypeInfo ti)
-        {
-            return TypeIsPublicVolatileDynamic2(ti);
-        }
+        //public static bool TypeIsPublicVolatile(TypeInfo ti)
+        //{
+        //    return TypeIsPublicVolatileDynamic2(ti);
+        //}
 
 
         static public bool TypeIsPublicVolatileDynamic2(object t1)
@@ -238,21 +238,22 @@ namespace Tempo
                    || (t1 is Type) && t.Assembly.CodeBase.EndsWith(".winmd")
                    || t.FullName.StartsWith("Windows.Foundation");
         }
-        static public bool TypeMatchesFilters(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        static public bool TypeMatchesSearch(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
         {
             return
                 TypeIsPublicVolatile(t)
-                   && (TypeMatchesFilterString(t, filter, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch)
+                   //&& (TypeMatchesFilterString(t, filter, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch)
+                   && MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref meaningfulMatch)
                 ||
-                MatchesAttributes(t, filter, settings, ref abort, ref meaningfulMatch));
+                MatchesAttributes(t, filter, ref meaningfulMatch);
         }
 
-        static bool TypeMatchesFilterString(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
-        {
-            return MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch);
-        }
+        //static bool TypeMatchesFilterString(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        //{
+        //    return MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch);
+        //}
 
-        static bool MatchesFilter(Regex filter, string name, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        static bool MatchesFilter(Regex filter, string name, ref bool meaningfulMatch)
         {
             if (filter == null || filter.ToString() == "")
                 return true;
@@ -269,9 +270,9 @@ namespace Tempo
                 if (index != -1)
                     explicitName = name.Substring(index + 1);
 
-                if (!MatchesOneFilter(f, name, settings, ref abort)
+                if (!MatchesOneFilter(f, name)
                     &&
-                    (explicitName == null || !MatchesOneFilter(f, explicitName, settings, ref abort)))
+                    (explicitName == null || !MatchesOneFilter(f, explicitName)))
                     return false;
             }
 
@@ -280,10 +281,10 @@ namespace Tempo
         }
 
 
-        static bool MatchesOneFilter(Regex filter, string name, Settings settings, ref bool abort)
+        static bool MatchesOneFilter(Regex filter, string name)
         {
-            if (abort)
-                return false;
+            //if (abort)
+            //    return false;
 
             var matches = filter.IsMatch(name);
             return matches;
@@ -311,17 +312,17 @@ namespace Tempo
                 return MatchesSetting(setting, valueFunc(), ref meaningfulMatch);
         }
 
-        static bool MatchesProtected(dynamic method)//(bool isFamily, bool isPublic)
-        {
-            if (Settings.IsProtected == true && BaseViewModel.CheckProtected(method)//isFamily
-                || Settings.IsProtected == false && !BaseViewModel.CheckProtected(method)//!isFamily
-                || Settings.IsProtected == null)
-            {
-                return true;
-            }
+        //static bool MatchesProtected(dynamic method)//(bool isFamily, bool isPublic)
+        //{
+        //    if (Settings.IsProtected == true && BaseViewModel.CheckProtected(method)//isFamily
+        //        || Settings.IsProtected == false && !BaseViewModel.CheckProtected(method)//!isFamily
+        //        || Settings.IsProtected == null)
+        //    {
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
 
 
 
@@ -524,7 +525,7 @@ namespace Tempo
             if (filter == null)
                 s = t.PrettyName;
             else if (settings != null && settings.FilterOnFullName)
-                s = t.FullName;
+                s = t.PrettyFullName;
             else
                 s = t.PrettyName;
 
@@ -544,7 +545,7 @@ namespace Tempo
         /// Check if a type matches the regex filter. This is mostly about the type name,
         /// but also looks at DLL name, IID, namespaces, etc, and base classes
         /// </summary>
-        public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref bool meaningfulMatch)
         {
             if (!filterOnName || (filter == null || filter.ToString().Trim() == ""))
             {
@@ -559,7 +560,7 @@ namespace Tempo
 
             if (settings != null && settings.FilterOnFullName)
             {
-                if (MatchesFilter(filter, type.Namespace, settings, ref abort, ref meaningfulMatch))
+                if (MatchesFilter(filter, type.Namespace, ref meaningfulMatch))
                 {
                     return true;
                 }
@@ -567,7 +568,7 @@ namespace Tempo
 
             if (type.DllPath != null && settings.FilterOnDllPath)
             {
-                if (MatchesFilter(filter, type.DllPath, settings, ref abort, ref meaningfulMatch))
+                if (MatchesFilter(filter, type.DllPath, ref meaningfulMatch))
                 {
                     return true;
                 }
@@ -575,7 +576,7 @@ namespace Tempo
 
             if (!string.IsNullOrEmpty(type.Guid))
             {
-                if (MatchesFilter(filter, type.Guid, settings, ref abort, ref meaningfulMatch))
+                if (MatchesFilter(filter, type.Guid, ref meaningfulMatch))
                 {
                     return true;
                 }
@@ -589,24 +590,24 @@ namespace Tempo
                     continue;
                 }
 
-                if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), settings, ref abort, ref meaningfulMatch))
+                if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), ref meaningfulMatch))
                 {
                     return true;
                 }
-                if (abort) return false;
+                //if (abort) return false;
 
                 if (t.IsGenericType)
                 {
                     foreach (var typeArg in t.GetGenericArguments())
                     {
-                        if (MatchesFilter(filter, typeArg.PrettyName, settings, ref abort, ref meaningfulMatch))//, true))
+                        if (MatchesFilter(filter, typeArg.PrettyName, ref meaningfulMatch))//, true))
                             return true;
-                        if (abort) return false;
+                        //if (abort) return false;
                     }
 
-                    if (MatchesFilter(filter, t.PrettyName, settings, ref abort, ref meaningfulMatch))
+                    if (MatchesFilter(filter, t.PrettyName, ref meaningfulMatch))
                         return true;
-                    if (abort) return false;
+                    //if (abort) return false;
                 }
             }
 
@@ -624,7 +625,7 @@ namespace Tempo
             new CheckForNamespace(),
             new CheckForContract(),
             new CheckForTypeRestrictions(),
-            new CheckForFilterOnType(),
+            //new CheckForFilterOnType(),
             new CheckForHasBaseType(),
             new CheckForDuplicateEnumValues(),
             new CheckForCustomInParameters(),
@@ -689,7 +690,7 @@ namespace Tempo
             MatchGeneration.SetValueQuietly(MatchGeneration + 1);
 
             // Testing aid
-            if(searchExpression.SearchSlowly)
+            if (searchExpression.SearchSlowly)
             {
                 Thread.Sleep(10000);
             }
@@ -815,7 +816,7 @@ namespace Tempo
                     var matchesCheckers = true;
 
                     // Validate the type against all the settings and the search expression
-                    RunTypeCheckers(searchExpression, types[i], ref abort, ref typeMatchesFilters, ref meaningfulMatch, ref abortType, ref matchesCheckers);
+                    RunTypeCheckers(types[i], ref abort, ref typeMatchesFilters, ref meaningfulMatch, ref abortType, ref matchesCheckers);
 
                     // We keep searching even if the type doesn't match, because maybe a member matches.
                     // But sometimes a type mismatch means we don't even look at the members (for example Settings is set
@@ -828,33 +829,74 @@ namespace Tempo
                     typeMatches = matchesCheckers;
                 }
 
-                // Check for -where queries
-                // Bugbug: remove this? Just rely on AQS queries
-                if (searchExpression.WhereCondition != null)
-                {
-                    if (typeMatches && meaningfulMatch || searchExpression.HasNoSearchString && searchExpression.WhereCondition != null)
-                    {
-                        if (EvaluateWhere.TypeCheck(types[i], searchExpression))
-                        {
-                            typeMatches = true;
-                            meaningfulMatch = true;
-                            typeMatchesFilters = true;
-                        }
-                        else
-                        {
-                            meaningfulMatch = false;
-                            typeMatches = false;
-                        }
-                    }
-                }
+
+                // Even if we're not searching type names, there's an exception if we're doing a
+                // "type::member" search, like "Button::Click". In that case, still check the type name.
+                //if (Manager.Settings.ShowTypes || searchExpression.IsTwoPart)
+                //{
+
+                //    var meaningfulMatchT = false;
+                //    typeMatches &=
+                //        TypeMatchesSearch(
+                //            types[i],
+                //            searchExpression.TypeRegex,
+                //            Manager.Settings.FilterOnBaseType,
+                //            Manager.Settings,
+                //            ref abortType,
+                //            ref meaningfulMatchT);
+
+                //    meaningfulMatch |= meaningfulMatchT;
+
+                //    if(abortType)
+                //    {
+                //        continue;
+                //    }
+                //}
 
 
-                else if (typeMatches)
+                //// Check for -where queries
+                //// Bugbug: remove this? Just rely on AQS queries
+                //if (searchExpression.WhereCondition != null)
+                //{
+                //    if (typeMatches && meaningfulMatch || searchExpression.HasNoSearchString && searchExpression.WhereCondition != null)
+                //    {
+                //        if (EvaluateWhere.TypeCheck(types[i], searchExpression))
+                //        {
+                //            typeMatches = true;
+                //            meaningfulMatch = true;
+                //            typeMatchesFilters = true;
+                //        }
+                //        else
+                //        {
+                //            meaningfulMatch = false;
+                //            typeMatches = false;
+                //        }
+                //    }
+                //}
+
+
+                if (typeMatches)
                 {
                     // Check for AQS queries
 
                     // This will return null if there is no AQS query or the query wasn't really used
-                    var aqsResult = EvaluateAqsExpression(searchExpression, types[i]);
+                    var aqsResult = EvaluateAqsExpression(
+                        searchExpression,
+                        types[i],
+                        (SearchExpression.CustomOperand customOperandObject) =>
+                        {
+                            if (Manager.Settings.ShowTypes || searchExpression.IsTwoPart)
+                            {
+                                return TypeMatchesSearchHelper(
+                                    types[i],
+                                    customOperandObject.TypeRegex,
+                                    searchExpression.IsTwoPart,
+                                    ref abortType);
+                            }
+
+                            return false;
+
+                        });
 
                     if (aqsResult == false)
                     {
@@ -912,36 +954,55 @@ namespace Tempo
 
                     LastMember = member.Name;
 
-                    if (!CheckMemberCheckers(
+                    if (!RunMemberCheckers(
                         member,
                         types[i],
-                        searchExpression,
                         ref membersChecked,
-                        ref meaningfulMatch,
+                        //ref meaningfulMatch,
                         ref abort))
                     {
                         // The member doesn't match for some reason, carry on to the next member
                         continue;
                     }
 
-                    // Check for -where queries
-                    // Bugbug: remove this? Just rely on AQS queries
-                    if (searchExpression.WhereCondition != null)
-                    {
-                        if (meaningfulMatch || searchExpression.MemberRegex == null)
-                        {
-                            if (!EvaluateWhere.MemberCheck(types[i], member, searchExpression))
-                            {
-                                meaningfulMatch = false;
-                                continue;
-                            }
-                        }
-                    }
+                    //// Check for -where queries
+                    //// Bugbug: remove this? Just rely on AQS queries
+                    //if (searchExpression.WhereCondition != null)
+                    //{
+                    //    if (searchExpression.MemberRegex != null)
+                    //    {
+                    //        var filtersMatch = true;
+                    //        MemberMatchesFilters(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
+
+                    //        if (!filtersMatch || abort)
+                    //        {
+                    //            continue;
+                    //        }
+                    //    }
+
+
+                    //    if (meaningfulMatch || searchExpression.MemberRegex == null)
+                    //    {
+                    //        if (!EvaluateWhere.MemberCheck(types[i], member, searchExpression))
+                    //        {
+                    //            meaningfulMatch = false;
+                    //            continue;
+                    //        }
+                    //    }
+                    //}
 
                     else
                     {
                         // Check for AQS conditions
-                        var aqsResult = EvaluateAqsExpression(searchExpression, member);
+                        var aqsResult = EvaluateAqsExpression(
+                            searchExpression,
+                            member,
+                            (SearchExpression.CustomOperand customOperandObject) =>
+                            {
+                                var filtersMatch = true;
+                                MemberMatchesFilters(member, customOperandObject.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
+                                return filtersMatch;
+                            });
 
                         // True means it matched, null means it didn't not match (maybe there was no AQS),
                         // false means it was rejected.
@@ -1040,11 +1101,36 @@ namespace Tempo
             });
         }
 
+        static bool TypeMatchesSearchHelper(TypeViewModel typeVM, Regex regex, bool isTwoPart, ref bool abort)
+        {
+            var typeMatches = false;
+
+            if (Manager.Settings.ShowTypes || isTwoPart)
+            {
+                var meaningfulMatchT = false;
+                typeMatches =
+                    TypeMatchesSearch(
+                        typeVM,
+                        regex,
+                        Manager.Settings.FilterOnBaseType,
+                        Manager.Settings,
+                        ref abort,
+                        ref meaningfulMatchT);
+            }
+
+            return typeMatches;
+        }
+
+
+
         /// <summary>
         /// Helper to call SearchExpression.EvaluateAqsExpression and implement the callback
         /// </summary>
         /// <returns>True if it matches, false if it doesn't, and null if there was no (meaningful) AQS</returns>
-        static bool? EvaluateAqsExpression(SearchExpression searchExpression, MemberOrTypeViewModelBase memberVM)
+        static bool? EvaluateAqsExpression(
+            SearchExpression searchExpression,
+            MemberOrTypeViewModelBase memberVM,
+            Func<SearchExpression.CustomOperand, bool> customEvaluator)
         {
             var keyUsed = false;
             bool? result = null;
@@ -1058,6 +1144,10 @@ namespace Tempo
                     {
                         // The evaluator wants to know the value of a property name
 
+                        // Remember that something was able to evaluate
+                        // (In the case of a custom operator, it won't exist, but it still counts)
+                        keyUsed = true;
+
                         var tryGet = memberVM.TryGetVMProperty(key, out var value);
 
                         if (!tryGet)
@@ -1066,8 +1156,6 @@ namespace Tempo
                             return null;
                         }
 
-                        // Remember that something was able to evaluate
-                        keyUsed = true;
 
                         // String-ize the result
                         if (value == null)
@@ -1078,16 +1166,19 @@ namespace Tempo
                         {
                             return WhereCondition.ToWhereString(value);
                         }
-                    });
+                    },
+                    customEvaluator);
             }
             catch (Exception e)
             {
-                UnhandledExceptionManager.ProcessException(e);
-                SearchExpression.RaiseSearchExpressionError();
-
+                DebugLog.Append(e.Message);
+                SearchExpression.RaiseSearchExpressionError($"{e.GetType()}: {e.Message}");
             }
 
-            if (result == null || !keyUsed)
+            // The expression might be a no op. This happens if there is no expression.
+            // And it happens if you use type keys on a member or vice versa,
+            // in which case `keyUsed` won't be set.
+            if (result == null || !(keyUsed || searchExpression.HasCustomOperands))
             {
                 return null;
             }
@@ -1102,7 +1193,7 @@ namespace Tempo
             return ret;
         }
 
-        public static void RunTypeCheckers(SearchExpression searchExpression, TypeViewModel type, ref bool abort, ref bool typeMatchesFilters, ref bool meaningfulMatch, ref bool abortType, ref bool matchesCheckers)
+        public static void RunTypeCheckers(TypeViewModel type, ref bool abort, ref bool typeMatchesFilters, ref bool meaningfulMatch, ref bool abortType, ref bool matchesCheckers)
         {
             foreach (var checker in Checkers)
             {
@@ -1110,7 +1201,7 @@ namespace Tempo
                 var meaningfulMatchT = false;
                 var abortTypeT = false;
 
-                checker.TypeCheck(type, searchExpression, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
+                checker.TypeCheck(type, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
 
                 matchesCheckers &= matchesT;
 
@@ -1132,12 +1223,11 @@ namespace Tempo
             }
         }
 
-        static bool CheckMemberCheckers(
+        static bool RunMemberCheckers(
             MemberOrTypeViewModelBase member,
             TypeViewModel typeOfMember,
-            SearchExpression searchExpression,
             ref int membersChecked,
-            ref bool meaningfulMatch,
+            //ref bool meaningfulMatch,
             ref bool abort)
         {
             // Why is this check here?
@@ -1273,7 +1363,7 @@ namespace Tempo
             for (int j = 0; j < Checkers.Length; j++)
             {
                 Checkers[j].MemberCheck(
-                    typeOfMember, searchExpression,
+                    typeOfMember,
                     propertyInfo,
                     eventInfo,
                     fieldInfo,
@@ -1291,13 +1381,14 @@ namespace Tempo
             if (!matchesT)
                 return false;
 
-            bool filtersMatch = true;
-            if (searchExpression.MemberRegex != null)
-            {
-                CheckMemberName(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
-            }
+            //bool filtersMatch = true;
+            //if (searchExpression.MemberRegex != null)
+            //{
+            //    MemberMatchesFilters(member, searchExpression.MemberRegex, ref abort, out filtersMatch, out meaningfulMatch);
+            //}
 
-            bool isMatch = filtersMatch;
+            //bool isMatch = filtersMatch;
+            var isMatch = true;
 
             if (isMatch && Settings.IsOverloaded != null)
             {
@@ -1354,7 +1445,9 @@ namespace Tempo
             return true;
         }
 
-        public static void CheckMemberName(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
+        //         static public bool TypeMatchesFilters(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+
+        public static void MemberMatchesFilters(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
         {
             var method = new DuckMethod(member);
             filtersMatch = false;
@@ -1365,7 +1458,7 @@ namespace Tempo
                 bool notSearch = false; //= f[0] == '\''; // bugbug
                 meaningfulMatch = false;
 
-                if (Settings.FilterOnName && MatchesFilter(memberRegex, member.Name, Settings, ref abort, ref meaningfulMatch))
+                if (Settings.FilterOnName && MatchesFilter(memberRegex, member.Name, ref meaningfulMatch))
                 {
                     filtersMatch = true;
                 }
@@ -1375,18 +1468,18 @@ namespace Tempo
                     if (Settings.FilterOnReturnType)
                     {
                         if (member is PropertyViewModel
-                            && MatchesFilterString(memberRegex, (member as PropertyViewModel).PropertyType, true, /*filterOnBaseTypes*/ true, Settings, ref abort, ref meaningfulMatch))
+                            && MatchesFilterString(memberRegex, (member as PropertyViewModel).PropertyType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
                         else if (member is MethodViewModel
-                                 && MatchesFilterString(memberRegex, (member as MethodViewModel).ReturnType, true, /*filterOnBaseTypes*/ true, Settings, ref abort, ref meaningfulMatch))
+                                 && MatchesFilterString(memberRegex, (member as MethodViewModel).ReturnType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
                         else if (member is FieldViewModel
                                  && !(member as FieldViewModel).DeclaringType.IsEnum
-                                 && MatchesFilterString(memberRegex, (member as FieldViewModel).FieldType, true, /*filterOnBaseTypes*/ true, Settings, ref abort, ref meaningfulMatch))
+                                 && MatchesFilterString(memberRegex, (member as FieldViewModel).FieldType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
@@ -1394,7 +1487,7 @@ namespace Tempo
 
                     if (Settings.FilterOnAttributes)
                     {
-                        if (MatchesAttributes(member as BaseViewModel, memberRegex, Settings, ref abort, ref meaningfulMatch))
+                        if (MatchesAttributes(member as BaseViewModel, memberRegex, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
@@ -1446,9 +1539,9 @@ namespace Tempo
 
                     foreach (var parameter in parameters)
                     {
-                        if (Settings.FilterOnName && MatchesFilter(memberRegex, parameter.Name, Settings, ref abort, ref meaningfulMatch)
+                        if (Settings.FilterOnName && MatchesFilter(memberRegex, parameter.Name, ref meaningfulMatch)
                             ||
-                            MatchesFilterString(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref abort, ref meaningfulMatch))
+                            MatchesFilterString(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
@@ -1457,7 +1550,7 @@ namespace Tempo
 
                 if (!filtersMatch && Settings.FilterOnDeclaringType)
                 {
-                    if (MatchesFilterString(memberRegex, member.DeclaringType, true, /*filterOnBaseTypes*/ true, Settings, ref abort, ref meaningfulMatch))
+                    if (MatchesFilterString(memberRegex, member.DeclaringType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                     {
                         filtersMatch = true;
                     }

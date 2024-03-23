@@ -13,7 +13,6 @@ namespace Tempo
 
         public virtual void TypeCheck(
             TypeViewModel t,
-            SearchExpression filter,
             out bool matches,
             out bool meaningful,
             out bool abortType,
@@ -26,7 +25,6 @@ namespace Tempo
 
         public virtual void MemberCheck(
             TypeViewModel t,
-            SearchExpression filter,
             PropertyViewModel propertyInfo,
             EventViewModel eventInfo,
             FieldViewModel fieldInfo,
@@ -66,9 +64,9 @@ namespace Tempo
 
     public class CheckForTypeRestrictions : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, SearchExpression filter, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
         {
-            base.TypeCheck(t, filter, out matches, out meaningful, out abortType, ref abort);
+            base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
 
             if (Manager.MatchesTypeModifiers(t, ref meaningful)

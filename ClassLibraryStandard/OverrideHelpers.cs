@@ -45,6 +45,13 @@ namespace Tempo
         // for the filenames, since I don't know how to generate the correct filename.
         public override IEnumerable<string> GetMethodMarkdownFilenamesFromQuery(StringReader reader)
         {
+            // Sometimes we don't get anything back from GitHub
+            var rawBytes = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+            if(rawBytes.Length == 0)
+            {
+                yield break;
+            }
+
             // Example query
             // https://api.github.com/search/code?q=HttpResponseMessage+repo:MicrosoftDocs/winrt-api+path:/windows.web.http/+filename:httpresponsemessage_close_*
 
@@ -66,7 +73,7 @@ namespace Tempo
 
             // Load the Json from string
             var jsonReader = JsonReaderWriterFactory.CreateJsonReader(
-                Encoding.UTF8.GetBytes(reader.ReadToEnd()),
+                rawBytes,
                 new System.Xml.XmlDictionaryReaderQuotas());
 
             // Convert Json to XML
