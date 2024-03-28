@@ -83,6 +83,11 @@ namespace Tempo
 
         async void OnTypesUpdated()
         {
+            if(Types == null)
+            {
+                return;
+            }
+
             // Update the AllNames property based on these types
             await CalculateAllNamesAsync();
 

@@ -546,25 +546,25 @@ namespace Tempo
 
                 foreach (var filename in typeSetFileNames)
                 {
-                    if (filename.EndsWith(".nupkg"))
+                    if (File.Exists(filename))
                     {
-                        DesktopManager2.LoadFromNupkg(filename, useWinRTProjections, typeSet, loadContext);
-                    }
-                    else
-                    {
-                        // Either a .DLL or a .WinMD
-
-                        if (File.Exists(filename))
+                        if (filename.EndsWith(".nupkg"))
                         {
+                            DesktopManager2.LoadFromNupkg(filename, useWinRTProjections, typeSet, loadContext);
+                        }
+                        else
+                        {
+                            // Either a .DLL or a .WinMD
+
                             resolver.DirectoryName = System.IO.Path.GetDirectoryName(filename);
                             DebugLog.Append("Loading custom file " + filename);
                             loadContext.LoadAssemblyFromPath(filename);
                             typeSet.AssemblyLocations.Add(new AssemblyLocation(filename));
                         }
-                        else
-                        {
-                            DebugLog.Append("Couldn't find custom file " + filename);
-                        }
+                    }
+                    else
+                    {
+                        DebugLog.Append("Couldn't find custom file " + filename);
                     }
                 }
 
@@ -573,6 +573,7 @@ namespace Tempo
 
                 if (loadContext.LoadedAssemblies == null || loadContext.LoadedAssemblies.Count == 0)
                 {
+                    typeSet = null;
                     return;
                 }
 
