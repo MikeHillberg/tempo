@@ -1433,7 +1433,7 @@ namespace Tempo
             _winPlatformScopeLoader.StartLoad(
                 offThreadLoadAction: () => // Runs *off* UI thread
                 {
-                    DesktopManager2.LoadWindowsTypesWithMRAsync(
+                    DesktopManager2.LoadWindowsTypesWithMR(
                         useWinRTProjections,
                         (assemblyName) => LocateAssembly(assemblyName));
                 },

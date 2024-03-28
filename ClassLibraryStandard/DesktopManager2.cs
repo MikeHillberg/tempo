@@ -61,7 +61,7 @@ namespace Tempo
 
 
         // Load System32 types with MR reflection, using either a C++ projection or a C# projection
-        static public void LoadWindowsTypesWithMRAsync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
+        static public void LoadWindowsTypesWithMR(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
         {
             // Early out if already loaded
             if (Manager.WindowsTypeSet?.Types != null
@@ -83,15 +83,6 @@ namespace Tempo
             loadContext.AssemblyPathFromName = (assemblyName) => ResolveMRAssembly(assemblyName, assemblyLocator); // Find an assembly
             loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
-            //TypeSet typeSet = null;
-            //{
-            //    typeSet = Manager.WindowsTypeSet;
-            //    if(typeSet == null)
-            //    {
-            //        Manager.WindowsTypeSet = typeSet = new MRTypeSet(MRTypeSet.WindowsCSName, useWinRTProjections);
-            //    }
-            //}
-
             loadContext.LoadAssemblyFromPath(@"C:\Users\Mike\source\repos\TempoOnline\TempoPSProvider\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll");
 
             // Load from System32
@@ -104,7 +95,7 @@ namespace Tempo
                 }
 
                 loadContext.LoadAssemblyFromPath(winmdFile);
-                typeSet.AssemblyLocations.Add(winmdFile);
+                typeSet.AssemblyLocations.Add(new AssemblyLocation(winmdFile));
             }
 
             // Load the latest WinUI framework package
@@ -112,7 +103,7 @@ namespace Tempo
             if (winUIWinMDFilename != null)
             {
                 loadContext.LoadAssemblyFromPath(winUIWinMDFilename);
-                typeSet.AssemblyLocations.Add(winUIWinMDFilename);
+                typeSet.AssemblyLocations.Add(new AssemblyLocation(winUIWinMDFilename));
             }
 
             // After everything's loaded you have to commit it before using it
@@ -198,7 +189,7 @@ namespace Tempo
             var sem = new Semaphore(0, 1);
             _ = Task.Run(() =>
             {
-                LoadWindowsTypesWithMRAsync(useWinRTProjections, assemblyLocator, winuiWinMDFilename);
+                LoadWindowsTypesWithMR(useWinRTProjections, assemblyLocator, winuiWinMDFilename);
                 sem.Release();
             });
 
@@ -411,13 +402,10 @@ namespace Tempo
                             }
                         }
 
-                        var friendlyName = $"{entryName} ({packageFilename})";
-                        DebugLog.Append("Loading custom file " + friendlyName);
-
                         // Add the assembly to the LoadContext
                         loadContext.LoadAssemblyFromBytes(buffer, entryName);
 
-                        typeSet.AssemblyLocations.Add(friendlyName);
+                        typeSet.AssemblyLocations.Add(new AssemblyLocation(entryName, packageFilename));
                     }
                 }
             }
@@ -571,7 +559,7 @@ namespace Tempo
                             resolver.DirectoryName = System.IO.Path.GetDirectoryName(filename);
                             DebugLog.Append("Loading custom file " + filename);
                             loadContext.LoadAssemblyFromPath(filename);
-                            typeSet.AssemblyLocations.Add(filename);
+                            typeSet.AssemblyLocations.Add(new AssemblyLocation(filename));
                         }
                         else
                         {
