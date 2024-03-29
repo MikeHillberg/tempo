@@ -83,6 +83,11 @@ namespace Tempo
 
         async void OnTypesUpdated()
         {
+            if(Types == null)
+            {
+                return;
+            }
+
             // Update the AllNames property based on these types
             await CalculateAllNamesAsync();
 
@@ -104,8 +109,7 @@ namespace Tempo
 
         public List<Assembly> Assemblies { get; set; } = new List<Assembly>();
 
-        // bugbug: Need an AssemblyViewModel, because with MR there's no System.Assembly type available
-        public List<string> AssemblyLocations { get; } = new List<string>();
+        public List<AssemblyLocation> AssemblyLocations { get; } = new List<AssemblyLocation>();
 
         public IEnumerable<Object> Namespaces { get; set; }
 

@@ -1089,6 +1089,13 @@ namespace Tempo
         /// </summary>
         void StartLoadWinAppScope(bool useWinRTProjections)
         {
+            // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
+            if(_winAppScopeLoader != null)
+            {
+                // Already a load in progress
+                return;
+            }
+
             _winAppScopeLoader = new ApiScopeLoader();
 
             _winAppScopeLoader.StartLoad(
@@ -1408,8 +1415,6 @@ namespace Tempo
             }
         }
 
-
-
         static ApiScopeLoader _winPlatformScopeLoader = null;
 
         /// <summary>
@@ -1417,12 +1422,18 @@ namespace Tempo
         /// </summary>
         static void StartLoadWinPlatformScope(bool useWinRTProjections)
         {
+            if (_winPlatformScopeLoader != null)
+            {
+                // Already loading
+                return;
+            }
+
             _winPlatformScopeLoader = new ApiScopeLoader();
 
             _winPlatformScopeLoader.StartLoad(
                 offThreadLoadAction: () => // Runs *off* UI thread
                 {
-                    DesktopManager2.LoadWindowsTypesWithMRAsync(
+                    DesktopManager2.LoadWindowsTypesWithMR(
                         useWinRTProjections,
                         (assemblyName) => LocateAssembly(assemblyName));
                 },

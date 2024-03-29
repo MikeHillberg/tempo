@@ -455,8 +455,7 @@ namespace Tempo
             }
             catch (Exception e)
             {
-                // Probably a 404
-                Debug.Assert(e is WebException);
+                // 404, invalid operation from unexpected doc format
             }
 
             return "";
