@@ -83,8 +83,6 @@ namespace Tempo
             loadContext.AssemblyPathFromName = (assemblyName) => ResolveMRAssembly(assemblyName, assemblyLocator); // Find an assembly
             loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
-            loadContext.LoadAssemblyFromPath(@"C:\Users\Mike\source\repos\TempoOnline\TempoPSProvider\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll");
-
             // Load from System32
             foreach (var winmdFile in Directory.EnumerateFiles(_winMDDir, @"*.winmd"))
             {
