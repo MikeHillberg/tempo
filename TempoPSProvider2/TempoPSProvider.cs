@@ -217,7 +217,7 @@ namespace TempoPSProvider
 
                 // Initialize the type metadata
 
-                DesktopManager.Initialize(wpfApp: false, null);
+                DesktopManager2.Initialize(wpfApp: false);
 
                 // Check if Tempo passed a filename list
                 // @"C:\Users\Mike\Downloads\Microsoft.WindowsAppSDK.1.3.230110100-experimental.nightly.nupkg;"

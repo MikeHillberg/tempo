@@ -105,6 +105,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
     <ProjectReference Include="..\middleweight-reflection\MiddleweightReflection\MiddleweightReflection.csproj" />
+    <ProjectReference Include="..\TempoPSProvider2\TempoPSProvider2.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />

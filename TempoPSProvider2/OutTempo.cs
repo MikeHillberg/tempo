@@ -87,13 +87,14 @@ namespace TempoPSProvider
                 _writer.Flush();
                 _pipeClient.Flush();
 
-                // Bring the app to the foreground. That has to be done from this process since it
-                // has to be done by the foreground app.
-                var hwnd = Win32Native.FindWindow(null, "Tempo");
-                if ((int)hwnd != -1)
-                {
-                    Win32Native.SetForegroundWindow(hwnd);
-                }
+                // bugbug: Doesn't build with .Net Core
+                //// Bring the app to the foreground. That has to be done from this process since it
+                //// has to be done by the foreground app.
+                //var hwnd = Win32Native.FindWindow(null, "Tempo");
+                //if ((int)hwnd != -1)
+                //{
+                //    Win32Native.SetForegroundWindow(hwnd);
+                //}
             }
             catch (IOException)
             {
