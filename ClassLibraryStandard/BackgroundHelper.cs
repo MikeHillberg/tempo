@@ -8,49 +8,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
+//using System.Windows.Threading;
 
 namespace Tempo
 {
     public delegate void BackgroundHelperHandler();
     static public class BackgroundHelper
     {
-        // I can never remember the syntax for Dispatcher.BeginInvoke
-        static public void BeginInvoke(this Dispatcher dispatcher, Action action)
-        {
-            dispatcher.BeginInvoke(DispatcherPriority.Normal, (ThreadStart)delegate { action(); });
-        }
-
-        //static public void DoWorkOnUIThreadAsync(
-        //            DispatcherPriority priority,
-        //            BackgroundHelperHandler worker)
-        //{
-        //    if (DesktopManager2.SyncMode)
-        //    {
-        //        DoWorkAsyncOld(worker, null, true);
-        //    }
-
-            
-        //    DesktopManager2.Dispatcher.BeginInvoke(
-        //        priority,
-        //        (ThreadStart)delegate { worker(); }
-        //        );
-        //}
-
-
-        static public Task DoWorkAsync(BackgroundHelperHandler worker, bool sync = false)
-        {
-            if(sync)
-            {
-                worker();
-                return Task.CompletedTask;
-            }
-
-            return Task.Run(() =>
-            {
-                worker();
-            });
-        }
 
         static public void DoWorkAsyncOld(
             BackgroundHelperHandler worker,
