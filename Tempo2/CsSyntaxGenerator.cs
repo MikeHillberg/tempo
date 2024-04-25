@@ -136,13 +136,13 @@ namespace Tempo
             textBlock.Blocks.Add(paragraph);
             var inlines = paragraph.Inlines;
 
-            if( field.DeclaringType.IsStruct)
+            if( !field.DeclaringType.IsEnum)
             {
                 GenerateTypeName(field.FieldType, inlines, highlightMatch: true);
                 inlines.Add(" ");
             }
 
-            inlines.AddWithSearchHighlighting(field.Name);
+            inlines.AddWithSearchHighlighting($"{field.Name};");
 
         }
 

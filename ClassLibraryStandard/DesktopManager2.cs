@@ -16,7 +16,6 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using System.Xml.Linq;
 using Tempo;
 using static Tempo.DesktopManager2;
