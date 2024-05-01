@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI;
+using Microsoft.UI.Text;
 
 namespace Tempo
 {
@@ -205,6 +206,7 @@ namespace Tempo
                 text += " (";
 
             inlines.AddWithSearchHighlighting(text);
+
             if (parameters.Count != 0)
             {
                 var paragraph = new Paragraph() { Margin = Indent2 };
@@ -438,7 +440,7 @@ namespace Tempo
             TypeViewModel type,
             InlineCollection inlines,
             bool withHyperlink = true,
-            bool highlightMatch = false,
+            bool highlightMatch = true,
             bool firstArgument = true)
         {
             if (type == null)
@@ -489,12 +491,18 @@ namespace Tempo
                     Fill = HomePage.Instance.SystemAccentColorShape.Fill
                 };
 
-                inlines.Add(new InlineUIContainer() { Child = rectangle });
+                // Add an up arrow to the text to indicate that there's something
+                // in the base class that matches.
+                // Tried doing this with a rectangle before, but TextBlock.Inlines
+                // doesn't support InlineUIContainer
+                var upArrow = new Run() { Text = "\u2191" };
+                upArrow.FontWeight = FontWeights.Bold;
+                inlines.Add(upArrow);
             }
 
 
             inlines.AddWithSearchHighlighting(
-                typeNameBase,
+                typeNameBase, 
                 withHyperlink ? targetType : null);
 
             if (!type.IsGenericType)
