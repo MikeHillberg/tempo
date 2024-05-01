@@ -11,6 +11,8 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using System.Diagnostics;
 using System.Threading;
+using System.IO.Pipes;
+using System.IO;
 
 namespace Tempo
 {
@@ -630,6 +632,115 @@ namespace Tempo
         {
             _baseline.StartBringIntoView();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            GoToPS(sender, e);
+        }
+
+        private void GoToPS(object sender, RoutedEventArgs e)
+        {
+            // Init the ProcessStartInfo with the path to the system ps exe (not ps core)
+            var systemRootPath = Environment.GetEnvironmentVariable("SystemRoot");
+            var psexe = $@"{systemRootPath}\System32\WindowsPowerShell\v1.0\powershell.exe";
+            var startInfo = new ProcessStartInfo(psexe);
+
+            // Run the startup script to load the Tempo: drive, then cd to it
+            // Bypassing the execution policy check allows scripts to run
+            startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:";
+
+            // Pass in the exe name so it can call back
+            var pipeName = $"TempoPipe_{Guid.NewGuid().ToString()}";
+            startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey] = pipeName;
+
+            // Figure out the filenames of what we're looking at.
+            // For ML type sets it's in AssemblyLocations
+            var filenameList = new List<string>();
+            foreach (var assemblyLocation in Manager.CurrentTypeSet.AssemblyLocations)
+            {
+                // AssemblyLocation has a path that's either an actual file path
+                // or a relative path within a nupkg
+                if (assemblyLocation.ContainerPath == null)
+                {
+                    filenameList.Add(assemblyLocation.Path);
+                }
+                else
+                {
+                    // Add the nupkg path but only once
+                    if (!filenameList.Contains(assemblyLocation.ContainerPath))
+                    {
+                        filenameList.Add(assemblyLocation.ContainerPath);
+                    }
+                }
+            }
+
+            // WPF is still using reflection, so we have actual Assemblies
+            foreach (var assembly in Manager.CurrentTypeSet.Assemblies)
+            {
+                if (!filenameList.Contains(assembly.Location))
+                {
+                    filenameList.Add(assembly.Location);
+                }
+            }
+
+            // Create a semi-colon separated list of filenames and set it into the environment
+            // for the PS process to pick up
+            var builder = new StringBuilder();
+            foreach (var filename in filenameList)
+            {
+                builder.Append($"{filename};");
+            }
+            startInfo.Environment[TempoPSProvider.TempoPSProvider.FilenamesKey] = builder.ToString();
+
+            // Need to set this when you set an environment variable
+            startInfo.UseShellExecute = false;
+
+            // Start a thread that will wait and listen for the PS process to call back (from out-tempo cmdlet)
+            Task.Run(() => PSOutTempoServerThread(pipeName));
+
+            // Start the shell
+            Process.Start(startInfo);
+
+        }
+
+        // Thread to listen for calls from PS (from the out-tempo cmdlet)
+        void PSOutTempoServerThread(string pipeName)
+        {
+            //using (var pipe = new NamedPipeServerStream(pipeName, PipeDirection.In))
+            //{
+            //    try
+            //    {
+            //        // Wait for out-tempo cmdlet to run
+            //        pipe.WaitForConnection();
+
+            //        using (var reader = new StreamReader(pipe))
+            //        {
+            //            // Respond to requests
+            //            while (true)
+            //            {
+            //                // Each line is a request
+            //                var line = reader.ReadLine();
+            //                if (line == null)
+            //                {
+            //                    // PS has exited
+            //                    break;
+            //                }
+
+            //                // Process the request
+            //                ProcessRequestFromPS(line);
+            //            }
+            //        }
+            //    }
+            //    catch (IOException)
+            //    {
+            //        // Catch the IOException that is raised if the pipe is broken
+            //        // or disconnected.
+            //    }
+            //}
+        }
+
+
+
     }
 
     public class SplitFilename

@@ -180,6 +180,9 @@
                         </RadioButton>
                     </Grid>
 
+                    <Button Click="Button_Click">PS</Button>
+                    
+                    
                 </StackPanel>
 
                 <!-- Baseline row -->
