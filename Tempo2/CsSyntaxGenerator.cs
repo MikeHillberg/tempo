@@ -227,6 +227,12 @@ namespace Tempo
                         inlines.Add(run);
                     }
 
+                    // Add an up arrow to the text to indicate that there's something
+                    // in the base class that matches.
+                    var upArrow = new Run() { Text = UpArrowCodePoint };
+                    upArrow.FontWeight = FontWeights.Bold;
+                    inlines.Add(upArrow);
+
                     GenerateTypeName(parameter.ParameterType, inlines);
 
                     text = " " + parameter.Name;
@@ -434,7 +440,7 @@ namespace Tempo
             SearchHighlighter.HighlightMatches(textBlock, App.SearchExpression?.TypeRegex);
         }
 
-
+        public const string UpArrowCodePoint = "\u2191 ";
 
         static void GenerateTypeName(
             TypeViewModel type,
@@ -495,7 +501,7 @@ namespace Tempo
                 // in the base class that matches.
                 // Tried doing this with a rectangle before, but TextBlock.Inlines
                 // doesn't support InlineUIContainer
-                var upArrow = new Run() { Text = "\u2191" };
+                var upArrow = new Run() { Text = UpArrowCodePoint };
                 upArrow.FontWeight = FontWeights.Bold;
                 inlines.Add(upArrow);
             }

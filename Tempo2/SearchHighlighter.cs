@@ -167,6 +167,8 @@ namespace Tempo
             return;
         }
 
+        static Regex UpArrowRegex = new Regex(CsSyntaxGenerator.UpArrowCodePoint);
+
         // Highlight search string matches in a *Rich* TextBlock
         public static void HighlightMatches(RichTextBlock rtb, Regex regex)
         {
@@ -184,7 +186,16 @@ namespace Tempo
                     var run = inline as Run;
                     if (run != null)
                     {
-                        index += HighlightMatchesCommon(textHighlighters, run.Text, regex, index);
+                        var runText = run.Text;
+
+                        // Highlight the up arrow that indicates there's a match in the base class
+                        var regexToUse = regex;
+                        if (runText == CsSyntaxGenerator.UpArrowCodePoint)
+                        {
+                            regexToUse = UpArrowRegex;
+                        }
+
+                        index += HighlightMatchesCommon(textHighlighters, runText, regexToUse, index);
                     }
                     else if (inline is Hyperlink)
                     {

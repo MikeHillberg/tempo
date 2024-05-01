@@ -900,6 +900,20 @@ namespace Tempo
         }
 
 
+        int _matchGeneration = -1;
+        public void SetMatchGeneration()
+        {
+            _matchGeneration = Manager.MatchGeneration;
+        }
+
+        /// <summary>
+        /// True if this parameter was found in the latest search
+        /// </summary>
+        public bool IsMatch
+        {
+            get { return _matchGeneration == Manager.MatchGeneration; }
+        }
+
         public override bool IsFamilyOrAssembly
         {
             get { throw new NotImplementedException(); }

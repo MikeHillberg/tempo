@@ -1581,6 +1581,9 @@ namespace Tempo
                             MatchesFilterString(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
+
+                            // Trigger parameter.IsMatch
+                            parameter.SetMatchGeneration();
                         }
                     }
                 }
