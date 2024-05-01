@@ -40,7 +40,6 @@ namespace Tempo
                     ta.TypeName = "[" + ta.TypeName.Substring(0, suffixIndex) + "]";
                 }
 
-                var first = true;
                 var args = a.ConstructorArguments;
                 if (args != null)
                 {
@@ -53,11 +52,10 @@ namespace Tempo
                     }
                     else
                     {
-                        foreach (var constructorArgument in args)
+                        // Write out the constructor arguments in "(Type) value" format
+                        for(int i = 0; i < args.Count; i++)
                         {
-                            if (!first)
-                                sb.Append(", ");
-                            first = false;
+                            var constructorArgument = args[i];
 
                             string argumentValue = constructorArgument.Value == null
                                 ? "null"
@@ -80,28 +78,37 @@ namespace Tempo
                                 }
                             }
 
-                            sb.AppendFormat("{0} = ", constructorArgument.ArgumentType.Name);
+                            sb.AppendFormat("({0}) ", constructorArgument.ArgumentType.Name);
 
                             if (constructorArgument.Value is UInt32)
                                 sb.AppendFormat("0x{0:X}", constructorArgument.Value);
                             else
                                 sb.AppendFormat("{0}", argumentValue);
+
+                            if (i < args.Count - 1)
+                            {
+                                sb.AppendLine();
+                            }
                         }
                     }
                 }
 
-
-                foreach (var property in a.NamedArguments)
+                // Write out the named arguments in "Name=Value" format
+                var namedArguments = a.NamedArguments;
+                for(int i = 0; i < namedArguments.Count; i++)
                 {
-                    if (!first)
-                        sb.Append(", ");
-                    first = false;
+                    var property = a.NamedArguments[i];
 
                     sb.AppendFormat("{0}=", property.MemberName);
                     if (property.TypedValue.Value is UInt32)
                         sb.AppendFormat("0x{0:X}", property.TypedValue.Value);
                     else
                         sb.AppendFormat("{0}", property.TypedValue.Value);
+
+                    if (i < namedArguments.Count - 1)
+                    {
+                        sb.AppendLine();
+                    }
                 }
 
 
