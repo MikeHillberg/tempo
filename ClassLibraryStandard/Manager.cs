@@ -180,12 +180,29 @@ namespace Tempo
                     // [composable] shows up as constructor instead
                     continue;
 
+                if (attr.FullName == "Windows.Foundation.Metadata.ActivatableAttribute")
+                    // [activatable] shows up as a constructor too
+                    continue;
+
+                if (attr.FullName == "Windows.Foundation.Metadata.OverloadAttribute")
+                    // [overload] shows up as ABI Name
+                    continue;
+
+                if (attr.FullName == "Windows.Foundation.Metadata.ContractVersionAttribute")
+                    // Contract shows up as a version
+                    continue;
+
+
+
+
+
                 // ((System.Reflection.RuntimeConstructorInfo)(attr.m_ctor)).DeclaringType
                 var attributeClassName = attr.Name;// attr.Constructor.DeclaringType.Name;
                 if (MatchesFilter(filter, attributeClassName, ref meaningfulMatch))
                     return true;
 
-                foreach (var parameter in attr.ConstructorArguments)// AttributeView.SafeGetCustomAttributeConstructorArguments(attr))
+                // Write out the attribute's constructor arguments
+                foreach (var parameter in attr.ConstructorArguments)
                 {
                     if (MatchesFilter(filter, parameter.ArgumentType.Name, ref meaningfulMatch))
                         return true;
@@ -196,6 +213,20 @@ namespace Tempo
                             return true;
                     }
                 }
+
+                // And write out the named arguments
+                foreach (var arg in attr.NamedArguments)
+                {
+                    if (MatchesFilter(filter, attr.Name, ref meaningfulMatch))
+                        return true;
+
+                    if (arg.TypedValue.Value != null)
+                    {
+                        if (MatchesFilter(filter, arg.TypedValue.Value.ToString(), ref meaningfulMatch))
+                            return true;
+                    }
+                }
+
             }
 
             return false;
@@ -887,11 +918,17 @@ namespace Tempo
                         {
                             if (Manager.Settings.ShowTypes || searchExpression.IsTwoPart)
                             {
-                                return TypeMatchesSearchHelper(
+                                var matches = TypeMatchesSearchHelper(
                                     types[i],
                                     customOperandObject.TypeRegex,
                                     searchExpression.IsTwoPart,
                                     ref abortType);
+
+                                // Simplify breakpoints
+                                if (matches)
+                                    return true;
+                                else
+                                    return false;
                             }
 
                             return false;
@@ -1544,6 +1581,9 @@ namespace Tempo
                             MatchesFilterString(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
+
+                            // Trigger parameter.IsMatch
+                            parameter.SetMatchGeneration();
                         }
                     }
                 }

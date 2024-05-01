@@ -453,7 +453,7 @@ namespace Tempo
                 // Do a pseudo job of converting markdown to a plain string
                 return MarkdownToPlainText(description.ToString());
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // 404, invalid operation from unexpected doc format
             }

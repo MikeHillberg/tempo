@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI;
+using Microsoft.UI.Text;
 
 namespace Tempo
 {
@@ -136,13 +137,13 @@ namespace Tempo
             textBlock.Blocks.Add(paragraph);
             var inlines = paragraph.Inlines;
 
-            if( field.DeclaringType.IsStruct)
+            if( !field.DeclaringType.IsEnum)
             {
                 GenerateTypeName(field.FieldType, inlines, highlightMatch: true);
                 inlines.Add(" ");
             }
 
-            inlines.AddWithSearchHighlighting(field.Name);
+            inlines.AddWithSearchHighlighting($"{field.Name};");
 
         }
 
@@ -205,6 +206,7 @@ namespace Tempo
                 text += " (";
 
             inlines.AddWithSearchHighlighting(text);
+
             if (parameters.Count != 0)
             {
                 var paragraph = new Paragraph() { Margin = Indent2 };
@@ -224,6 +226,12 @@ namespace Tempo
                         run.Text = "out ";
                         inlines.Add(run);
                     }
+
+                    // Add an up arrow to the text to indicate that there's something
+                    // in the base class that matches.
+                    var upArrow = new Run() { Text = UpArrowCodePoint };
+                    upArrow.FontWeight = FontWeights.Bold;
+                    inlines.Add(upArrow);
 
                     GenerateTypeName(parameter.ParameterType, inlines);
 
@@ -432,13 +440,13 @@ namespace Tempo
             SearchHighlighter.HighlightMatches(textBlock, App.SearchExpression?.TypeRegex);
         }
 
-
+        public const string UpArrowCodePoint = "\u2191 ";
 
         static void GenerateTypeName(
             TypeViewModel type,
             InlineCollection inlines,
             bool withHyperlink = true,
-            bool highlightMatch = false,
+            bool highlightMatch = true,
             bool firstArgument = true)
         {
             if (type == null)
@@ -489,12 +497,18 @@ namespace Tempo
                     Fill = HomePage.Instance.SystemAccentColorShape.Fill
                 };
 
-                inlines.Add(new InlineUIContainer() { Child = rectangle });
+                // Add an up arrow to the text to indicate that there's something
+                // in the base class that matches.
+                // Tried doing this with a rectangle before, but TextBlock.Inlines
+                // doesn't support InlineUIContainer
+                var upArrow = new Run() { Text = UpArrowCodePoint };
+                upArrow.FontWeight = FontWeights.Bold;
+                inlines.Add(upArrow);
             }
 
 
             inlines.AddWithSearchHighlighting(
-                typeNameBase,
+                typeNameBase, 
                 withHyperlink ? targetType : null);
 
             if (!type.IsGenericType)
