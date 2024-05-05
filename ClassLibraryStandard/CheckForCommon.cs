@@ -6,7 +6,7 @@ namespace Tempo
 {
     public class CheckForNamespace : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out DebuggaBool meaningful, out bool abortType, ref bool abort)
         {
             base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
@@ -46,7 +46,7 @@ namespace Tempo
     public class CheckForNotInBaseline : CheckForMatch
     {
 
-        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out DebuggaBool meaningful, out bool abortType, ref bool abort)
         {
             base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
@@ -90,7 +90,7 @@ namespace Tempo
             MethodViewModel methodInfo,
             DuckMethod effectiveMethod,
             out bool matches,
-            out bool meaningful,
+            out DebuggaBool meaningful,
             ref bool abort)
         {
             base.MemberCheck(t, propertyInfo, eventInfo, fieldInfo, constructorInfo, methodInfo, effectiveMethod, out matches, out meaningful, ref abort);
