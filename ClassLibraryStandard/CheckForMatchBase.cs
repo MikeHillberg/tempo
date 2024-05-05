@@ -14,7 +14,7 @@ namespace Tempo
         public virtual void TypeCheck(
             TypeViewModel t,
             out bool matches,
-            out bool meaningful,
+            out DebuggaBool meaningful,
             out bool abortType,
             ref bool abort)
         {
@@ -32,10 +32,13 @@ namespace Tempo
             MethodViewModel methodInfo,
             DuckMethod effectiveMethod,
             out bool matches,
-            out bool meaningful,
+            out DebuggaBool meaningful,
             ref bool abort)
         {
-            matches = meaningful = true;
+            //matches = meaningful = true;
+            matches = true;
+            meaningful = false;
+
             return;
         }
 
@@ -64,7 +67,7 @@ namespace Tempo
 
     public class CheckForTypeRestrictions : CheckForMatch
     {
-        public override void TypeCheck(TypeViewModel t, out bool matches, out bool meaningful, out bool abortType, ref bool abort)
+        public override void TypeCheck(TypeViewModel t, out bool matches, out DebuggaBool meaningful, out bool abortType, ref bool abort)
         {
             base.TypeCheck(t, out matches, out meaningful, out abortType, ref abort);
 
