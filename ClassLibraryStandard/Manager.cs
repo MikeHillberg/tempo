@@ -58,7 +58,7 @@ namespace Tempo
             return null;
         }
 
-        static public bool MatchesTypeKind(TypeViewModel t, ref bool meaningfulMatch)
+        static public bool MatchesTypeKind(TypeViewModel t, ref DebuggaBool meaningfulMatch)
         {
             return MatchesSetting(Settings.IsClass, t.IsClass, ref meaningfulMatch)
                    &&
@@ -69,7 +69,7 @@ namespace Tempo
                    MatchesSetting(Settings.IsStruct, !t.IsEnum && t.IsValueType, ref meaningfulMatch);
         }
 
-        static public bool MatchesTypeModifiers(TypeViewModel t, ref bool meaningfulMatch)
+        static public bool MatchesTypeModifiers(TypeViewModel t, ref DebuggaBool meaningfulMatch)
         {
 
 
@@ -119,7 +119,7 @@ namespace Tempo
             return true;
         }
 
-        static public bool MatchesDependencyObject(TypeViewModel t, ref bool meaningfulMatch)
+        static public bool MatchesDependencyObject(TypeViewModel t, ref DebuggaBool meaningfulMatch)
         {
             if (Settings.IsDO == null)
                 return true;
@@ -149,7 +149,7 @@ namespace Tempo
 
         }
 
-        static bool MatchesAttributes(BaseViewModel t, Regex filter, ref bool meaningfulMatch)
+        static bool MatchesAttributes(BaseViewModel t, Regex filter, ref DebuggaBool meaningfulMatch)
         {
             if (Settings.FilterOnAttributes == false)
                 return false;
@@ -269,7 +269,7 @@ namespace Tempo
                    || (t1 is Type) && t.Assembly.CodeBase.EndsWith(".winmd")
                    || t.FullName.StartsWith("Windows.Foundation");
         }
-        static public bool TypeMatchesSearch(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
+        static public bool TypeMatchesSearch(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref DebuggaBool meaningfulMatch)
         {
             return
                 TypeIsPublicVolatile(t)
@@ -284,7 +284,7 @@ namespace Tempo
         //    return MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch);
         //}
 
-        static bool MatchesFilter(Regex filter, string name, ref bool meaningfulMatch)
+        static bool MatchesFilter(Regex filter, string name, ref DebuggaBool meaningfulMatch)
         {
             if (filter == null || filter.ToString() == "")
                 return true;
@@ -322,7 +322,7 @@ namespace Tempo
 
         }
 
-        static public bool MatchesSetting(bool? setting, bool value, ref bool meaningfulMatch)
+        static public bool MatchesSetting(bool? setting, bool value, ref DebuggaBool meaningfulMatch)
         {
             bool matches = MatchesSetting(setting, value);
             if (matches && setting != null)
@@ -335,7 +335,7 @@ namespace Tempo
             return setting == true ? value : setting == false ? !value : true;
         }
 
-        static public bool MatchesSetting(bool? setting, Func<bool> valueFunc, ref bool meaningfulMatch)
+        static public bool MatchesSetting(bool? setting, Func<bool> valueFunc, ref DebuggaBool meaningfulMatch)
         {
             if (setting == null)
                 return true;
@@ -576,7 +576,7 @@ namespace Tempo
         /// Check if a type matches the regex filter. This is mostly about the type name,
         /// but also looks at DLL name, IID, namespaces, etc, and base classes
         /// </summary>
-        public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref bool meaningfulMatch)
+        public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
         {
             if (!filterOnName || (filter == null || filter.ToString().Trim() == ""))
             {
@@ -824,7 +824,7 @@ namespace Tempo
                     continue;
                 }
 
-                bool meaningfulMatch = false;
+                DebuggaBool meaningfulMatch = false;
                 var abortType = false;
 
                 // This says that the type didn't get rejected by anything; it didn't not match
@@ -1144,7 +1144,7 @@ namespace Tempo
 
             if (Manager.Settings.ShowTypes || isTwoPart)
             {
-                var meaningfulMatchT = false;
+                DebuggaBool meaningfulMatchT = false;
                 typeMatches =
                     TypeMatchesSearch(
                         typeVM,
@@ -1230,19 +1230,19 @@ namespace Tempo
             return ret;
         }
 
-        public static void RunTypeCheckers(TypeViewModel type, ref bool abort, ref bool typeMatchesFilters, ref bool meaningfulMatch, ref bool abortType, ref bool matchesCheckers)
+        public static void RunTypeCheckers(TypeViewModel type, ref bool abort, ref bool typeMatchesFilters, ref DebuggaBool meaningfulMatch, ref bool abortType, ref bool matchesCheckers)
         {
             foreach (var checker in Checkers)
             {
                 var matchesT = false;
-                var meaningfulMatchT = false;
+                DebuggaBool meaningfulMatchT;
                 var abortTypeT = false;
 
                 checker.TypeCheck(type, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
 
                 matchesCheckers &= matchesT;
 
-                meaningfulMatch |= meaningfulMatchT;
+                meaningfulMatch = meaningfulMatch |= meaningfulMatchT;
 
                 abortType |= abortTypeT;
 
@@ -1394,7 +1394,7 @@ namespace Tempo
 
             // 
             bool matchesT = false;
-            bool meaningfulT = false;
+            DebuggaBool meaningfulT;
             bool abortT = false;
 
             for (int j = 0; j < Checkers.Length; j++)
@@ -1484,7 +1484,7 @@ namespace Tempo
 
         //         static public bool TypeMatchesFilters(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref bool meaningfulMatch)
 
-        public static void MemberMatchesFilters(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out bool meaningfulMatch)
+        public static void MemberMatchesFilters(MemberOrTypeViewModelBase member, Regex memberRegex, ref bool abort, out bool filtersMatch, out DebuggaBool meaningfulMatch)
         {
             var method = new DuckMethod(member);
             filtersMatch = false;

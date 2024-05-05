@@ -685,7 +685,7 @@ namespace Tempo
                         var regex = new Regex(conditionString, !caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
 
                         var abort = false;
-                        var meaningfulMatch = false;
+                        DebuggaBool meaningfulMatch = false;
 
                         if (Manager.MatchesFilterString(regex, type, true, true, Manager.Settings, ref meaningfulMatch))
                             return true;

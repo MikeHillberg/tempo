@@ -227,11 +227,14 @@ namespace Tempo
                         inlines.Add(run);
                     }
 
-                    // Add an up arrow to the text to indicate that there's something
-                    // in the base class that matches.
-                    var upArrow = new Run() { Text = UpArrowCodePoint };
-                    upArrow.FontWeight = FontWeights.Bold;
-                    inlines.Add(upArrow);
+                    if (parameter.IsMatch && !parameter.ParameterType.IsMatch)
+                    {
+                        // Add an up arrow to the text to indicate that there's something
+                        // in the base class that matches.
+                        var upArrow = new Run() { Text = UpArrowCodePoint };
+                        upArrow.FontWeight = FontWeights.Bold;
+                        inlines.Add(upArrow);
+                    }
 
                     GenerateTypeName(parameter.ParameterType, inlines);
 
@@ -489,14 +492,6 @@ namespace Tempo
 
             if (withHyperlink && type.IsMatch && highlightMatch)
             {
-                var rectangle = new Rectangle()
-                {
-                    Margin = new Thickness(0, 0, 3, 0),
-                    Width = 4, // bugbug
-                    Height = 12,
-                    Fill = HomePage.Instance.SystemAccentColorShape.Fill
-                };
-
                 // Add an up arrow to the text to indicate that there's something
                 // in the base class that matches.
                 // Tried doing this with a rectangle before, but TextBlock.Inlines

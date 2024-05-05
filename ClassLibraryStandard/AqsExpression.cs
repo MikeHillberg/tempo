@@ -240,7 +240,19 @@ namespace Tempo
                 else
                 {
                     // This token is some kind of operator
-                    if(expectingOperand)
+
+                    if (op == AqsOperator.CloseParen)
+                    {
+                        // On close paren, return from the recursion
+                        break;
+                    }
+
+                    // If we just processed an operator, we're expecting an operand.
+                    // But a NOT is OK (the operand will follow)
+                    // And the beginning of a nested expression is OK (it will ultimately become an operand)
+                    if (expectingOperand 
+                        && op != AqsOperator.OpenParen
+                        && op != AqsOperator.Not)
                     {
                         errorMessage = $"expected operand at {tokenString}";
                         SearchExpression.RaiseSearchExpressionError(errorMessage);
@@ -251,7 +263,7 @@ namespace Tempo
                     expectingOperand = true;
 
                     // If this is a NOT or open paren, we still need to inject an AND
-                    if(expectingAndor
+                    if (expectingAndor
                         && op != AqsOperator.And
                         && op != AqsOperator.Or)
                     {
@@ -300,14 +312,10 @@ namespace Tempo
                         }
 
                         // After completing a nested expression, we expect an AND or OR next
+                        expectingOperand = false;
                         expectingAndor = true;
                     }
 
-                    else if (op == AqsOperator.CloseParen)
-                    {
-                        // On close paren, return from the recursion
-                        break;
-                    }
                     else
                     {
                         // It's an operator, but not a paren
