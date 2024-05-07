@@ -329,7 +329,11 @@ namespace Tempo
                     var entryName = entry.Name.ToLower();
 
                     // Only looking in the lib directory
-                    if (!entry.FullName.ToLower().StartsWith("lib/"))
+                    // I've seen the ZipFile API sometimes uses slashes and sometimes whacks, 
+                    // so checking for both
+                    var fullName = entry.FullName.ToLower();
+                    if(!fullName.StartsWith("lib/")
+                        && !fullName.StartsWith(@"lib\"))
                     {
                         continue;
                     }
@@ -727,6 +731,7 @@ namespace Tempo
         {
             if (!filename.Contains("Tempo"))
             {
+                DebugLog.Append($"Bad file delete: {filename}");
                 throw new Exception($"Bad file delete: {filename}");
             }
 

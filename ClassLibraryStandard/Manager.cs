@@ -273,7 +273,6 @@ namespace Tempo
         {
             return
                 TypeIsPublicVolatile(t)
-                   //&& (TypeMatchesFilterString(t, filter, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch)
                    && MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref meaningfulMatch)
                 ||
                 MatchesAttributes(t, filter, ref meaningfulMatch);
