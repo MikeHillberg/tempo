@@ -65,8 +65,8 @@ namespace Tempo
             var sb = new StringBuilder();
 
             if (type.TypeKind == TypeKind.Class
-                && (type.BaseType != null 
-                    || type.PublicInterfaces != null && type.PublicInterfaces.Count != 0 ))
+                && (type.BaseType != null
+                    || type.PublicInterfaces != null && type.PublicInterfaces.Count != 0))
             {
                 sb.Append(" : ...");
             }
@@ -137,9 +137,9 @@ namespace Tempo
             textBlock.Blocks.Add(paragraph);
             var inlines = paragraph.Inlines;
 
-            if( !field.DeclaringType.IsEnum)
+            if (!field.DeclaringType.IsEnum)
             {
-                GenerateTypeName(field.FieldType, inlines, highlightMatch: true);
+                GenerateTypeName(field.FieldType, inlines, highlightMatch: true, withUpArrow: true);
                 inlines.Add(" ");
             }
 
@@ -161,7 +161,7 @@ namespace Tempo
             };
             inlines.Add(run);
 
-            GenerateTypeName(ev.EventHandlerType, inlines);
+            GenerateTypeName(ev.EventHandlerType, inlines, withUpArrow: true);
 
             inlines.AddWithSearchHighlighting($" {ev.Name};");
         }
@@ -179,9 +179,9 @@ namespace Tempo
                 Foreground = new SolidColorBrush() { Color = Colors.Blue }, // bugbug
                 Text = method.ModifierCodeString + " "
             };
-            inlines.Add(run); 
+            inlines.Add(run);
 
-            GenerateTypeName(method.ReturnType, inlines, highlightMatch: true, withHyperlink: true);
+            GenerateTypeName(method.ReturnType, inlines, highlightMatch: true, withHyperlink: true, withUpArrow: true);
 
 
             var parameters = method.Parameters;
@@ -194,7 +194,7 @@ namespace Tempo
         }
 
         private static void InsertParameters(
-            RichTextBlock textBlock, string methodName, 
+            RichTextBlock textBlock, string methodName,
             IList<ParameterViewModel> parameters,
             InlineCollection inlines)
         {
@@ -222,7 +222,7 @@ namespace Tempo
 
                     if (parameter.IsOut)
                     {
-                        var run = new Run() { Foreground = new SolidColorBrush(Colors.Blue)}; // bugbug
+                        var run = new Run() { Foreground = new SolidColorBrush(Colors.Blue) }; // bugbug
                         run.Text = "out ";
                         inlines.Add(run);
                     }
@@ -236,7 +236,7 @@ namespace Tempo
                         inlines.Add(upArrow);
                     }
 
-                    GenerateTypeName(parameter.ParameterType, inlines);
+                    GenerateTypeName(parameter.ParameterType, inlines, withUpArrow: true);
 
                     text = " " + parameter.Name;
                     if (i + 1 == parameters.Count)
@@ -262,7 +262,7 @@ namespace Tempo
             };
             inlines.Add(run);
 
-            GenerateTypeName(property.PropertyType, inlines, withHyperlink: true, highlightMatch: true);
+            GenerateTypeName(property.PropertyType, inlines, withHyperlink: true, highlightMatch: true, withUpArrow: true);
 
             string text = " " + property.Name + "\n{";
             inlines.AddWithSearchHighlighting(text);
@@ -327,7 +327,6 @@ namespace Tempo
             };
             textBlock.Inlines.Add(run);
 
-
             GenerateTypeName(type, textBlock.Inlines, withHyperlink: false);
 
             if (type.TypeKind == TypeKind.Class
@@ -372,8 +371,8 @@ namespace Tempo
             obj.SetValue(MemberNameProperty, value);
         }
         public static readonly DependencyProperty MemberNameProperty =
-            DependencyProperty.RegisterAttached("MemberName", typeof(MemberOrTypeViewModelBase), typeof(CsSyntaxGenerator), 
-                new PropertyMetadata(null, (s,e) => MemberNameChanged(s as TextBlock)));
+            DependencyProperty.RegisterAttached("MemberName", typeof(MemberOrTypeViewModelBase), typeof(CsSyntaxGenerator),
+                new PropertyMetadata(null, (s, e) => MemberNameChanged(s as TextBlock)));
 
         private static void MemberNameChanged(TextBlock textBlock)
         {
@@ -450,14 +449,15 @@ namespace Tempo
             InlineCollection inlines,
             bool withHyperlink = true,
             bool highlightMatch = true,
-            bool firstArgument = true)
+            bool firstArgument = true,
+            bool withUpArrow = false)
         {
             if (type == null)
             {
                 return;
             }
 
-            if(!type.IsInCurrentTypeSet)
+            if (!type.IsInCurrentTypeSet)
             {
                 withHyperlink = false;
             }
@@ -490,20 +490,29 @@ namespace Tempo
                 inlines.Add(", ");
             }
 
-            if (withHyperlink && type.IsMatch && highlightMatch)
+
+            // Sometimes we add an up arrow next to a type to indicate
+            // that the base type matched the search
+            // Not sure if all these bools are actually used, the
+            // `withUpArrow` is the main one
+            if (withHyperlink && withUpArrow && highlightMatch)
             {
-                // Add an up arrow to the text to indicate that there's something
-                // in the base class that matches.
-                // Tried doing this with a rectangle before, but TextBlock.Inlines
-                // doesn't support InlineUIContainer
-                var upArrow = new Run() { Text = UpArrowCodePoint };
-                upArrow.FontWeight = FontWeights.Bold;
-                inlines.Add(upArrow);
+                var baseType = type.BaseType;
+                if (baseType != null && baseType.IsMatch)
+                {
+                    // Add an up arrow to the text to indicate that there's something
+                    // in the base class that matches.
+                    // Tried doing this with a rectangle before, but TextBlock.Inlines
+                    // doesn't support InlineUIContainer
+                    var upArrow = new Run() { Text = UpArrowCodePoint };
+                    upArrow.FontWeight = FontWeights.Bold;
+                    inlines.Add(upArrow);
+                }
             }
 
 
             inlines.AddWithSearchHighlighting(
-                typeNameBase, 
+                typeNameBase,
                 withHyperlink ? targetType : null);
 
             if (!type.IsGenericType)
