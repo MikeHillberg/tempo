@@ -167,7 +167,7 @@ namespace Tempo
             return;
         }
 
-        static Regex UpArrowRegex = new Regex(CsSyntaxGenerator.UpArrowCodePoint);
+        static Regex UpArrowRegex = new Regex(CsSyntaxGenerator.UpArrowCodePoint, RegexOptions.Compiled);
 
         // Highlight search string matches in a *Rich* TextBlock
         public static void HighlightMatches(RichTextBlock rtb, Regex regex)

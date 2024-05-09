@@ -682,7 +682,7 @@ namespace Tempo
                     {
                         var type = value as TypeViewModel;
 
-                        var regex = new Regex(conditionString, !caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+                        var regex = AqsExpression.CreateRegex(conditionString, caseSensitive, isWildcardSyntax: false);
 
                         var abort = false;
                         DebuggaBool meaningfulMatch = false;
