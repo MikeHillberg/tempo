@@ -226,8 +226,11 @@ namespace Tempo
                         run.Text = "out ";
                         inlines.Add(run);
                     }
-
-                    if (parameter.IsMatch && !parameter.ParameterType.IsMatch)
+                    
+                    // If the parameter type doesn't match, then it won't get highlighted, so we need to highlight it here
+                    if (parameter.IsMatch 
+                        && !parameter.IsNameMatch
+                        && !parameter.ParameterType.IsMatch)
                     {
                         // Add an up arrow to the text to indicate that there's something
                         // in the base class that matches.
@@ -327,7 +330,7 @@ namespace Tempo
             };
             textBlock.Inlines.Add(run);
 
-            GenerateTypeName(type, textBlock.Inlines, withHyperlink: false);
+            GenerateTypeName(type, textBlock.Inlines, withHyperlink: false, withUpArrow:true);
 
             if (type.TypeKind == TypeKind.Class
                 && (type.BaseType != null && !type.BaseType.ShouldIgnore || type.PublicInterfaces.Count != 0))
@@ -457,6 +460,11 @@ namespace Tempo
                 return;
             }
 
+            if (type.Name == "ICompositionAnimationBase")
+            {
+                int j = 2236;
+            }
+
             if (!type.IsInCurrentTypeSet)
             {
                 withHyperlink = false;
@@ -495,10 +503,12 @@ namespace Tempo
             // that the base type matched the search
             // Not sure if all these bools are actually used, the
             // `withUpArrow` is the main one
-            if (withHyperlink && withUpArrow && highlightMatch)
+            //if (withHyperlink && withUpArrow && highlightMatch)
+            if (withUpArrow && highlightMatch)
             {
-                var baseType = type.BaseType;
-                if (baseType != null && baseType.IsMatch)
+                //var baseType = type.BaseType;
+                //if (baseType != null && baseType.IsMatch)
+                if(type.IsMatch && !type.IsNameMatch)
                 {
                     // Add an up arrow to the text to indicate that there's something
                     // in the base class that matches.

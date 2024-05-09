@@ -914,6 +914,21 @@ namespace Tempo
             get { return _matchGeneration == Manager.MatchGeneration; }
         }
 
+        /// <summary>
+        /// True if the parameter name matched in the current search
+        /// </summary>
+        public bool IsNameMatch
+        {
+            get { return _nameMatchGeneration == Manager.MatchGeneration; }
+        }
+
+        int _nameMatchGeneration = -1;
+        public void SetNameMatchGeneration()
+        {
+            _nameMatchGeneration = Manager.MatchGeneration;
+        }
+
+
         public override bool IsFamilyOrAssembly
         {
             get { throw new NotImplementedException(); }

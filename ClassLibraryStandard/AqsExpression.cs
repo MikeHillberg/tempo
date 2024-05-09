@@ -400,7 +400,16 @@ namespace Tempo
 
             try
             {
-                return new Regex(value, caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
+                // This regex will be evaluated a _lot_, so should be worth the tradeoff of construction time.
+                // In practice, doesn't seem to have a measurable effect, but it just seems right, so ...
+                var options = RegexOptions.Compiled;
+
+                if (!caseSensitive)
+                {
+                    options |= RegexOptions.IgnoreCase;
+                }
+
+                return new Regex(value, options);
             }
             catch (System.ArgumentException)
             {
