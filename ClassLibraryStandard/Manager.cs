@@ -588,13 +588,13 @@ namespace Tempo
             }
 
 
-            if (settings != null && settings.FilterOnFullName)
-            {
-                if (MatchesFilter(filter, type.Namespace, ref meaningfulMatch))
-                {
-                    return true;
-                }
-            }
+            //if (settings != null && settings.FilterOnFullName)
+            //{
+            //    if (MatchesFilter(filter, type.Namespace, ref meaningfulMatch))
+            //    {
+            //        return true;
+            //    }
+            //}
 
             if (type.DllPath != null && settings.FilterOnDllPath)
             {
@@ -620,8 +620,20 @@ namespace Tempo
                     continue;
                 }
 
-                if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), ref meaningfulMatch))
+                if (settings != null && settings.FilterOnFullName)
                 {
+                    if (MatchesFilter(filter, t.Namespace, ref meaningfulMatch))
+                    {
+                        return true;
+                    }
+                }
+
+
+                //if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), ref meaningfulMatch))
+                if (filterOnName
+                    && MatchesFilter(filter, t.PrettyName, ref meaningfulMatch))
+                {
+                    t.SetNameMatchGeneration();
                     return true;
                 }
                 //if (abort) return false;
@@ -1575,7 +1587,14 @@ namespace Tempo
 
                     foreach (var parameter in parameters)
                     {
-                        if (Settings.FilterOnName && MatchesFilter(memberRegex, parameter.Name, ref meaningfulMatch)
+                        var nameMatch = false;
+                        if (Settings.FilterOnName && MatchesFilter(memberRegex, parameter.Name, ref meaningfulMatch))
+                        {
+                            nameMatch = true;
+                            parameter.SetNameMatchGeneration();
+                        }
+
+                        if (nameMatch
                             ||
                             MatchesFilterString(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {

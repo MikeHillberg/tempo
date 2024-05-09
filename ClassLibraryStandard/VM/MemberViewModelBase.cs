@@ -819,6 +819,22 @@ namespace Tempo
         }
 
 
+        /// <summary>
+        /// True if the name matched in the most recent search (maybe in addition to something else matching)
+        /// </summary>
+        public bool IsNameMatch
+        {
+            get { return _nameMatchGeneration == Manager.MatchGeneration; }
+        }
+        int _nameMatchGeneration = -1;
+        public void SetNameMatchGeneration()
+        {
+            _nameMatchGeneration = Manager.MatchGeneration;
+        }
+
+
+
+
 
         public abstract bool IsSealed { get; }
         //public abstract bool IsDeprecated { get; }
