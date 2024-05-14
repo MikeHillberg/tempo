@@ -161,6 +161,18 @@ namespace Tempo
             };
             inlines.Add(run);
 
+
+            if(ev.IsInvokerMatch && !ev.EventHandlerType.IsNameMatch)
+            {
+                // Add an up arrow to the text to indicate that there's something
+                // in the base class that matches.
+                var upArrow = new Run() { Text = UpArrowCodePoint };
+                upArrow.FontWeight = FontWeights.Bold;
+                inlines.Add(upArrow);
+            }
+
+
+
             GenerateTypeName(ev.EventHandlerType, inlines, withUpArrow: true);
 
             inlines.AddWithSearchHighlighting($" {ev.Name};");
@@ -330,7 +342,9 @@ namespace Tempo
             };
             textBlock.Inlines.Add(run);
 
-            GenerateTypeName(type, textBlock.Inlines, withHyperlink: false, withUpArrow:true);
+            // We don't need to show the up arrow for the type, e.g. because its base class matched rather than its name,
+            // because we're on the type batch and that will show up somewhere else
+            GenerateTypeName(type, textBlock.Inlines, withHyperlink: false, withUpArrow:false);
 
             if (type.TypeKind == TypeKind.Class
                 && (type.BaseType != null && !type.BaseType.ShouldIgnore || type.PublicInterfaces.Count != 0))
@@ -460,7 +474,7 @@ namespace Tempo
                 return;
             }
 
-            if (type.Name == "ICompositionAnimationBase")
+            if (type.Name == "CheckBox")
             {
                 int j = 2236;
             }
