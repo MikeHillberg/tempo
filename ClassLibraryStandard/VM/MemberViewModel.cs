@@ -772,6 +772,18 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// True if this event's Invoker parameter matched. (Indicates that the event type matched)
+        /// </summary>
+        public bool IsInvokerMatch => _invokerMatchGeneration == Manager.MatchGeneration;
+
+        int _invokerMatchGeneration = -1;
+        public void SetInvokerMatch()
+        {
+            _invokerMatchGeneration = Manager.MatchGeneration;
+        }
+
+
         protected abstract TypeViewModel GetTypeFromCache(TypeViewModel typeViewModel);
 
         TypeViewModel _argsType = null;

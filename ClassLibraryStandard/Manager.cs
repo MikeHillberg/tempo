@@ -577,6 +577,23 @@ namespace Tempo
         /// </summary>
         public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
         {
+
+            // This optimization allows 80% of the calls to be skipped, and it's called a lot,
+            // but it doesn't actually have much of an effect on wall clock time
+            var check = type.CheckMatchesCache(filter);
+            if(check != null)
+            {
+                return check == true;
+            }
+
+            var matches = MatchesFilterStringWorker(filter, type, filterOnName, filterOnBaseTypes, settings, ref meaningfulMatch);
+            type.SetMatchesCache(filter, matches);
+            return matches;
+
+        }
+
+        public static bool MatchesFilterStringWorker(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
+        {
             if (!filterOnName || (filter == null || filter.ToString().Trim() == ""))
             {
                 return true;
@@ -1505,6 +1522,7 @@ namespace Tempo
 
                 bool notSearch = false; //= f[0] == '\''; // bugbug
                 meaningfulMatch = false;
+                var isEventInvoker = false;
 
                 if (Settings.FilterOnName && MatchesFilter(memberRegex, member.Name, ref meaningfulMatch))
                 {
@@ -1555,6 +1573,7 @@ namespace Tempo
                         var invoker = eventVM.Invoker;
                         if (invoker != null)
                         {
+                            isEventInvoker = true;
                             parameters.AddRange(eventVM.Invoker.Parameters);
                         }
                     }
@@ -1602,6 +1621,11 @@ namespace Tempo
 
                             // Trigger parameter.IsMatch
                             parameter.SetMatchGeneration();
+
+                            if(isEventInvoker)
+                            {
+                                (member as EventViewModel).SetInvokerMatch();
+                            }
                         }
                     }
                 }

@@ -2417,5 +2417,44 @@ namespace Tempo
         /// True if this type is in a TypeSet (not a generated/fake type)
         /// </summary>
         public bool IsInTypes { get; internal set; } = false;
+
+
+        /// <summary>
+        /// Return a cached bool in context of `context` if it was set in the same MatchGeneration
+        /// </summary>
+        public bool? CheckMatchesCache(object context)
+        {
+            if (_cacheMatchGeneration != Manager.MatchGeneration)
+            {
+                // Cached value is invalid
+                return null;
+            }
+
+            if (_matchCache.TryGetValue(context, out var value))
+            {
+                // Return cached value
+                return value;
+            }
+
+            // Not cached yet
+            return null;
+        }
+
+        /// <summary>
+        /// Cache a bool in context of `context` for this MatchGeneration
+        /// </summary>
+        public void SetMatchesCache(object context, bool value)
+        {
+            if (_cacheMatchGeneration != Manager.MatchGeneration)
+            {
+                _matchCache.Clear();
+            }
+            _matchCache[context] = value;
+            _cacheMatchGeneration = Manager.MatchGeneration;
+        }
+        int _cacheMatchGeneration = -1;
+        Dictionary<object, bool> _matchCache = new Dictionary<object, bool>();
+
+
     }
 }
