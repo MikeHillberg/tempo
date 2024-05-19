@@ -9,7 +9,7 @@
 
     <Grid x:Name="_detailsGrid"
           CornerRadius="5,0,0,0"
-          Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
+          Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
           Padding="10"
           >
         <local:TypeDetailView  x:Name="_typeDetail" IsFullSearchContent="True" />

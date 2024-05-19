@@ -156,7 +156,7 @@ namespace Tempo
             set { SetValue(DocPageButtonLabelProperty, value); }
         }
         public static readonly DependencyProperty DocPageButtonLabelProperty =
-            DependencyProperty.Register("DocPageButtonLabel", typeof(string), typeof(SearchResults), 
+            DependencyProperty.Register("DocPageButtonLabel", typeof(string), typeof(SearchResults),
                 new PropertyMetadata(""));
 
 
@@ -459,7 +459,7 @@ namespace Tempo
 
 
             // Ignore the results unless this was the last concurrent search started
-            if(iteration == Manager.RecalculateIteration)
+            if (iteration == Manager.RecalculateIteration)
             {
                 SlowSearchInProgress = false;
 
@@ -467,8 +467,8 @@ namespace Tempo
                 Results = newResults;
                 NothingFound = (Results.Count == 0);
 
-                if(!NothingFound 
-                    && App.OfferToCopyResultsToClipboard 
+                if (!NothingFound
+                    && App.OfferToCopyResultsToClipboard
                     && Manager.Settings.CompareToBaseline)
                 {
                     // When doing an API diff from the command line,
@@ -482,7 +482,7 @@ namespace Tempo
                         CloseButtonText = "Cancel",
                         PrimaryButtonText = "Copy",
                     }).ShowAsync();
-                    if(result == ContentDialogResult.Primary)
+                    if (result == ContentDialogResult.Primary)
                     {
                         CommonCommandBar.CopyToClipboardCompactHelper(Results);
                     }
@@ -730,14 +730,17 @@ namespace Tempo
                     NavigateToItem(newItem);
                 }
             }
+#if DEBUG
             catch (Exception e)
             {
-#if DEBUG
                 Debug.Assert(false);
                 var d = new MessageDialog(e.Message + "\n" + newItem.ToString() + "\n" + e.StackTrace.ToString());
                 var t = d.ShowAsync();
-#endif
             }
+#else
+            catch (Exception)
+            { }
+#endif
 
             _goingBack = false;
 
@@ -781,7 +784,7 @@ namespace Tempo
                     index = Random.Shared.Next(items.Count - 1);
                     targetItem = items[0] as MemberOrTypeViewModelBase;
                     var typeName = targetItem.DeclaringType.Name;
-                    if(typeName != "XamlPropertyIndex" && typeName != "XamlEventIndex" && typeName != "XamlTypeIndex")
+                    if (typeName != "XamlPropertyIndex" && typeName != "XamlEventIndex" && typeName != "XamlTypeIndex")
                     {
                         break;
                     }
@@ -963,7 +966,7 @@ namespace Tempo
             set { SetValue(ResultsColumnWidthProperty, value); }
         }
         public static readonly DependencyProperty ResultsColumnWidthProperty =
-            DependencyProperty.Register("ResultsColumnWidth", typeof(GridLength), typeof(SearchResults), 
+            DependencyProperty.Register("ResultsColumnWidth", typeof(GridLength), typeof(SearchResults),
                 new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
         InputSystemCursor _ewCursor = null;
@@ -1010,7 +1013,7 @@ namespace Tempo
             // Start moving the splitter
 
             // Capture the pointer so that we still get messages when the mouse isn't actually over it anymore
-            if(!(sender as FrameworkElement).CapturePointer(e.Pointer))
+            if (!(sender as FrameworkElement).CapturePointer(e.Pointer))
             {
                 return;
             }
@@ -1033,7 +1036,7 @@ namespace Tempo
 
         private void Splitter_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            if(_activeSplitter == null)
+            if (_activeSplitter == null)
             {
                 return;
             }

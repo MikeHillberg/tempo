@@ -207,13 +207,16 @@ namespace Tempo
 
 
             }
+#if DEBUG
             catch (Exception ex)
             {
-#if DEBUG
                 var d = new MessageDialog(ex.Message + "\n" + ex.StackTrace.ToString());
                 var t = d.ShowAsync();
-#endif
             }
+#else
+            catch (Exception)
+            { }
+#endif
 
 
         }
