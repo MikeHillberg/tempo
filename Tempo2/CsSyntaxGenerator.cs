@@ -474,11 +474,6 @@ namespace Tempo
                 return;
             }
 
-            if (type.Name == "CheckBox")
-            {
-                int j = 2236;
-            }
-
             if (!type.IsInCurrentTypeSet)
             {
                 withHyperlink = false;

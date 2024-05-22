@@ -8,7 +8,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}" 
+    <Grid Background="{ThemeResource SystemControlBackgroundAltHighBrush}" 
           PointerPressed="Grid_PointerPressed" >
 
         <Grid.RowDefinitions>
@@ -71,7 +71,7 @@
                 <Border x:Name="_wideModeCol1" Grid.Column="1" 
                     CornerRadius="0,5,5,0"
                     Padding="10"
-                    Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
+                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                     <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
                     <local:TypeDetailViewTypeInfo x:Name="_typeInfo"  TypeVM="{x:Bind TypeVM, Mode=OneWay}"  />
                 </Border>
