@@ -22,7 +22,7 @@
     <Platforms>x86;x64;arm64</Platforms>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <AppxPackageDir>C:\Users\Mike\source\repos\tempo\AppPackages\</AppxPackageDir>
+    <AppxPackageDir>C:\Users\MikeHill\source\repos\tempo\AppPackages\</AppxPackageDir>
     <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -86,8 +86,6 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="UwpTempo2_StoreKey.pfx" />
-    <None Include="UwpTempo2_TemporaryKey.pfx" />
     <None Include="App.xaml.old.cs" />
   </ItemGroup>
   <ItemGroup>
