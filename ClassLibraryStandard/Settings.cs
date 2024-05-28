@@ -186,7 +186,7 @@ namespace Tempo
 
         public void NotifyChange(bool isReset = false, [CallerMemberName] string name = null)
         {
-            DebugLog.Append($"Settings change ({isReset}, {name})");
+            DebugLog.Append($"Settings change (reset:{isReset}, caller:{name})");
             _isDefault = isReset ? (bool?)true : null;
 
             var args = new PropertyChangedEventArgs(name);

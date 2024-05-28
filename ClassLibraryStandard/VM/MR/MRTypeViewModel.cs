@@ -44,8 +44,6 @@ namespace Tempo
                          .ToList();
         }
 
-        public override MethodViewModel DelegateInvoker => this.IsDelegate ? new MRMethodViewModel(this, this.Type.GetInvokeMethod()) : null;
-
         static public TypeViewModel GetFromCache(MrType type, TypeSet typeSet)
         {
             //// The MRTYpes  aren't guaranteed to be unique, sometimes  new instances are
@@ -58,19 +56,6 @@ namespace Tempo
 
 
 
-        //public IList<MRTypeViewModel> ReferencedTypes
-        //{
-        //    get
-        //    {
-        //        var referencedTypes = (from typeAndSource in TypeReferenceHelper.GetDirectReferencedTypes(
-        //                                            selectedType,
-        //                                            false /* shouldFlatten*/, true /*includeDerived*/)
-        //                               orderby typeAndSource.TypeVM.FullName != null
-        //                               orderby typeAndSource.TypeVM.FullName
-        //                               orderby typeAndSource.TypeVM.Name
-        //                               select typeAndSource.TypeVM).Distinct();
-        //    }
-        //}
 
 
         public override bool IsIdlSupported

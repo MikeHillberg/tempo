@@ -1,11 +1,23 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Tempo
 {
     public class Utils
     {
+        // E.g. Text="{x:Bind l:Utils.DebugHook('foo')}"
+        static public object DebugHook(object o)
+        {
+            if(Debugger.IsAttached)
+            {
+                Debugger.Break();
+            }
+
+            return o;
+        }
+
         static public Visibility CollapsedIfTrue(bool b)
         {
             return b ? Visibility.Collapsed : Visibility.Visible;
@@ -73,7 +85,7 @@ namespace Tempo
 
         // Helper to set text onto the clipboard
         // Can't make it an extension method on Clipboard because it's a static class
-        public static void SetClipboardText(string text )
+        public static void SetClipboardText(string text)
         {
             var dataPackage = new DataPackage();
             dataPackage.SetText(text);

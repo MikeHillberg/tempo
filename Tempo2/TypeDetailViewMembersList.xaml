@@ -15,58 +15,83 @@
 
     <Grid>
 
-        <!-- bugbug: try taking the '#' off a background color -->
-        <ListView ItemsSource="{x:Bind ListCVS.View, Mode=OneWay}"
+        <Grid>
+            <!-- Non-delegate class case -->
+            <ListView ItemsSource="{x:Bind ListCVS.View, Mode=OneWay}"
                 ItemClick="ListView_ItemClick"
                 x:Name="_listView"
                 IsItemClickEnabled="True"
                 SelectionMode="None"
                 Margin="0"
                 ItemContainerStyle="{StaticResource MouseListViewItemStyle}"
-                  >
+                Visibility="{x:Bind local:Utils.CollapsedIfTrue(TypeVM.IsDelegate), Mode=OneWay}">
 
-            <ListView.Header>
-                <!-- bugbug: give this two children and look at the compiler error -->
+                <ListView.Header>
+                    <!-- bugbug: give this two children and look at the compiler error -->
 
-                <StackPanel Margin="12,20,0,10" Visibility="{x:Bind SummaryVisibility, Mode=OneWay}" x:Name="_foo">
-                    <!-- bugbug: Better way to set the left margin to line up with ListView? -->
-                    <TextBlock local:CsSyntaxGenerator.TypeDeclaration="{x:Bind TypeVM, Mode=OneWay}" TextWrapping="Wrap" />
+                    <StackPanel Margin="12,20,0,10" Visibility="{x:Bind SummaryVisibility, Mode=OneWay}" x:Name="_foo">
+                        <!-- bugbug: Better way to set the left margin to line up with ListView? -->
+                        <TextBlock local:CsSyntaxGenerator.TypeDeclaration="{x:Bind TypeVM, Mode=OneWay}" TextWrapping="Wrap" />
 
-                    <HyperlinkButton Click="ShowMe_Click">
-                        <TextBlock Text="{x:Bind ShowMe, Mode=OneWay}" x:Name="_showMeText"/>
-                    </HyperlinkButton>
-                </StackPanel>
+                        <HyperlinkButton Click="ShowMe_Click">
+                            <TextBlock Text="{x:Bind ShowMe, Mode=OneWay}" x:Name="_showMeText"/>
+                        </HyperlinkButton>
+                    </StackPanel>
 
-            </ListView.Header>
+                </ListView.Header>
 
-            <ListView.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate x:DataType="local:MemberList">
-                            <TextBlock Text="{x:Bind Heading}" />
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ListView.GroupStyle>
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate x:DataType="local:MemberList">
+                                <TextBlock Text="{x:Bind Heading}" />
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
 
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
-                    <Grid ColumnDefinitions="4,Auto">
-                        <Border BorderThickness="4,0,0,0" 
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:MemberOrTypeViewModelBase">
+                        <Grid ColumnDefinitions="4,Auto">
+                            <Border BorderThickness="4,0,0,0" 
                                 BorderBrush="{ThemeResource SystemAccentColor}"
                                 Visibility="{x:Bind local:TypeDetailViewMembersList.VisibleIfMatching(
                                                 IsMatch, 
                                                 local:Manager.MatchGeneration.Value), Mode=OneWay}" 
                             >
-                        </Border>
-                        <local:MemberItemView Grid.Column="1" 
+                            </Border>
+                            <local:MemberItemView Grid.Column="1" 
                                               MemberVM="{x:Bind}"
                                               Margin="3,0,0,0"/>
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            
+            
+            <!-- Delegate class case -->
+            <StackPanel Margin="{StaticResource VerticalMargin}" 
+                        Visibility="{x:Bind local:Utils.VisibleIf(TypeVM.IsDelegate), Mode=OneWay}">
+                <local:StackListHeaderItem>Parameters</local:StackListHeaderItem>
 
+                <ListView ItemsSource="{x:Bind TypeVM.DelegateParameters, Mode=OneWay}" 
+                          SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:ParameterViewModel">
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind ParameterType, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" Margin="10,0,0,0"/>
+                            </StackPanel>
+                            
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                
+            </StackPanel>
+
+        </Grid>
+        
         <!-- Use a scaling inversion on this copy button, so that when the content is being
              zoomed up we don't zoom this button up along with it -->
         <controls:LayoutTransformControl >
@@ -76,7 +101,7 @@
             </controls:LayoutTransformControl.Transform>
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
-                <HyperlinkButton Click="CopyTypeDefinition" >
+                <HyperlinkButton Click="CopyTypeDefinition" AutomationProperties.Name="Copy type definition to the clipboard">
                     <StackPanel Orientation="Horizontal" 
                             ToolTipService.ToolTip="Copy this type definition to the clipboard">
                         <SymbolIcon x:Name="_copySymbol"  Symbol="Copy" Margin="0,0,12,0">

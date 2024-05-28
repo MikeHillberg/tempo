@@ -1,6 +1,7 @@
 ﻿using CommonLibrary;
 using Microsoft.Win32;
 using MiddleweightReflection;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -725,8 +726,10 @@ namespace Tempo
 
         }
 
-        // This is just a wrapper for File.Delete with an extra defense-in-depth check to make sure
-        // we're only deleting a Tempo file
+        /// <summary>
+        /// This is just a wrapper for File.Delete with an extra defense-in-depth check to make sure
+        /// we're only deleting a Tempo file (has "tempo" in its name somewhere).
+        /// </summary>
         static public void SafeDelete(string filename)
         {
             if (!filename.Contains("Tempo"))
@@ -743,6 +746,26 @@ namespace Tempo
         static public string GetCsTypeDefinition(TypeViewModel type, string msdnAddress)
         {
             var sb = new StringBuilder();
+
+            if(type.IsDelegate)
+            {
+                sb.Append($"{type.CodeModifiers} delegate void {type} (");
+
+                var firstParameter = true;
+                foreach (var parameter in type.DelegateParameters)
+                {
+                    if (!firstParameter)
+                        sb.Append(", ");
+                    firstParameter = false;
+
+                    sb.Append(parameter.ParameterType.CSharpName + " " + parameter.PrettyName);
+                }
+                sb.AppendLine(");");
+
+                sb.AppendLine("");
+                sb.AppendLine(msdnAddress);
+                return sb.ToString();
+            }
 
             if (type.IsFlagsEnum)
             {
@@ -791,7 +814,7 @@ namespace Tempo
                 sb.Append($"    {constructor.ModifierCodeString} {type.CSharpName} (");
 
                 var firstParameter = true;
-                foreach (var parameter in constructor.Parameters)// .GetParameters())
+                foreach (var parameter in constructor.Parameters)
                 {
                     if (!firstParameter)
                         sb.Append(", ");

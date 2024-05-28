@@ -738,7 +738,7 @@ namespace Tempo
 
         static public IEnumerable<MemberOrTypeViewModelBase> GetMembersHelper(SearchExpression searchExpression, int iteration)
         {
-            DebugLog.Append($"GetMembersHelper ({iteration})");
+            DebugLog.Append($"GetMembersHelper (iteration: {iteration})");
             LastType = null;
             LastMember = null;
 
