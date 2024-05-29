@@ -80,8 +80,10 @@
                         <DataTemplate x:DataType="local:ParameterViewModel">
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind ParameterType, Mode=OneWay}" />
-                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" Margin="10,0,0,0"/>
+                                <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind ParameterType, Mode=OneWay}"
+                                           local:SearchHighlighter.IsEnabled="true"/>
+                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" Margin="10,0,0,0"
+                                           local:SearchHighlighter.IsEnabled="true"/>
                             </StackPanel>
                             
                         </DataTemplate>
