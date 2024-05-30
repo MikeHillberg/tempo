@@ -70,7 +70,9 @@
             
             
             <!-- Delegate class case -->
-            <StackPanel Margin="{StaticResource VerticalMargin}" 
+            <!-- bugbug: had to eyeball the left margin. In the ListView above, the left alignment appears to be coming
+                 from inside the ListView control template, but that doesn't show up in VS visual debugger -->
+            <StackPanel Margin="10,5,0,0" 
                         Visibility="{x:Bind local:Utils.VisibleIf(TypeVM.IsDelegate), Mode=OneWay}">
                 <local:StackListHeaderItem>Parameters</local:StackListHeaderItem>
 

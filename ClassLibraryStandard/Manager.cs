@@ -670,6 +670,20 @@ namespace Tempo
                 }
             }
 
+            // For a delegate type, we'll consider the invoker parameters as part of the type def
+            // For events this is usually explicit, e.g. the TArgs and TSender in
+            // TypedEventHandler<TSender,TArgs>, but for other delegate types it only shows up in the invoker method
+            if(type.IsDelegate)
+            {
+                foreach(var param in type.DelegateParameters)
+                {
+                    if(MatchesFilterStringWorker(filter, param.ParameterType, filterOnName, filterOnBaseTypes, settings, ref meaningfulMatch))
+                    {
+                        return true;
+                    }
+                }
+            }
+
             return false;
         }
 

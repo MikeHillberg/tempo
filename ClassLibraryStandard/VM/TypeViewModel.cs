@@ -1017,7 +1017,7 @@ namespace Tempo
             get
             {
                 if (!IsDelegate)
-                    return null;
+                    return new List<ParameterViewModel>();
 
                 return this.GetDelegateParameters();
             }
