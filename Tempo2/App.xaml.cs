@@ -338,7 +338,7 @@ namespace Tempo
                     App.GoBack();
             };
 
-            // Butbug: why are these accelerators doing key input rather than KeyboardAccelerator?
+            // Bugbug: why are these accelerators doing key input rather than KeyboardAccelerator?
             // Is it because accelerators cause too many tooltips?
             // Update: No, it's because the handlers need to mark the args as Handled
             RootFrame.KeyDown += (s, e2) =>
@@ -632,7 +632,7 @@ namespace Tempo
                     continue;
                 }
 
-                if(arg == _singleInstanceCommandLineArgument)
+                if (arg == _singleInstanceCommandLineArgument)
                 {
                     // This is special-cased in the method ShouldAllowSingleInstance()
                     continue;
@@ -1282,7 +1282,7 @@ namespace Tempo
             bool navigateToSearchResults,
             bool useWinRTProjections)
         {
-            if(navigateToSearchResults)
+            if (navigateToSearchResults)
             {
                 // We're going to navigate when this is done. Disable the home page
                 // so that you can't interact with it in the meantime and get interrupted
@@ -1319,12 +1319,10 @@ namespace Tempo
 
                         if (typeSet.TypeCount == 0)
                         {
-                            await (new ContentDialog()
-                            {
-                                Content = "No APIs found, switching to Windows Platform APIs",
-                                XamlRoot = HomePage.XamlRoot,
-                                CloseButtonText = "OK"
-                            }).ShowAsync();
+
+                            await MyMessageBox.Show(
+                                "No APIs found, switching to Windows Platform APIs",
+                                null, "OK");
 
                             // Go to a scope we know exists
                             GoToWindowsScopeAndGoHome();
@@ -1444,12 +1442,7 @@ namespace Tempo
                     _baselineScopeLoader = null;
                     if (typeSet.TypeCount == 0)
                     {
-                        await (new ContentDialog()
-                        {
-                            Content = "No APIs found",
-                            XamlRoot = HomePage.XamlRoot,
-                            CloseButtonText = "OK"
-                        }).ShowAsync();
+                        await MyMessageBox.Show("No APIs found", null, "OK");
 
                         return;
                     }

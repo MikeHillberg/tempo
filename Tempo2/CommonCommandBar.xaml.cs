@@ -208,12 +208,16 @@ namespace Tempo
                 TeachingTipIds.ApiScopeSwitcher, _root, _apiScopeButton,
                 () => new TeachingTip()
                 {
-                    Title = "Change your API scope",
-                    Subtitle = "Change the APIs you're searching, for example search WinAppSDK rather than Windows APIs",
+                    Title = ApiScopeTipText.Title,
+                    Subtitle = ApiScopeTipText.Subtitle
                 },
                 force: force);
 
         }
+
+        (string Title, string Subtitle) ApiScopeTipText = (
+            "Change your API scope", 
+            "Change the APIs you're searching, for example search WinAppSDK rather than Windows APIs");
 
 
 
