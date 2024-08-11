@@ -18,6 +18,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Text;
 using Windows.ApplicationModel.Activation;
+using Windows.UI.Core;
+using Microsoft.UI.Input;
 using NuGet.Configuration;
 using System.Web;
 
@@ -332,53 +334,19 @@ namespace Tempo
             // Too jarring
             //RootFrame.ContentTransitions = new TransitionCollection() { new ContentThemeTransition() };
 
-            RootFrame.PointerPressed += (s, e2) =>
-            {
-                if (e2.GetCurrentPoint(s as UIElement).Properties.IsXButton1Pressed)
-                    App.GoBack();
-            };
-
-            // Bugbug: why are these accelerators doing key input rather than KeyboardAccelerator?
-            // Is it because accelerators cause too many tooltips?
-            // Update: No, it's because the handlers need to mark the args as Handled
-            RootFrame.KeyDown += (s, e2) =>
-            {
-                if (e2.Handled)
-                {
-                    return;
-                }
-
-                if (e2.Key == VirtualKey.E && (_keyModifiers == KeyModifiers.Control))
-                {
-                    // If we're in SearchResults, the search box is on the screen and all we have to do is focus it
-                    if (RootFrame.Content is SearchResults)
-                    {
-                        (RootFrame.Content as SearchResults).FocusAndSelect();
-                    }
-
-                    // Otherwise jump to Home and focus the search box there.
-                    else
-                    {
-                        MoveToMainAndFocusToSearch();
-                    }
-                }
-
-                else if (e2.Key == VirtualKey.Back
-                            && _keyModifiers == KeyModifiers.None
-                            && !(e2.OriginalSource is TextBox)) // bugbug!
-                {
-                    App.GoBack();
-                }
-                else if (e2.Key == VirtualKey.Left && _keyModifiers == KeyModifiers.Alt)
-                {
-                    App.GoBack();
-                }
-            };
+            //// Bugbug: why are these accelerators doing key input rather than KeyboardAccelerator?
+            //// Is it because accelerators cause too many tooltips?
+            //// Update: No, it's because the handlers need to mark the args as Handled
+            //RootFrame.KeyDown += (s, e2) =>
+            //{
+            //    ProcessRootKeyDown(e2);
+            //};
 
 
-            // Have to use HandledEventsToo for the Control key monitoring
-            RootFrame.AddHandler(Frame.KeyDownEvent, new KeyEventHandler(RootFrame_KeyDown), true);
-            RootFrame.AddHandler(Frame.KeyUpEvent, new KeyEventHandler(RootFrame_KeyUp), true);
+
+            //// Have to use HandledEventsToo for the Control key monitoring
+            //RootFrame.AddHandler(Frame.KeyDownEvent, new KeyEventHandler(RootFrame_KeyDown), true);
+            //RootFrame.AddHandler(Frame.KeyUpEvent, new KeyEventHandler(RootFrame_KeyUp), true);
 
             SetupGlobalAccelerators();
 
@@ -414,14 +382,91 @@ namespace Tempo
         }
 
         /// <summary>
+        /// Move to the nearest search box (search page or Home)
+        /// </summary>
+        void MoveToSearchBox()
+        {
+            // If we're in SearchResults, the search box is on the screen and all we have to do is focus it
+            if (RootFrame.Content is SearchResults)
+            {
+                (RootFrame.Content as SearchResults).FocusAndSelect();
+            }
+
+            // Otherwise jump to Home and focus the search box there.
+            else
+            {
+                MoveToMainAndFocusToSearch();
+            }
+
+        }
+
+
+        /// <summary>
+        /// Get the keyboard modifiers (control/shift/alt) for the current state of the message pump
+        /// </summary>
+        KeyModifiers GetKeyModifiersForThread()
+        {
+            var modifiers = KeyModifiers.None;
+            var downState = CoreVirtualKeyStates.Down;
+
+            if ((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu) & downState) == downState)
+            {
+                modifiers |= KeyModifiers.Alt;
+            }
+
+            if ((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & downState) == downState)
+            {
+                modifiers |= KeyModifiers.Control;
+            }
+
+            if ((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift) & downState) == downState)
+            {
+                modifiers |= KeyModifiers.Shift;
+            }
+
+            // Windows key shortcuts don't reliably work because sometimes they get intercepted by the system.
+            // (E.g. Windows+Back)
+            //if((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows) & downState) == downState)
+            //{
+            //    modifiers |= KeyModifiers.Windows;
+            //}
+
+            return modifiers;
+        }
+
+
+
+
+        /// <summary>
         /// Hook up some accelerators to the root to ensure that it always works, no matter what page we're on
         /// </summary>
         void SetupGlobalAccelerators()
         {
-            // With the keyboard accelerator on the root, the tool tip for it will
-            // always appear on every pixel of every page. So shut it off.
-            // The normal affordance for it is a hyperlink on the search results page,
-            // so it's not a secret. I just can't think of a good place to put it on the home page.
+            // If the left mouse button is pressed (and nothing else), navigate back
+            RootFrame.PointerPressed += (s, e2) =>
+            {
+                var pointerProperties = e2.GetCurrentPoint(s as UIElement).Properties;
+                if (pointerProperties.IsXButton1Pressed
+                    && !pointerProperties.IsXButton2Pressed
+                    && GetKeyModifiersForThread() == KeyModifiers.None)
+                {
+                    App.GoBack();
+                }
+            };
+
+            // Back navigation on GoBack or Alt+Left
+            // GoBack is raised by the old multimedia keyboard? PTP gesture?
+            SetupAccelerator(
+                VirtualKey.GoBack,
+                VirtualKeyModifiers.None,
+                () => App.GoBack());
+            SetupAccelerator(
+                VirtualKey.Left,
+                VirtualKeyModifiers.Menu,
+                () => App.GoBack());
+
+            // With the keyboard accelerators on the root, the tool tips will
+            // always appear on every pixel of every page. So shut them off.
             RootFrame.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
 
 
@@ -445,24 +490,53 @@ namespace Tempo
                 VirtualKeyModifiers.Control,
                 () => ContentScalingPercent = Math.Max(ContentScalingPercent - 10, 100));
 
-            // Reset is Alt+Home to match Edge, or F3 to match something else that I don't remember what
-            SetupAccelerator(
-                VirtualKey.Home,
-                VirtualKeyModifiers.Menu,
-                () => App.ResetAndGoHome());
+            // F3 resets settings.
+            // F3 used to be a common pattern, but I don't remember where I got it from.
             SetupAccelerator(
                 VirtualKey.F3,
                 VirtualKeyModifiers.None,
                 () => App.ResetSettings());
+
+            // Control+T to toggle light/dark mode
             SetupAccelerator(
                 VirtualKey.T,
                 VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
                 () => App.Instance.ToggleTheme());
 
+            // Control+E moves to the search text box
+            SetupAccelerator(
+                VirtualKey.E,
+                VirtualKeyModifiers.Control,
+                () => MoveToSearchBox());
+
+            // Reset is Alt+Home to match Edge
+            // A key accelerator doesn't work though if keyboard focus is in the ListView because of this issue:
+            // https://github.com/microsoft/microsoft-ui-xaml/issues/9885
+            // As a workaround, intercept Alt+Home before it goes to the ListView
+
+            //SetupAccelerator(
+            //    VirtualKey.Home,
+            //    VirtualKeyModifiers.Menu,
+            //    () => App.ResetAndGoHome());
+
+            RootFrame.PreviewKeyDown += (s, e2) =>
+            {
+                if(e2.Key != VirtualKey.Home)
+                {
+                    return;
+                }
+
+                if( GetKeyModifiersForThread() == KeyModifiers.Alt)
+                {
+                    App.ResetAndGoHome();
+                    e2.Handled = true;
+                }
+            };
+
         }
 
         /// <summary>
-        /// Set up a single root accelerators
+        /// Set up a single root accelerator
         /// </summary>
         void SetupAccelerator(VirtualKey key, VirtualKeyModifiers modifiers, Action action)
         {
@@ -1900,8 +1974,12 @@ namespace Tempo
             None = 0,
             Control = 1,
             Alt = 2,
+            Shift = 4,
+
+            // Not reliable
+            //Windows = 8
         }
-        KeyModifiers _keyModifiers = KeyModifiers.None;
+        //KeyModifiers _keyModifiers = KeyModifiers.None;
         //bool _leftAlt = false;
         //bool _rightAlt = false;
 
@@ -2104,25 +2182,25 @@ namespace Tempo
             }
         }
 
-        private void RootFrame_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Control)
-                _keyModifiers |= KeyModifiers.Control;
+        //private void RootFrame_KeyDown(object sender, KeyRoutedEventArgs e)
+        //{
+        //    if (e.Key == VirtualKey.Control)
+        //        _keyModifiers |= KeyModifiers.Control;
 
-            // bugbug: Not sure how to track Alt.  When you do Alt-Tab, you see the Alt
-            // got down, but not come back up
-            //else if (e2.Key == VirtualKey.Menu)
-            //    _keyModifiers |= KeyModifiers.Alt;
+        //    // bugbug: Not sure how to track Alt.  When you do Alt-Tab, you see the Alt
+        //    // got down, but not come back up
+        //    //else if (e2.Key == VirtualKey.Menu)
+        //    //    _keyModifiers |= KeyModifiers.Alt;
 
-        }
-        private void RootFrame_KeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            // bugbug: no way to get key modifiers?
-            if (e.Key == VirtualKey.Control)
-                _keyModifiers &= ~KeyModifiers.Control;
-            else if (e.Key == VirtualKey.Menu)
-                _keyModifiers &= ~KeyModifiers.Alt;
-        }
+        //}
+        //private void RootFrame_KeyUp(object sender, KeyRoutedEventArgs e)
+        //{
+        //    // bugbug: no way to get key modifiers?
+        //    if (e.Key == VirtualKey.Control)
+        //        _keyModifiers &= ~KeyModifiers.Control;
+        //    else if (e.Key == VirtualKey.Menu)
+        //        _keyModifiers &= ~KeyModifiers.Alt;
+        //}
 
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
