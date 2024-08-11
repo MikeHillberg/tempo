@@ -38,6 +38,7 @@
             <AppBarButton Visibility="{x:Bind FilterVisibility, Mode=Oneway}" 
                     x:Name="_filterButton"
                     ToolTipService.ToolTip="Filter results"
+                          AutomationProperties.Name="Filter results"
                     Background="{x:Bind local:HomePage.AdaptiveSettings.FilterBackground, Mode=OneWay}" >
                 <local:DropDownAppBarButtonContent Symbol="Filter" Label="Filter"/>
                 
@@ -96,8 +97,14 @@
             <!-- Button to choose the ApiScope -->
             <AppBarButton x:Name="_apiScopeButton"
                           Visibility="{x:Bind IsScopeVisible, Mode=OneWay}"
-                          ToolTipService.ToolTip="Choose an API scope" 
+                          AutomationProperties.Name="Choose an API scope"
                           ContextRequested="_apiScopeButton_ContextRequested">
+                <ToolTipService.ToolTip>
+                    <local:ComplexToolTip
+                        Title="{x:Bind ApiScopeTipText.Item1}"
+                        Subtitle="{x:Bind ApiScopeTipText.Item2}"/>
+                </ToolTipService.ToolTip>
+                
                 <local:DropDownAppBarButtonContent Symbol="Library" 
                                                    Label="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"/>
 

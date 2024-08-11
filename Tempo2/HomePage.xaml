@@ -15,10 +15,14 @@
                        Fill="{ThemeResource SystemAccentColor}"/>
             <Rectangle x:Name="ApplicationPageBackgroundThemeBrushShape" x:FieldModifier="public"
                        Fill="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+            <Rectangle x:Name="SystemControlBackgroundAltHighShape" x:FieldModifier="Public"
+                       Fill="{ThemeResource SystemControlBackgroundAltHighBrush}"/>
         </ScrollViewer.Resources>
 
-        <Grid x:Name="_root" Background="Transparent" Padding="60" 
-          PointerPressed="TeachingTipDemo_PointerPressed">
+        <Grid x:Name="_root" 
+              Background="{x:Bind RootBackground}"
+              Padding="60" 
+              PointerPressed="TeachingTipDemo_PointerPressed">
 
             <Grid ColumnDefinitions="Auto,*"
                   VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -190,7 +194,7 @@
                            >API diffs</TextBlock>
 
                 <Grid Grid.Row="3" Grid.Column="1">
-                    
+
                     <!-- IsExpanded is set in code-behind -->
                     <Expander x:Name="_baselineExpander">
                         <Expander.Header>

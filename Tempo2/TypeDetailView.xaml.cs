@@ -248,6 +248,31 @@ namespace Tempo
             return relativeScrollPosition + "," + SelectedPivot.ToString();
         }
 
+        /// <summary>
+        /// TypeKind as a string, or "delegate" for delegate classes
+        /// </summary>
+        /// <param name="typeVM"></param>
+        /// <returns></returns>
+        string ConvertedTypeKind(TypeViewModel typeVM)
+        {
+            if(typeVM == null)
+            {
+                return "";
+            }
+
+            if(typeVM.TypeKind == TypeKind.Class)
+            {
+                if (typeVM.IsDelegate)
+                    return "delegate";
+                else
+                    return typeVM.TypeKindString;
+            }   
+            else
+            {
+                return typeVM.TypeKindString;
+            }
+        }
+
 
 
         public int SelectedPivot

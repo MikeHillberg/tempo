@@ -225,8 +225,9 @@ namespace Tempo
                             });
                     }
 
-                    if (Constructors.Count != 0)
+                    if (Constructors.Count != 0 && !IsDelegate)
                     {
+                        // Delegates have a public constructor, but instead we'll show the invoker parameters
                         _groupedMembers.Add(
                             new MemberList(Constructors)
                             {
@@ -1016,7 +1017,7 @@ namespace Tempo
             get
             {
                 if (!IsDelegate)
-                    return null;
+                    return new List<ParameterViewModel>();
 
                 return this.GetDelegateParameters();
             }

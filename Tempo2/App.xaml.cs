@@ -20,6 +20,8 @@ using System.Text;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Core;
 using Microsoft.UI.Input;
+using NuGet.Configuration;
+using System.Web;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -107,6 +109,67 @@ namespace Tempo
             //    Thread.Sleep(500);
             //}
 
+            // Optionally support single instancing
+            HandleSingleInstancing();
+
+            // Initialize MainWindow here
+            Window = new MainWindow();
+            Window.Title = "Tempo API Viewer";
+
+            RootFrame = Window.Content as RootFrame;
+            if (RootFrame == null)
+            {
+                // Create a Frame to act as the navigation context and navigate to the first page
+                RootFrame = new RootFrame();
+
+                // Place the frame in the current Window
+                Window.Content = RootFrame;
+            }
+
+            // Force wide mode until skinny mode works again
+            //RootFrame.MinWidth = 1024;
+
+            if (RootFrame.Content == null)
+            {
+                // When the navigation stack isn't restored navigate to the first page,
+                // configuring the new page by passing required information as a navigation
+                // parameter
+                // TODO Raname this HomePage type in case your app HomePage has a different name
+                RootFrame.Navigate(typeof(HomePage), e.Arguments);
+            }
+
+            RootFrame.Navigated += (s, e) =>
+            {
+                // During startup, when we hook up this event handler, we've already
+                // navigated to the home page. We might disable it during startup until
+                // we've navigated to the search page. In that case, re-enable here.
+                // It's over-kill to enable on every navigate, but this is ensurance against a bug.
+                RootFrame.IsEnabled = true;
+
+                // bugbug: can't set Set cursor to work
+                //RootFrame.ClearCursor();
+            };
+
+            ConfigureSavedSettings();
+
+            Window.Activate();
+            WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Window);
+
+            FinishLaunch();
+
+        }
+
+
+        /// <summary>
+        /// Register for or redirect to single instance, if requested.
+        /// </summary>
+        private void HandleSingleInstancing()
+        {
+            if (!ShouldAllowSingleInstance())
+            {
+                return;
+            }
+
             // Is this the first app instance or a secondary?
             // If it's a secondary we'll forward to the existing and then exit
             var keyInstance = AppInstance.FindOrRegisterForKey("main");
@@ -164,46 +227,38 @@ namespace Tempo
             //{
             //    OnFileActivated(activatedEventArgs);
             //}
+        }
 
-            // Initialize MainWindow here
-            Window = new MainWindow();
-            Window.Title = "Tempo API Viewer";
+        static string _singleInstanceCommandLineArgument = "/singleinstance";
 
-            RootFrame = Window.Content as Frame;
-            if (RootFrame == null)
+        /// <summary>
+        /// Check if single-instancing is requested (command-line argument)
+        /// </summary>
+        /// <returns></returns>
+        bool ShouldAllowSingleInstance()
+        {
+            // There's a ProcessCommandLine method that runs later (and must be later)
+            // that processes the rest of the arguments. We need to check this earlier
+            // than that though
+
+            var args = Environment.GetCommandLineArgs();
+
+            // The first arg is the name of the exe
+            if (args == null || args.Length == 1)
             {
-                // Create a Frame to act as the navigation context and navigate to the first page
-                RootFrame = new RootFrame();
-
-                // Place the frame in the current Window
-                Window.Content = RootFrame;
+                return false;
             }
 
-            // Force wide mode until skinny mode works again
-            //RootFrame.MinWidth = 1024;
-
-            RootFrame.Navigated += (s, e) =>
+            for (int i = 1; i < args.Length; i++)
             {
-                // Enable the whole UI now
-                RootFrame.IsEnabled = true;
-            };
-
-            if (RootFrame.Content == null)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                // TODO Raname this HomePage type in case your app HomePage has a different name
-                RootFrame.Navigate(typeof(HomePage), e.Arguments);
+                var arg = args[i].ToLower();
+                if (arg == _singleInstanceCommandLineArgument)
+                {
+                    return true;
+                }
             }
 
-            ConfigureSavedSettings();
-
-            Window.Activate();
-            WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-
-            FinishLaunch();
-
+            return false;
         }
 
         /// <summary>
@@ -266,14 +321,14 @@ namespace Tempo
             // mikehill_ua
             //SystemNavigationManager.GetForCurrentView().BackRequested += NavigateBackRequested;
 
-            RootFrame = App.Window.Content as Frame;
+            RootFrame = App.Window.Content as RootFrame;
 
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
             if (RootFrame == null)
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
-                RootFrame = new Frame();
+                RootFrame = new RootFrame();
 
             }
             // Too jarring
@@ -527,9 +582,52 @@ namespace Tempo
             // If launched with "tempo:Button", search for "Button"
             if (activationArgs.Kind == ExtendedActivationKind.Protocol)
             {
-                var searchTerm = (activationArgs.Data as IProtocolActivatedEventArgs).Uri.AbsolutePath;
 
-                // We've pulled everything out of the args, now if necessary we can switch threads
+                var uri = (activationArgs.Data as IProtocolActivatedEventArgs).Uri;
+                DebugLog.Append($"protocol launch: {uri}");
+
+                // Say the launch is "tempo:Button?scope=winappsdk"
+                // AbsolutePath is "Button"
+                var searchTerm = uri.AbsolutePath;
+
+                // Query is "?scope=winappsdk" in that example
+                var query = uri.Query;
+                if (!string.IsNullOrEmpty(query))
+                {
+                    var queryParams = HttpUtility.ParseQueryString(query);
+                    var scope = queryParams.Get("scope");
+                    if (scope != null)
+                    {
+                        // Set the ApiScope to the requested value. We'll set _initialScopeSet
+                        // so that we don't overwrite this with what we saved on the last run
+
+                        switch (scope.ToLower())
+                        {
+                            case "winappsdk":
+                                IsWinAppScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case "custom":
+                                IsCustomApiScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case "windows":
+                                IsWinPlatformScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            default:
+                                // We haven't set _initialScopeSet,
+                                // so later we'll restore to whatever scope was used the last time
+                                DebugLog.Append($"Unknown scope: {scope}");
+                                break;
+
+                        }
+                    }
+                }
+
 
                 // Post so that we can finish initialization
                 Manager.PostToUIThread(() => App.Instance.GotoSearch(searchTerm));
@@ -608,6 +706,12 @@ namespace Tempo
                     continue;
                 }
 
+                if (arg == _singleInstanceCommandLineArgument)
+                {
+                    // This is special-cased in the method ShouldAllowSingleInstance()
+                    continue;
+                }
+
                 if (arg == "/diff")
                 {
                     // Next we should see the baseline file
@@ -673,6 +777,7 @@ namespace Tempo
             // If we got custom filenames, start opening them
             if (commandLineFilenames != null && commandLineFilenames.Count != 0)
             {
+                // Set this so that we don't change the scope to whatever was used the last time
                 _initialScopeSet = true;
 
                 DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
@@ -1251,6 +1356,16 @@ namespace Tempo
             bool navigateToSearchResults,
             bool useWinRTProjections)
         {
+            if (navigateToSearchResults)
+            {
+                // We're going to navigate when this is done. Disable the home page
+                // so that you can't interact with it in the meantime and get interrupted
+                RootFrame.IsEnabled = false;
+
+                // bugbug: can't get this to work, doesn't change the cursor
+                //RootFrame.SetWaitCursor();
+            }
+
             CloseCustomScope(goHome: false);
 
             // Update the filenames now so it doesn't cause a flicker
@@ -1278,12 +1393,10 @@ namespace Tempo
 
                         if (typeSet.TypeCount == 0)
                         {
-                            await (new ContentDialog()
-                            {
-                                Content = "No APIs found, switching to Windows Platform APIs",
-                                XamlRoot = HomePage.XamlRoot,
-                                CloseButtonText = "OK"
-                            }).ShowAsync();
+
+                            await MyMessageBox.Show(
+                                "No APIs found, switching to Windows Platform APIs",
+                                null, "OK");
 
                             // Go to a scope we know exists
                             GoToWindowsScopeAndGoHome();
@@ -1297,6 +1410,9 @@ namespace Tempo
                         if (navigateToSearchResults)
                         {
                             App.Instance.GotoSearch();
+
+                            // This should happen in App automatically, but playing it safe
+                            RootFrame.IsEnabled = true;
                         }
                     }
                 },
@@ -1304,6 +1420,9 @@ namespace Tempo
                 uiThreadCanceledAction: () =>
                 {
                     _customApiScopeLoader = null;
+
+                    // We're not going to navigate, so re-enable now
+                    RootFrame.IsEnabled = true;
 
                     // Go to a scope we know exists
                     GoToWindowsScopeAndGoHome();
@@ -1397,12 +1516,7 @@ namespace Tempo
                     _baselineScopeLoader = null;
                     if (typeSet.TypeCount == 0)
                     {
-                        await (new ContentDialog()
-                        {
-                            Content = "No APIs found",
-                            XamlRoot = HomePage.XamlRoot,
-                            CloseButtonText = "OK"
-                        }).ShowAsync();
+                        await MyMessageBox.Show("No APIs found", null, "OK");
 
                         return;
                     }
@@ -1836,7 +1950,7 @@ namespace Tempo
 #endif
         }
 
-        static private Frame RootFrame
+        static private RootFrame RootFrame
         {
             get; set;
         }

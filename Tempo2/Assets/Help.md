@@ -124,3 +124,12 @@ the other as the "Custom API Scope"
 tempo /diff Component_V1.nupkg Component_V2.nupkg
 tempo /diff Component_V1.dll Component_V2.dll
 ```
+
+You can also protocol launch:
+
+```
+tempo:Button
+tempo:Button?scope=windows
+tempo:Button?scope=winappsdk
+tempo:?scope=Windows
+```

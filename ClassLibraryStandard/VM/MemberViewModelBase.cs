@@ -62,6 +62,8 @@ namespace Tempo
             }
         }
 
+        public string NameThenNamespace => $"{PrettyName} ({Namespace})";
+
         protected void RaisePropertyChanged(string name)
         {
             if (this.PropertyChanged != null)
