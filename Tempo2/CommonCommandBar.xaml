@@ -40,7 +40,7 @@
                     ToolTipService.ToolTip="Filter results"
                     Background="{x:Bind local:HomePage.AdaptiveSettings.FilterBackground, Mode=OneWay}" >
                 <local:DropDownAppBarButtonContent Symbol="Filter" Label="Filter"/>
-                
+
                 <Button.Flyout>
                     <local:FilterAppBarButtonMenu/>
                 </Button.Flyout>
@@ -109,11 +109,18 @@
                                 <KeyboardAccelerator Modifiers="Control" Key="W" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
-                        
+
                         <ToggleMenuFlyoutItem Text="WinAppSDK APIs" Click="SelectWinAppSdkApis"
                                               IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="K" />
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+
+                        <ToggleMenuFlyoutItem Text="Win32 APIs" Click="SelectWin32Apis"
+                                              IsChecked="{x:Bind local:App.Instance.IsWin32Scope, Mode=OneWay}">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="2" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
