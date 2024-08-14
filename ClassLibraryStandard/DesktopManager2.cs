@@ -131,6 +131,7 @@ namespace Tempo
 
 
         public static string WinAppSdkPackageName => "Microsoft.WindowsAppSDK";
+        public static string Win32PackageName => "Microsoft.Windows.SDK.Win32Metadata";
 
 
 
@@ -329,19 +330,21 @@ namespace Tempo
                 {
                     var entryName = entry.Name.ToLower();
 
-                    // Only looking in the lib directory
-                    // I've seen the ZipFile API sometimes uses slashes and sometimes whacks, 
+                    // Bugbug: what exactly are the rules for the organization inside a .nupkg?
+                    // Only looking in the lib directory (pattern I mostly see)
+                    // plus the root directory (Win32Metadata is located here)
+                    // I've seen the ZipFile API sometimes use slashes and sometimes whacks, 
                     // so checking for both
-                    var fullName = entry.FullName.ToLower();
-                    if(!fullName.StartsWith("lib/")
-                        && !fullName.StartsWith(@"lib\"))
+                    var fullName = entry.FullName.ToLower().Replace('\\', '/');
+                    if(!fullName.StartsWith("lib/") // Not in lib folder
+                        && fullName.Contains("/") ) // Not at the root
                     {
                         continue;
                     }
 
                     //  We only care about winmds and dlls
-                    var isWinmd = entryName.EndsWith(".winmd");
-                    var isDll = entryName.EndsWith(".dll");
+                    var isWinmd = fullName.EndsWith(".winmd");
+                    var isDll = fullName.EndsWith(".dll");
                     if (!isWinmd && !isDll)
                     {
                         continue;
@@ -683,6 +686,32 @@ namespace Tempo
             else if (channel == WinAppSDKChannel.Experimental)
                 prereleasePrefix = "experimental";
 
+            var typeSet = LoadNugetHelper(useWinrtProjections, packageName, prereleasePrefix);
+            if(typeSet != null)
+            {
+                Manager.WindowsAppTypeSet = typeSet;
+            }
+
+        }
+
+        static public void LoadWin32AssembliesSync(bool useWinrtProjections, byte[] mscorlib = null)
+        {
+            var packageName = DesktopManager2.Win32PackageName;
+
+            // All of the win32 metadata packages are "-preview"
+            // Bugbug: should handle the possibility that this changes
+            var typeSet = LoadNugetHelper(useWinrtProjections, packageName, "preview");
+            if (typeSet != null)
+            {
+                Manager.Win32TypeSet = typeSet;
+            }
+
+        }
+
+
+
+        private static TypeSet LoadNugetHelper(bool useWinrtProjections, string packageName, string prereleasePrefix = "")
+        {
             DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
             // Download the nupkg from nuget.org (or used the cached copy)
@@ -693,7 +722,7 @@ namespace Tempo
             if (string.IsNullOrEmpty(packageLocationAndVersion.Location))
             {
                 // The user probably canceled the operation
-                return;
+                return null;
             }
 
             // Catch exceptions so we can fail gracefully if there's any kind of expected exception cases that I don't know about
@@ -709,7 +738,7 @@ namespace Tempo
                     // Indicate the version for everything in this type set
                     typeSet.Version = $"{packageName},{packageLocationAndVersion.Version}";
 
-                    Manager.WindowsAppTypeSet = typeSet;
+                    return typeSet;
                 }
                 else
                 {
@@ -723,7 +752,6 @@ namespace Tempo
                 SafeDelete(packageFilename);
                 throw;
             }
-
         }
 
         /// <summary>
