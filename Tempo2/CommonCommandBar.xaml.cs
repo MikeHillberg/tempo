@@ -305,6 +305,17 @@ namespace Tempo
             App.Instance.GotoSearch();
         }
 
+        private void SelectWin32Apis(object sender, RoutedEventArgs e)
+        {
+            if (App.Instance.IsWin32Scope)
+            {
+                return;
+            }
+
+            App.Instance.IsWin32Scope = true;
+            App.Instance.GotoSearch();
+        }
+
 
         private async void SelectCustomApiScope(object sender, RoutedEventArgs e)
         {

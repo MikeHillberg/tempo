@@ -165,6 +165,17 @@ namespace Tempo
         }
     }
 
+    public class Win32TypeSet : MRTypeSet
+    {
+        public static string StaticName = "Win32";
+        public Win32TypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
+
+        protected override string GetXmlFileName(Assembly a)
+        {
+            return null;
+        }
+    }
+
     public class DotNetTypeSet : DesktopTypeSet
     {
         public static string StaticName = "DotNet";

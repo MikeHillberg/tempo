@@ -858,6 +858,10 @@ namespace Tempo
             {
                 scope = nameof(IsCustomApiScope);
             }
+            else if(IsWin32Scope)
+            {
+                scope = nameof(IsWin32Scope);
+            }
 
             ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
             settings.Values[_currentScopeSettingName] = scope;
@@ -889,6 +893,10 @@ namespace Tempo
 
                     case "IsCustomApiScope":
                         IsCustomApiScope = true;
+                        break;
+
+                    case "IsWin32Scope":
+                        IsWin32Scope = true;
                         break;
 
                     default:
@@ -1043,6 +1051,48 @@ namespace Tempo
                     (typeSet) => Manager.WindowsAppTypeSet = typeSet,
                     (b) => StartLoadWinAppScope(b));
         }
+
+
+
+
+        // IsWin32Scope means show the Win32 metadata project
+        static bool _isWin32Scope = false;
+        public bool IsWin32Scope
+        {
+            get { return _isWin32Scope; }
+            set
+            {
+                if (_isWin32Scope == value)
+                {
+                    return;
+                }
+
+                _isWin32Scope = value;
+                SaveCurrentScope();
+
+                if (value)
+                {
+                    EnsureWin32ScopeStarted();
+                }
+
+                RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+
+
+
+        /// <summary>
+        /// Ensure the Win32 Metadata is loaded or loading
+        /// </summary>
+        internal void EnsureWin32ScopeStarted()
+        {
+            EnsureScopeStarted(
+                    () => Manager.Win32TypeSet,
+                    (typeSet) => Manager.Win32TypeSet = typeSet,
+                    (b) => StartLoadWin32Scope(b));
+        }
+
 
 
         // IsCustomApiScope means show the APIs that were selected with a file picker
@@ -1318,6 +1368,74 @@ namespace Tempo
 
             return await winAppScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest WinAppSDK package ...");
         }
+
+
+
+
+
+        /// <summary>
+        /// Load the Win32 scope (doesn't complete synchronously)
+        /// </summary>
+        void StartLoadWin32Scope(bool useWinRTProjections)
+        {
+            // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
+            if (_win32ScopeLoader != null)
+            {
+                // Already a load in progress
+                return;
+            }
+
+            _win32ScopeLoader = new ApiScopeLoader();
+
+            _win32ScopeLoader.StartLoad(
+                offThreadLoadAction: () => // Runs *off* UI thread
+                {
+                    DesktopManager2.LoadWin32AssembliesSync(useWinRTProjections);
+                },
+
+                uiThreadCompletedAction: () => // Runs on UI thread (if succeeded)
+                {
+                    _win32ScopeLoader = null;
+                    if (_isWin32Scope)
+                    {
+                        Manager.CurrentTypeSet = Manager.Win32TypeSet;
+                    }
+                },
+
+                uiThreadCanceledAction: () => // Runs on UI thread (if canceled)
+                {
+                    _win32ScopeLoader = null;
+
+                    _ = MyMessageBox.Show(
+                            "Unable to load Win32 package\n\nSwitching to Windows Platform APIs",
+                            "Load error");
+
+                    // Go back to an API scope we know is there
+                    IsWinPlatformScope = true;
+                    App.GoHome();
+                });
+
+        }
+
+        static ApiScopeLoader _win32ScopeLoader = null;
+
+        /// <summary>
+        /// Ensure that the Win32 metadata is done loading
+        /// </summary>
+        internal async static Task<bool> EnsureWin32ScopeLoadedAsync()
+        {
+            var win32ScopeLoader = _win32ScopeLoader;
+            if (win32ScopeLoader == null)
+            {
+                return true;
+            }
+
+            return await win32ScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest Win32 metadata package ...");
+        }
+
+
+
+
 
 
 
