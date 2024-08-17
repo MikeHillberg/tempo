@@ -314,7 +314,7 @@ namespace Tempo
         }
 
 
-        public static void LoadFromNupkg(string packageFilename, bool useWinrtProjections, MRTypeSet typeSet, MrLoadContext loadContext)
+        public static void LoadFromNupkg(string packageFilename, MRTypeSet typeSet, MrLoadContext loadContext)
         {
 
             // Open the nupkg zip file
@@ -536,12 +536,11 @@ namespace Tempo
         // Load a set of filenames into a TypeSet, using MR code
         public static void LoadTypeSetMiddleweightReflection(
             MRTypeSet typeSet,
-            string[] typeSetFileNames,
-            bool useWinRTProjections)
+            string[] typeSetFileNames)
         {
             try
             {
-                var loadContext = new MrLoadContext(useWinRTProjections: useWinRTProjections);
+                var loadContext = new MrLoadContext(typeSet.UsesWinRTProjections);
                 var resolver = new MRAssemblyResolver();
                 loadContext.AssemblyPathFromName = resolver.ResolveCustomAssembly;
                 loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
@@ -555,7 +554,7 @@ namespace Tempo
                     {
                         if (filename.EndsWith(".nupkg"))
                         {
-                            DesktopManager2.LoadFromNupkg(filename, useWinRTProjections, typeSet, loadContext);
+                            DesktopManager2.LoadFromNupkg(filename, typeSet, loadContext);
                         }
                         else
                         {
@@ -731,7 +730,7 @@ namespace Tempo
             {
                 // Load the winmd files
                 var typeSet = new WindowsAppTypeSet(useWinrtProjections);
-                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename }, useWinrtProjections);
+                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename });
 
                 if (typeSet.Types != null)
                 {
