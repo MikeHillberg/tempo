@@ -926,12 +926,22 @@ namespace Tempo
             {
                 EnsureWinAppScopeStarted();
             }
+            else if(_isWin32Scope)
+            {
+               EnsureWin32ScopeStarted();
+            }
             else
             {
                 Debug.Assert(_isCustomApiScope);
                 EnsureCustomScopeStarted(
                     DesktopManager2.CustomApiScopeFileNames.Value,
                     navigateToSearchResults: false);
+            }
+
+            // Also, if the baseline is loaded, reload it too
+            if (Manager.Settings.CompareToBaseline == true)
+            {
+                StartLoadBaselineScope(App.Instance.BaselineFilenames);
             }
         }
 
@@ -1496,7 +1506,7 @@ namespace Tempo
             _customApiScopeLoader.StartLoad(
                 offThreadLoadAction: () =>
                 {
-                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames, useWinRTProjections);
+                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames);
                 },
 
                 uiThreadCompletedAction: async () =>
@@ -1626,7 +1636,7 @@ namespace Tempo
             _baselineScopeLoader.StartLoad(
                 offThreadLoadAction: () =>
                 {
-                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames, useWinRTProjections: true);
+                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames);
                 },
 
                 uiThreadCompletedAction: async () =>
