@@ -675,6 +675,9 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// Load the Windows App SDK assemblies, downloading from nuget
+        /// </summary>
         static public void LoadWinAppSdkAssembliesSync(WinAppSDKChannel channel, bool useWinrtProjections, byte[] mscorlib = null)
         {
             var packageName = DesktopManager2.WinAppSdkPackageName;
@@ -686,22 +689,29 @@ namespace Tempo
             else if (channel == WinAppSDKChannel.Experimental)
                 prereleasePrefix = "experimental";
 
-            var typeSet = LoadNugetHelper(useWinrtProjections, packageName, prereleasePrefix);
-            if(typeSet != null)
+            // Download the package and load into `typeSet`
+            var typeSet = new WindowsAppTypeSet(useWinrtProjections); 
+            LoadNugetHelper(typeSet, packageName, prereleasePrefix);
+            if(typeSet.Types != null)
             {
                 Manager.WindowsAppTypeSet = typeSet;
             }
 
         }
 
+        /// <summary>
+        /// Load the Win32 Metadata, downloading from nuget
+        /// </summary>
         static public void LoadWin32AssembliesSync(bool useWinrtProjections, byte[] mscorlib = null)
         {
             var packageName = DesktopManager2.Win32PackageName;
+            var typeSet = new Win32TypeSet(useWinrtProjections);
+
 
             // All of the win32 metadata packages are "-preview"
             // Bugbug: should handle the possibility that this changes
-            var typeSet = LoadNugetHelper(useWinrtProjections, packageName, "preview");
-            if (typeSet != null)
+            LoadNugetHelper(typeSet, packageName, "preview");
+            if (typeSet.Types != null)
             {
                 Manager.Win32TypeSet = typeSet;
             }
@@ -709,8 +719,10 @@ namespace Tempo
         }
 
 
-
-        private static TypeSet LoadNugetHelper(bool useWinrtProjections, string packageName, string prereleasePrefix = "")
+        /// <summary>
+        /// Download the specified package from nuget and load into `typeSet`
+        /// </summary>
+        private static void LoadNugetHelper(MRTypeSet typeSet, string packageName, string prereleasePrefix = "")
         {
             DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
@@ -722,7 +734,7 @@ namespace Tempo
             if (string.IsNullOrEmpty(packageLocationAndVersion.Location))
             {
                 // The user probably canceled the operation
-                return null;
+                return;
             }
 
             // Catch exceptions so we can fail gracefully if there's any kind of expected exception cases that I don't know about
@@ -730,15 +742,14 @@ namespace Tempo
             try
             {
                 // Load the winmd files
-                var typeSet = new WindowsAppTypeSet(useWinrtProjections);
-                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename }, useWinrtProjections);
+                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename }, typeSet.UsesWinRTProjections);
 
                 if (typeSet.Types != null)
                 {
                     // Indicate the version for everything in this type set
                     typeSet.Version = $"{packageName},{packageLocationAndVersion.Version}";
 
-                    return typeSet;
+                    return;
                 }
                 else
                 {

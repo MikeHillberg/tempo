@@ -127,7 +127,10 @@
                         <ToggleMenuFlyoutItem Text="Win32 APIs" Click="SelectWin32Apis"
                                               IsChecked="{x:Bind local:App.Instance.IsWin32Scope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control" Key="2" />
+                                <!-- This is Control+2, but we have to set Key to 50 rather than "2", 
+                                because "2" gets interpreted as a number, which is VirtualKey.RightButton
+                                (50 is VirtualKey.Number2) -->
+                                <KeyboardAccelerator Modifiers="Control" Key="50"/>
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
