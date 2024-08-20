@@ -1283,14 +1283,25 @@ namespace Tempo
 
                 checker.TypeCheck(type, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
 
+                // By default, checkers "match".
+                // E.g. if the checker is checking for a "don't care" filter: it matches
                 matchesCheckers &= matchesT;
 
-                meaningfulMatch = meaningfulMatch |= meaningfulMatchT;
+                if(matchesCheckers)
+                {
+                    meaningfulMatch = meaningfulMatch |= meaningfulMatchT;
+                }
+                else
+                {
+                    // If it's not a match, it's not a meaningful match either
+                    meaningfulMatch = false;
+                }
 
                 abortType |= abortTypeT;
 
                 if (abortType)
                 {
+                    // bugbug: should return too if matchesChecker is false
                     return;
                 }
 
