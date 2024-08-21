@@ -18,6 +18,7 @@
                         <Style TargetType="ContentPresenter">
                             <Setter Property="FontWeight" Value="Bold"/>
                             <Setter Property="Padding" Value="5" />
+                            <Setter Property="VerticalAlignment" Value="Top" />
                         </Style>
                     </local:NameValuePanel.FirstStyle>
                 </local:NameValuePanel>
