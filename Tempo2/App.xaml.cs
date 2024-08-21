@@ -1821,6 +1821,10 @@ namespace Tempo
             {
                 return await EnsureCustomApiScopeAsync();
             }
+            else if(_isWin32Scope)
+            {
+                return await EnsureWin32ScopeLoadedAsync();
+            }
             else
             {
                 return await EnsureWinPlatformScopeLoaded();
