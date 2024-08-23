@@ -51,7 +51,10 @@ namespace Tempo
             //return new MRTypeViewModel(type, typeSet);
 
             // Bugbug: this needs to be instance based, so there can be independent sets.
-            return typeSet.GetFromCacheBase(type, () => new MRTypeViewModel(type, typeSet));
+            var vm = typeSet.GetFromCacheBase(type, () => new MRTypeViewModel(type, typeSet));
+            Debug.Assert(vm.FullName == type.GetFullName());
+
+            return vm;
         }
 
 

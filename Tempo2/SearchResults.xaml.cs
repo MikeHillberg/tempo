@@ -490,9 +490,9 @@ namespace Tempo
                 }
 
                 App.OfferToCopyResultsToClipboard = false;
+                DebugLog.Append($"Found {Results.Count} results in {SearchDelay}ms");
             }
 
-            DebugLog.Append($"Found {Results.Count} results in {SearchDelay}ms");
         }
 
 

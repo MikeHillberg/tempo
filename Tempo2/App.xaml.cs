@@ -1624,11 +1624,14 @@ namespace Tempo
         /// <param name="filenames"></param>
         public static void StartLoadBaselineScope(string[] filenames)
         {
-            DebugLog.Append($"Loading baseline scope {filenames[0]}");
-
             CloseBaselineScope();
 
-            App.Instance.BaselineFilenames = filenames.ToArray();
+            App.Instance.BaselineFilenames = filenames;
+
+            foreach (var filename in filenames)
+            {
+                DebugLog.Append($"Loading baseline scope {filename}");
+            }
 
             var typeSet = new MRTypeSet("Baseline", !App.Instance.UsingCppProjections);
             _baselineScopeLoader = new ApiScopeLoader();
@@ -1645,12 +1648,13 @@ namespace Tempo
                     if (typeSet.TypeCount == 0)
                     {
                         await MyMessageBox.Show("No APIs found", null, "OK");
-
                         return;
                     }
 
                     Manager.BaselineTypeSet = typeSet;
                     Manager.Settings.CompareToBaseline = true;
+
+                    // IsBaselineScopeLoaded is a function of BaselineTypeSet
                     App.Instance.RaisePropertyChange(nameof(IsBaselineScopeLoaded));
                 },
 
@@ -2288,12 +2292,16 @@ namespace Tempo
                         _usingCppProjections = (bool)value;
                     }
 
+                    DebugLog.Append($"{(_usingCppProjections == true ? "C++" : "C#")} projections");
+
                 }
                 return _usingCppProjections == true;
             }
             set
             {
                 _usingCppProjections = value;
+
+                DebugLog.Append($"{(_usingCppProjections == true ? "C++" : "C#")} projections");
 
                 ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
                 settings.Values[nameof(UsingCppProjections)] = value;
