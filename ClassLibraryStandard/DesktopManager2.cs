@@ -741,7 +741,7 @@ namespace Tempo
             try
             {
                 // Load the winmd files
-                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename }, typeSet.UsesWinRTProjections);
+                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename });
 
                 if (typeSet.Types != null)
                 {
