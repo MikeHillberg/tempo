@@ -1534,6 +1534,10 @@ namespace Tempo
 
                 // Get the whole type page from GitHub
                 var reader = await this.DeclaringType.GetApiDocPageAsync();
+                if(reader == null)
+                {
+                    return "";
+                }
 
                 // Find the L2 section that describes all the fields
                 var found = false;
@@ -1555,7 +1559,7 @@ namespace Tempo
                 if (!found)
                 {
                     // Couldn't find any of the fields
-                    return null;
+                    return "";
                 }
 
                 // Find the L3 section for this field, example:

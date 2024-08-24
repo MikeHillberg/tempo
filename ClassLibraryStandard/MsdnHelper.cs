@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Tempo
 {
@@ -10,10 +7,40 @@ namespace Tempo
     {
         public static string CalculateDocPageAddress(object item)
         {
-            if (item == null)
+            var memberVM = item as MemberOrTypeViewModelBase;
+            if (memberVM == null)
             {
                 return string.Empty;
             }
+
+            if (memberVM.DeclaringType.TypeSet.Name == Win32TypeSet.StaticName)
+            {
+                // The Win32 APIs sometimes have a [Docuemtation] attribute that contains the URL
+                // to the doc page. If it exists, use it.
+
+                // customAttributes[0].ConstructorArguments[0].Value
+                var customAttributes = memberVM.CustomAttributes;
+                foreach ( var customAttribute in customAttributes )
+                {
+                    if(customAttribute.Name != "DocumentationAttribute")
+                    {
+                        continue;
+                    }
+
+                    var args = customAttribute.ConstructorArguments;
+                    if (args != null && args.Count > 0)
+                    {
+                        var value = args[0].Value;
+                        if (value != null)
+                        {
+                            return value.ToString();
+                        }
+                    }
+                }
+
+                return string.Empty;
+            }
+
 
             var m = item as MethodViewModel;
             var t = item as TypeViewModel;
@@ -55,6 +82,7 @@ namespace Tempo
                 memberName = f.Name;
                 declaringType = f.DeclaringType;
             }
+
 
             // https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.button.-ctor
             // https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Xaml.Controls.WebView._ctor

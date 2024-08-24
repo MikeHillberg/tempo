@@ -1020,6 +1020,10 @@ namespace Tempo
                 {
                     return "Custom APIs";
                 }
+                else if(IsWin32Scope)
+                {
+                    return "Win32 APIs";
+                }
 
                 // Shouldn't ever get here, but it happens during bootstrapping
                 return "API Scope";
@@ -2098,7 +2102,21 @@ namespace Tempo
                 return;
             }
 
-            _ = Launcher.LaunchUriAsync(new Uri(MsdnHelper.CalculateDocPageAddress(CurrentItem)));
+            var address = MsdnHelper.CalculateDocPageAddress(CurrentItem);
+            if (string.IsNullOrEmpty(address))
+            {
+                return;
+            }
+
+            // Defense in depth: don't crash the app if we come up with a bad URI
+            try
+            {
+                _ = Launcher.LaunchUriAsync(new Uri(address));
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Append($"Failed to launch {address}: {ex.Message}");
+            }
         }
 
         static public List<TypeViewModel> AllTypes;

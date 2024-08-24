@@ -1075,7 +1075,7 @@ namespace Tempo
 
         private void ShowDebugLog_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-
+            DebugLogViewer.Show();
         }
     }
 
