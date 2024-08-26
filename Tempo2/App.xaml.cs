@@ -20,6 +20,7 @@ using System.Text;
 using Windows.ApplicationModel.Activation;
 using NuGet.Configuration;
 using System.Web;
+using System.Runtime.InteropServices;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -485,6 +486,8 @@ namespace Tempo
         // Process the activation args we get when activated by app redirection
         internal void ProcessActivationArgs(AppActivationArguments args = null)
         {
+            RegisterRestart();
+
             if (!ProcessActivationArgsWorker(args))
             {
                 ProcessCommandLine();
@@ -595,20 +598,23 @@ namespace Tempo
         /// </summary>
         void ProcessCommandLine()
         {
-            // Not sure the best way to debug parameters that are passed in on the command line
-            // (See AppExecutionAlias in Package.appxmanifest)
-            // The solution here is to pass "/waitfordebugger" as a parameter, which will make it
+            // Best way to debug startup is in VS to go to `Debug | Tempo2 Debug Properties` menu
+            // and check `Do not launch app`. Then F5, and it will wait for the app to be launched
+            // Alternatively, pass `/waitfordebugger` on the command line, which will make it
             // sit until you attach a debugger to the process.
 
 
             var args = Environment.GetCommandLineArgs();
             string baselineFilename = null;
 
+
             // The first arg is the name of the exe
             if (args == null || args.Length == 1)
             {
                 return;
             }
+
+            DebugLog.Append($"Command line args: {args}");
 
             List<string> commandLineFilenames = null;
 
@@ -664,6 +670,13 @@ namespace Tempo
                     OfferToCopyResultsToClipboard = true;
                 }
                 waitingForFirstDiff = waitingForSecondDiff = false;
+
+                if(arg.StartsWith("/") || arg.StartsWith("-"))
+                {
+                    // Unknown switch, don't crash
+                    DebugLog.Append($"Unknown command-line switch: {arg}");
+                    continue;
+                }
 
                 if (commandLineFilenames == null)
                 {
@@ -725,7 +738,6 @@ namespace Tempo
             {
                 StartLoadBaselineScope(new string[] { baselineFilename });
             }
-
         }
 
         // DoSearch checks this, and when true (when using /diff),
@@ -2357,6 +2369,19 @@ namespace Tempo
             {
                 IsSystemTheme = true;
             }
+        }
+
+        // https://www.p-invoke.net/kernel32/registerapplicationrestart
+        [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RegisterApplicationRestart(string pwzCommandline, System.Int32 dwFlags);
+
+
+        static void RegisterRestart()
+        {
+            var failed = RegisterApplicationRestart("/restart", 0);
+            //var code = Marshal.GetLastPInvokeError();
+            Debug.Assert(!failed);
         }
     }
 }

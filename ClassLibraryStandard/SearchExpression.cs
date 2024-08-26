@@ -143,6 +143,11 @@ namespace Tempo
                 SearchSlowly = true;
                 searchString = searchString.Replace("-slowly", "");
             }
+            else if (searchString.Contains("-crash"))
+            {
+                int j = 0;
+                int i = 5 / j;
+            }
 
             // A "::" means Type::Member syntax, a single ":" means AQS syntax
             // To avoid confusion, convert "::" to "%"
