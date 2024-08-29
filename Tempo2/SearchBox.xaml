@@ -146,7 +146,10 @@
         <Border Grid.Row="2" Grid.Column="1"
                 Visibility="{x:Bind HasSearchExpressionError, Mode=OneWay}"
                 Background="LightYellow" >
-            <TextBlock>Search expression error</TextBlock>
+            <StackPanel>
+                <TextBlock>Search expression error</TextBlock>
+                <TextBlock Text="{x:Bind SearchErrorMessage, Mode=OneWay}"/>
+            </StackPanel>
         </Border>
     </Grid>
 

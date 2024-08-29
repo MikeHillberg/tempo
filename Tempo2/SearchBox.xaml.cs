@@ -22,7 +22,11 @@ namespace Tempo
             this.InitializeComponent();
             IsAllVisibleChanged();
 
-            SearchExpression.SearchExpressionError += (s, e) => HasSearchExpressionError = true;
+            SearchExpression.SearchExpressionError += (s, e) =>
+            {
+                HasSearchExpressionError = true;
+                SearchErrorMessage = e;
+            };
 
             this.Loaded += (_, __) =>
             {
@@ -42,23 +46,23 @@ namespace Tempo
 
             // Hack: we need the ASB's text box so that we can select the text
             // (That lets the user just start typing)
-            if(_asbTextBox == null)
+            if (_asbTextBox == null)
             {
                 var child = VisualTreeHelper.GetChild(_searchBox, 0);
-                if( child != null)
+                if (child != null)
                 {
                     child = VisualTreeHelper.GetChild(child, 0);
-                    if(child != null)
+                    if (child != null)
                     {
                         _asbTextBox = child as TextBox;
                     }
                 }
             }
 
-            if(_asbTextBox != null)
+            if (_asbTextBox != null)
             {
                 _asbTextBox.SelectionStart = 0;
-                
+
                 // Move the cursor to the end of the line
                 _asbTextBox.SelectionLength = _asbTextBox.Text.Length;
             }
@@ -79,6 +83,17 @@ namespace Tempo
         }
         public static readonly DependencyProperty HasSearchExpressionErrorProperty =
             DependencyProperty.Register("HasSearchExpressionError", typeof(bool), typeof(SearchBox), new PropertyMetadata(false));
+
+
+
+        public string SearchErrorMessage
+        {
+            get { return (string)GetValue(SearchErrorMessageProperty); }
+            set { SetValue(SearchErrorMessageProperty, value); }
+        }
+        public static readonly DependencyProperty SearchErrorMessageProperty =
+            DependencyProperty.Register("SearchErrorMessage", typeof(string), typeof(SearchBox), new PropertyMetadata(null));
+
 
 
 
@@ -142,7 +157,7 @@ namespace Tempo
 
         void ShowTeachingTips()
         {
-            if(!ShowSearchSyntaxTip(force: false))
+            if (!ShowSearchSyntaxTip(force: false))
                 return;
 
             if (!ShowProjectionsTip(force: false))
@@ -213,9 +228,14 @@ namespace Tempo
         /// <param name="args"></param>
         private async void _searchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
+            if (string.IsNullOrEmpty(_searchBox.Text))
+            {
+                HasSearchExpressionError = false;
+            }
+
             // This can be called if the user is moving through the candidate list.
             // Only do something with actual typing
-            if(args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 return;
             }
@@ -249,7 +269,7 @@ namespace Tempo
                           select name.Value;
             });
 
-            if(generation != _textChangedGeneration)
+            if (generation != _textChangedGeneration)
             {
                 // After this search started, another search was begun. So ignore.
                 matches = null;

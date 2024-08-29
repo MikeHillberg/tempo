@@ -95,6 +95,16 @@ namespace Tempo
             if (!shouldContinue)
                 return;
 
+            shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.Win32Scope, _root, _win32ScopeLabel,
+                () => new TeachingTip()
+                {
+                    Title = "View the Win32 APIs",
+                    Subtitle = "All of the Win32 APIs as exposed by the Win32 Metadata project",
+                });
+            if (!shouldContinue)
+                return;
+
         }
 
         // mikehill_ua:

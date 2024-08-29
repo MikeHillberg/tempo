@@ -142,6 +142,9 @@ namespace Tempo
 
             if (!App.HeadedHome)
             {
+                // DoSearch is usually called as part of NavigateToSearch, which passes in the search string.
+                // bugbug: this could be cleaner
+                _searchString = App.Instance.SearchText;
                 DoSearch();
             }
         }

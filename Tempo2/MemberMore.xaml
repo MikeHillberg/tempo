@@ -23,6 +23,7 @@
                 <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind MemberVM.DeclaringType, Mode=OneWay}" />
                 <TextBlock x:Name="_abiName"
                        Text="{x:Bind local:MethodViewModel.CalculateAbiName(MemberVM), Mode=OneWay}"
+                       IsTextSelectionEnabled="True"
                        local:CollapseIfEmpty.IsEnabled="True"/>
 
             </StackPanel>
