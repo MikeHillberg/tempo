@@ -125,6 +125,7 @@
     <None Remove="AllModelProperties.xaml" />
     <None Remove="AllModelPropertiesPage.xaml" />
     <None Remove="AttributesView2.xaml" />
+    <None Remove="CantStartPowerShell.xaml" />
     <None Remove="CommonCommandBar.xaml" />
     <None Remove="DebugLog.xaml" />
     <None Remove="DocPageViewer.xaml" />
@@ -158,6 +159,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="CantStartPowerShell.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="InfoTip.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

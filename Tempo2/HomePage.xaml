@@ -72,12 +72,19 @@
                             Spacing="0"
                             HorizontalAlignment="Left">
 
-                    <TextBlock>
+                    <TextBlock
+                        ToolTipService.ToolTip="Show all types and members in this API scope (then you can do search from there)">
                         <Hyperlink Click="ShowAll" >Show everything</Hyperlink>
                     </TextBlock>
 
-                    <TextBlock Margin="{StaticResource VerticalMargin}">
+                    <TextBlock Margin="{StaticResource VerticalMargin}"
+                               ToolTipService.ToolTip="Navigate types in a hierarchy of namespaces">
                         <Hyperlink Click="BrowseAll" >Browse by namespace</Hyperlink>
+                    </TextBlock>
+
+                    <TextBlock Margin="{StaticResource VerticalMargin}"
+                               ToolTipService.ToolTip="Search APIs in this scope using PowerShell on Windows">
+                        <Hyperlink Click="GoToPSClick" >PowerShell</Hyperlink>
                     </TextBlock>
 
                 </StackPanel>
@@ -180,9 +187,6 @@
                         </RadioButton>
                     </Grid>
 
-                    <Button Click="Button_Click">PS</Button>
-                    
-                    
                 </StackPanel>
 
                 <!-- Baseline row -->

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.IO.Pipes;
 using System.IO;
+using Windows.ApplicationModel;
 
 namespace Tempo
 {
@@ -633,29 +634,51 @@ namespace Tempo
             _baseline.StartBringIntoView();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            GoToPS(sender, e);
-        }
 
-        private void GoToPS(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Launch PowerShell
+        /// </summary>
+        async private void GoToPS()
         {
-            // Init the ProcessStartInfo with the path to the system ps exe (not ps core)
-            var systemRootPath = Environment.GetEnvironmentVariable("SystemRoot");
-            var psexe = $@"{systemRootPath}\System32\WindowsPowerShell\v1.0\powershell.exe";
+            DebugLog.Append("Launching PowerShell");
+
+            var shouldContinue = await App.EnsureApiScopeLoadedAsync();
+            if (!shouldContinue)
+            {
+                // User canceled the loading dialog, nothing to search
+                return;
+            }
+
+
+            // Hope that pwsh (PSCore) is in the path
+            var psexe = "pwsh.exe";
             var startInfo = new ProcessStartInfo(psexe);
+
+            // Need to be in the Tempo directory in order to find everything
+            // bugbug: Would be a little better to be in the User directory, but add Tempo to the path?
+            startInfo.WorkingDirectory = Package.Current.InstalledLocation.Path;
+            DebugLog.Append(startInfo.WorkingDirectory);
 
             // Run the startup script to load the Tempo: drive, then cd to it
             // Bypassing the execution policy check allows scripts to run
             startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:";
+            DebugLog.Append(startInfo.Arguments);
 
             // Pass in the exe name so it can call back
             var pipeName = $"TempoPipe_{Guid.NewGuid().ToString()}";
             startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey] = pipeName;
+            startInfo.Environment["Tempo_TypeSetName"] = Manager.CurrentTypeSet.Name;
+
+            // Pass in whether to be in C# or C++ mode
+            startInfo.Environment[TempoPSProvider.TempoPSProvider.UseWinRTProjectionsKey] 
+                = App.Instance.UsingCppProjections ? "0" : "1";
 
             // Figure out the filenames of what we're looking at.
             // For ML type sets it's in AssemblyLocations
             var filenameList = new List<string>();
+
+            // bugbug: CurrentTypeSet can be null
+            DebugLog.Append(Manager.CurrentTypeSet.Name);
             foreach (var assemblyLocation in Manager.CurrentTypeSet.AssemblyLocations)
             {
                 // AssemblyLocation has a path that's either an actual file path
@@ -696,12 +719,32 @@ namespace Tempo
             startInfo.UseShellExecute = false;
 
             // Start a thread that will wait and listen for the PS process to call back (from out-tempo cmdlet)
-            Task.Run(() => PSOutTempoServerThread(pipeName));
+            _ = Task.Run(() => PSOutTempoServerThread(pipeName));
 
-            // Start the shell
-            Process.Start(startInfo);
+            try
+            {
+                // Start pwsh
+                DebugLog.Append("Process start");
+                Process.Start(startInfo);
+            }
+            catch (Exception ex)
+            {
+                // Probably don't have pwsh installed
 
+                DebugLog.Append($"Failed to launch pwsh. {ex.Message}");
+                var dialog = new CantStartPowerShell()
+                {
+                    XamlRoot = this.XamlRoot
+                };
+                _ = dialog.ShowAsync();
+            }
         }
+
+        private void GoToPSClick(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            GoToPS();
+        }
+
 
         // Thread to listen for calls from PS (from the out-tempo cmdlet)
         void PSOutTempoServerThread(string pipeName)
@@ -738,8 +781,6 @@ namespace Tempo
             //    }
             //}
         }
-
-
 
     }
 

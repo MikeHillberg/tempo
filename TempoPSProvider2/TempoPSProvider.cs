@@ -37,6 +37,7 @@ namespace TempoPSProvider
     {
         public static string PipeNameKey = "TempoPipeName";
         public static string FilenamesKey = "TempoFilenames";
+        public static string UseWinRTProjectionsKey = "Tempo_UseWinRTProjections";
 
         protected override string[] ExpandPath(string path)
         {
@@ -216,16 +217,22 @@ namespace TempoPSProvider
                 };
 
                 // Initialize the type metadata
-
                 DesktopManager2.Initialize(wpfApp: false);
 
+                // Figure out if we're using C# or C++ projection
+                var useWinRTProjections = true;
+                var usingCppProjectionsString = Environment.GetEnvironmentVariable(UseWinRTProjectionsKey);
+                if( !string.IsNullOrEmpty(usingCppProjectionsString) && usingCppProjectionsString == "0")
+                {
+                    useWinRTProjections = false;
+                }
+
                 // Check if Tempo passed a filename list
-                // @"C:\Users\Mike\Downloads\Microsoft.WindowsAppSDK.1.3.230110100-experimental.nightly.nupkg;"
                 var filenameList = Environment.GetEnvironmentVariable(FilenamesKey);
                 if (string.IsNullOrEmpty(filenameList))
                 {
                     // No list, just load the System32 WinMDs
-                    DesktopManager2.LoadWindowsTypesWithMR(useWinRTProjections: false);
+                    DesktopManager2.LoadWindowsTypesWithMR(useWinRTProjections);
 
                     // Bugbug: cleaner out value, side effects
                     Manager.CurrentTypeSet = Manager.WindowsTypeSet;
@@ -234,11 +241,11 @@ namespace TempoPSProvider
                 {
                     // Load the specified files
                     var filenames = filenameList.Split(';');
-                    var typeSet = new MRTypeSet(MRTypeSet.CustomMRName, usesWinRTProjections: true);
+                    var typeSet = new MRTypeSet(MRTypeSet.CustomMRName, useWinRTProjections);
                     DesktopManager2.LoadTypeSetMiddleweightReflection(
                         typeSet,
                         (from filename in filenames where !string.IsNullOrEmpty(filename) select filename).ToArray(),
-                        useWinRTProjections: true);
+                        useWinRTProjections);
                     Manager.CurrentTypeSet = typeSet;
                 }
 
