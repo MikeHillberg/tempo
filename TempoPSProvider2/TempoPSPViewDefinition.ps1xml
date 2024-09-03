@@ -1,0 +1,22 @@
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>TypeView</Name>
+      <ViewSelectedBy>
+        <!-- See Tempo.PSHack class for more info -->
+        <TypeName>Tempo.PSHack</TypeName>
+      </ViewSelectedBy>
+      <WideControl>
+        <ColumnNumber>1</ColumnNumber>
+        <WideEntries>
+          <WideEntry>
+            <WideItem>
+              <PropertyName>PSNameHack</PropertyName>
+            </WideItem>
+          </WideEntry>
+        </WideEntries>
+      </WideControl>
+    </View>
+
+  </ViewDefinitions>
+</Configuration>

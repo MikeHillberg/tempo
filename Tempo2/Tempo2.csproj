@@ -103,6 +103,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
     <ProjectReference Include="..\middleweight-reflection\MiddleweightReflection\MiddleweightReflection.csproj" />
+    <ProjectReference Include="..\TempoPSProvider2\TempoPSProvider2.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
@@ -122,6 +123,7 @@
     <None Remove="AllModelProperties.xaml" />
     <None Remove="AllModelPropertiesPage.xaml" />
     <None Remove="AttributesView2.xaml" />
+    <None Remove="CantStartPowerShell.xaml" />
     <None Remove="CommonCommandBar.xaml" />
     <None Remove="ComplexToolTip.xaml" />
     <None Remove="DebugLog.xaml" />
@@ -157,6 +159,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Page Update="ComplexToolTip.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="CantStartPowerShell.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="InfoTip.xaml">
