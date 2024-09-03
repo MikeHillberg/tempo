@@ -15,10 +15,14 @@
                        Fill="{ThemeResource SystemAccentColor}"/>
             <Rectangle x:Name="ApplicationPageBackgroundThemeBrushShape" x:FieldModifier="public"
                        Fill="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+            <Rectangle x:Name="SystemControlBackgroundAltHighShape" x:FieldModifier="Public"
+                       Fill="{ThemeResource SystemControlBackgroundAltHighBrush}"/>
         </ScrollViewer.Resources>
 
-        <Grid x:Name="_root" Background="Transparent" Padding="60" 
-          PointerPressed="TeachingTipDemo_PointerPressed">
+        <Grid x:Name="_root" 
+              Background="{x:Bind RootBackground}"
+              Padding="60" 
+              PointerPressed="TeachingTipDemo_PointerPressed">
 
             <Grid ColumnDefinitions="Auto,*"
                   VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -126,6 +130,26 @@
                         </StackPanel>
                     </RadioButton>
 
+                    <RadioButton IsChecked="{x:Bind ((local:App)local:App.Current).IsWin32Scope, Mode=TwoWay}" 
+                                 VerticalAlignment="Top"
+                                 GroupName="Test"
+                                 DoubleTapped="ApiScope_RadioButton_DoubleTapped"
+                                 AccessKey="2">
+                        <StackPanel>
+                            <TextBlock>Win3<Underline>2</Underline></TextBlock>
+                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                Search the Win32 API, downloading it from nuget.org<LineBreak/>
+                                Note that this uses the <Hyperlink NavigateUri="https://github.com/microsoft/win32metadata">Win32 Metadata project</Hyperlink>,
+                                which is a metadata representation of the Win32 API and is the source for language projections such as
+                                <Hyperlink NavigateUri="https://github.com/microsoft/CsWin32">CSWin32</Hyperlink> (C#)
+                                and <Hyperlink NavigateUri="https://github.com/microsoft/windows-rs">windows-rs</Hyperlink> (Rust)
+                            </TextBlock>
+                        </StackPanel>
+                    </RadioButton>
+
+
+                    
+                    
                     <!-- Custom API scope -->
                     <Grid VerticalAlignment="Top">
                         <Border Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
@@ -197,7 +221,7 @@
                            >API diffs</TextBlock>
 
                 <Grid Grid.Row="3" Grid.Column="1">
-                    
+
                     <!-- IsExpanded is set in code-behind -->
                     <Expander x:Name="_baselineExpander">
                         <Expander.Header>

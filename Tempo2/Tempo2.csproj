@@ -22,7 +22,7 @@
     <Platforms>x86;x64;arm64</Platforms>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <AppxPackageDir>C:\Users\Mike\source\repos\tempo\AppPackages\</AppxPackageDir>
+    <AppxPackageDir>C:\Users\MikeHill\source\repos\tempo\AppPackages\</AppxPackageDir>
     <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -86,8 +86,6 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="UwpTempo2_StoreKey.pfx" />
-    <None Include="UwpTempo2_TemporaryKey.pfx" />
     <None Include="App.xaml.old.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -111,7 +109,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.7" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
@@ -127,6 +125,7 @@
     <None Remove="AttributesView2.xaml" />
     <None Remove="CantStartPowerShell.xaml" />
     <None Remove="CommonCommandBar.xaml" />
+    <None Remove="ComplexToolTip.xaml" />
     <None Remove="DebugLog.xaml" />
     <None Remove="DocPageViewer.xaml" />
     <None Remove="DropDownAppBarButtonContent.xaml" />
@@ -159,6 +158,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="ComplexToolTip.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="CantStartPowerShell.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

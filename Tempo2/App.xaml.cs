@@ -18,7 +18,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Text;
 using Windows.ApplicationModel.Activation;
+using Windows.UI.Core;
+using Microsoft.UI.Input;
 using NuGet.Configuration;
+using System.Web;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -106,6 +109,67 @@ namespace Tempo
             //    Thread.Sleep(500);
             //}
 
+            // Optionally support single instancing
+            HandleSingleInstancing();
+
+            // Initialize MainWindow here
+            Window = new MainWindow();
+            Window.Title = "Tempo API Viewer";
+
+            RootFrame = Window.Content as RootFrame;
+            if (RootFrame == null)
+            {
+                // Create a Frame to act as the navigation context and navigate to the first page
+                RootFrame = new RootFrame();
+
+                // Place the frame in the current Window
+                Window.Content = RootFrame;
+            }
+
+            // Force wide mode until skinny mode works again
+            //RootFrame.MinWidth = 1024;
+
+            if (RootFrame.Content == null)
+            {
+                // When the navigation stack isn't restored navigate to the first page,
+                // configuring the new page by passing required information as a navigation
+                // parameter
+                // TODO Raname this HomePage type in case your app HomePage has a different name
+                RootFrame.Navigate(typeof(HomePage), e.Arguments);
+            }
+
+            RootFrame.Navigated += (s, e) =>
+            {
+                // During startup, when we hook up this event handler, we've already
+                // navigated to the home page. We might disable it during startup until
+                // we've navigated to the search page. In that case, re-enable here.
+                // It's over-kill to enable on every navigate, but this is ensurance against a bug.
+                RootFrame.IsEnabled = true;
+
+                // bugbug: can't set Set cursor to work
+                //RootFrame.ClearCursor();
+            };
+
+            ConfigureSavedSettings();
+
+            Window.Activate();
+            WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Window);
+
+            FinishLaunch();
+
+        }
+
+
+        /// <summary>
+        /// Register for or redirect to single instance, if requested.
+        /// </summary>
+        private void HandleSingleInstancing()
+        {
+            if (!ShouldAllowSingleInstance())
+            {
+                return;
+            }
+
             // Is this the first app instance or a secondary?
             // If it's a secondary we'll forward to the existing and then exit
             var keyInstance = AppInstance.FindOrRegisterForKey("main");
@@ -163,46 +227,38 @@ namespace Tempo
             //{
             //    OnFileActivated(activatedEventArgs);
             //}
+        }
 
-            // Initialize MainWindow here
-            Window = new MainWindow();
-            Window.Title = "Tempo API Viewer";
+        static string _singleInstanceCommandLineArgument = "/singleinstance";
 
-            RootFrame = Window.Content as Frame;
-            if (RootFrame == null)
+        /// <summary>
+        /// Check if single-instancing is requested (command-line argument)
+        /// </summary>
+        /// <returns></returns>
+        bool ShouldAllowSingleInstance()
+        {
+            // There's a ProcessCommandLine method that runs later (and must be later)
+            // that processes the rest of the arguments. We need to check this earlier
+            // than that though
+
+            var args = Environment.GetCommandLineArgs();
+
+            // The first arg is the name of the exe
+            if (args == null || args.Length == 1)
             {
-                // Create a Frame to act as the navigation context and navigate to the first page
-                RootFrame = new RootFrame();
-
-                // Place the frame in the current Window
-                Window.Content = RootFrame;
+                return false;
             }
 
-            // Force wide mode until skinny mode works again
-            //RootFrame.MinWidth = 1024;
-
-            RootFrame.Navigated += (s, e) =>
+            for (int i = 1; i < args.Length; i++)
             {
-                // Enable the whole UI now
-                RootFrame.IsEnabled = true;
-            };
-
-            if (RootFrame.Content == null)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                // TODO Raname this HomePage type in case your app HomePage has a different name
-                RootFrame.Navigate(typeof(HomePage), e.Arguments);
+                var arg = args[i].ToLower();
+                if (arg == _singleInstanceCommandLineArgument)
+                {
+                    return true;
+                }
             }
 
-            ConfigureSavedSettings();
-
-            Window.Activate();
-            WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(Window);
-
-            FinishLaunch();
-
+            return false;
         }
 
         /// <summary>
@@ -265,66 +321,32 @@ namespace Tempo
             // mikehill_ua
             //SystemNavigationManager.GetForCurrentView().BackRequested += NavigateBackRequested;
 
-            RootFrame = App.Window.Content as Frame;
+            RootFrame = App.Window.Content as RootFrame;
 
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
             if (RootFrame == null)
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
-                RootFrame = new Frame();
+                RootFrame = new RootFrame();
 
             }
             // Too jarring
             //RootFrame.ContentTransitions = new TransitionCollection() { new ContentThemeTransition() };
 
-            RootFrame.PointerPressed += (s, e2) =>
-            {
-                if (e2.GetCurrentPoint(s as UIElement).Properties.IsXButton1Pressed)
-                    App.GoBack();
-            };
-
-            // Butbug: why are these accelerators doing key input rather than KeyboardAccelerator?
-            // Is it because accelerators cause too many tooltips?
-            // Update: No, it's because the handlers need to mark the args as Handled
-            RootFrame.KeyDown += (s, e2) =>
-            {
-                if (e2.Handled)
-                {
-                    return;
-                }
-
-                if (e2.Key == VirtualKey.E && (_keyModifiers == KeyModifiers.Control))
-                {
-                    // If we're in SearchResults, the search box is on the screen and all we have to do is focus it
-                    if (RootFrame.Content is SearchResults)
-                    {
-                        (RootFrame.Content as SearchResults).FocusAndSelect();
-                    }
-
-                    // Otherwise jump to Home and focus the search box there.
-                    else
-                    {
-                        MoveToMainAndFocusToSearch();
-                    }
-                }
-
-                else if (e2.Key == VirtualKey.Back
-                            && _keyModifiers == KeyModifiers.None
-                            && !(e2.OriginalSource is TextBox)) // bugbug!
-                {
-                    App.GoBack();
-                }
-                else if (e2.Key == VirtualKey.Left && _keyModifiers == KeyModifiers.Alt)
-                {
-                    App.GoBack();
-                }
-            };
+            //// Bugbug: why are these accelerators doing key input rather than KeyboardAccelerator?
+            //// Is it because accelerators cause too many tooltips?
+            //// Update: No, it's because the handlers need to mark the args as Handled
+            //RootFrame.KeyDown += (s, e2) =>
+            //{
+            //    ProcessRootKeyDown(e2);
+            //};
 
 
-            // Have to use HandledEventsToo for the Control key monitoring
-            RootFrame.AddHandler(Frame.KeyDownEvent, new KeyEventHandler(RootFrame_KeyDown), true);
-            RootFrame.AddHandler(Frame.KeyUpEvent, new KeyEventHandler(RootFrame_KeyUp), true);
+
+            //// Have to use HandledEventsToo for the Control key monitoring
+            //RootFrame.AddHandler(Frame.KeyDownEvent, new KeyEventHandler(RootFrame_KeyDown), true);
+            //RootFrame.AddHandler(Frame.KeyUpEvent, new KeyEventHandler(RootFrame_KeyUp), true);
 
             SetupGlobalAccelerators();
 
@@ -360,14 +382,91 @@ namespace Tempo
         }
 
         /// <summary>
+        /// Move to the nearest search box (search page or Home)
+        /// </summary>
+        void MoveToSearchBox()
+        {
+            // If we're in SearchResults, the search box is on the screen and all we have to do is focus it
+            if (RootFrame.Content is SearchResults)
+            {
+                (RootFrame.Content as SearchResults).FocusAndSelect();
+            }
+
+            // Otherwise jump to Home and focus the search box there.
+            else
+            {
+                MoveToMainAndFocusToSearch();
+            }
+
+        }
+
+
+        /// <summary>
+        /// Get the keyboard modifiers (control/shift/alt) for the current state of the message pump
+        /// </summary>
+        KeyModifiers GetKeyModifiersForThread()
+        {
+            var modifiers = KeyModifiers.None;
+            var downState = CoreVirtualKeyStates.Down;
+
+            if ((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu) & downState) == downState)
+            {
+                modifiers |= KeyModifiers.Alt;
+            }
+
+            if ((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & downState) == downState)
+            {
+                modifiers |= KeyModifiers.Control;
+            }
+
+            if ((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift) & downState) == downState)
+            {
+                modifiers |= KeyModifiers.Shift;
+            }
+
+            // Windows key shortcuts don't reliably work because sometimes they get intercepted by the system.
+            // (E.g. Windows+Back)
+            //if((InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows) & downState) == downState)
+            //{
+            //    modifiers |= KeyModifiers.Windows;
+            //}
+
+            return modifiers;
+        }
+
+
+
+
+        /// <summary>
         /// Hook up some accelerators to the root to ensure that it always works, no matter what page we're on
         /// </summary>
         void SetupGlobalAccelerators()
         {
-            // With the keyboard accelerator on the root, the tool tip for it will
-            // always appear on every pixel of every page. So shut it off.
-            // The normal affordance for it is a hyperlink on the search results page,
-            // so it's not a secret. I just can't think of a good place to put it on the home page.
+            // If the left mouse button is pressed (and nothing else), navigate back
+            RootFrame.PointerPressed += (s, e2) =>
+            {
+                var pointerProperties = e2.GetCurrentPoint(s as UIElement).Properties;
+                if (pointerProperties.IsXButton1Pressed
+                    && !pointerProperties.IsXButton2Pressed
+                    && GetKeyModifiersForThread() == KeyModifiers.None)
+                {
+                    App.GoBack();
+                }
+            };
+
+            // Back navigation on GoBack or Alt+Left
+            // GoBack is raised by the old multimedia keyboard? PTP gesture?
+            SetupAccelerator(
+                VirtualKey.GoBack,
+                VirtualKeyModifiers.None,
+                () => App.GoBack());
+            SetupAccelerator(
+                VirtualKey.Left,
+                VirtualKeyModifiers.Menu,
+                () => App.GoBack());
+
+            // With the keyboard accelerators on the root, the tool tips will
+            // always appear on every pixel of every page. So shut them off.
             RootFrame.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
 
 
@@ -391,24 +490,53 @@ namespace Tempo
                 VirtualKeyModifiers.Control,
                 () => ContentScalingPercent = Math.Max(ContentScalingPercent - 10, 100));
 
-            // Reset is Alt+Home to match Edge, or F3 to match something else that I don't remember what
-            SetupAccelerator(
-                VirtualKey.Home,
-                VirtualKeyModifiers.Menu,
-                () => App.ResetAndGoHome());
+            // F3 resets settings.
+            // F3 used to be a common pattern, but I don't remember where I got it from.
             SetupAccelerator(
                 VirtualKey.F3,
                 VirtualKeyModifiers.None,
                 () => App.ResetSettings());
+
+            // Control+T to toggle light/dark mode
             SetupAccelerator(
                 VirtualKey.T,
                 VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
                 () => App.Instance.ToggleTheme());
 
+            // Control+E moves to the search text box
+            SetupAccelerator(
+                VirtualKey.E,
+                VirtualKeyModifiers.Control,
+                () => MoveToSearchBox());
+
+            // Reset is Alt+Home to match Edge
+            // A key accelerator doesn't work though if keyboard focus is in the ListView because of this issue:
+            // https://github.com/microsoft/microsoft-ui-xaml/issues/9885
+            // As a workaround, intercept Alt+Home before it goes to the ListView
+
+            //SetupAccelerator(
+            //    VirtualKey.Home,
+            //    VirtualKeyModifiers.Menu,
+            //    () => App.ResetAndGoHome());
+
+            RootFrame.PreviewKeyDown += (s, e2) =>
+            {
+                if(e2.Key != VirtualKey.Home)
+                {
+                    return;
+                }
+
+                if( GetKeyModifiersForThread() == KeyModifiers.Alt)
+                {
+                    App.ResetAndGoHome();
+                    e2.Handled = true;
+                }
+            };
+
         }
 
         /// <summary>
-        /// Set up a single root accelerators
+        /// Set up a single root accelerator
         /// </summary>
         void SetupAccelerator(VirtualKey key, VirtualKeyModifiers modifiers, Action action)
         {
@@ -454,9 +582,52 @@ namespace Tempo
             // If launched with "tempo:Button", search for "Button"
             if (activationArgs.Kind == ExtendedActivationKind.Protocol)
             {
-                var searchTerm = (activationArgs.Data as IProtocolActivatedEventArgs).Uri.AbsolutePath;
 
-                // We've pulled everything out of the args, now if necessary we can switch threads
+                var uri = (activationArgs.Data as IProtocolActivatedEventArgs).Uri;
+                DebugLog.Append($"protocol launch: {uri}");
+
+                // Say the launch is "tempo:Button?scope=winappsdk"
+                // AbsolutePath is "Button"
+                var searchTerm = uri.AbsolutePath;
+
+                // Query is "?scope=winappsdk" in that example
+                var query = uri.Query;
+                if (!string.IsNullOrEmpty(query))
+                {
+                    var queryParams = HttpUtility.ParseQueryString(query);
+                    var scope = queryParams.Get("scope");
+                    if (scope != null)
+                    {
+                        // Set the ApiScope to the requested value. We'll set _initialScopeSet
+                        // so that we don't overwrite this with what we saved on the last run
+
+                        switch (scope.ToLower())
+                        {
+                            case "winappsdk":
+                                IsWinAppScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case "custom":
+                                IsCustomApiScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case "windows":
+                                IsWinPlatformScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            default:
+                                // We haven't set _initialScopeSet,
+                                // so later we'll restore to whatever scope was used the last time
+                                DebugLog.Append($"Unknown scope: {scope}");
+                                break;
+
+                        }
+                    }
+                }
+
 
                 // Post so that we can finish initialization
                 Manager.PostToUIThread(() => App.Instance.GotoSearch(searchTerm));
@@ -535,6 +706,12 @@ namespace Tempo
                     continue;
                 }
 
+                if (arg == _singleInstanceCommandLineArgument)
+                {
+                    // This is special-cased in the method ShouldAllowSingleInstance()
+                    continue;
+                }
+
                 if (arg == "/diff")
                 {
                     // Next we should see the baseline file
@@ -600,6 +777,7 @@ namespace Tempo
             // If we got custom filenames, start opening them
             if (commandLineFilenames != null && commandLineFilenames.Count != 0)
             {
+                // Set this so that we don't change the scope to whatever was used the last time
                 _initialScopeSet = true;
 
                 DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
@@ -680,6 +858,10 @@ namespace Tempo
             {
                 scope = nameof(IsCustomApiScope);
             }
+            else if(IsWin32Scope)
+            {
+                scope = nameof(IsWin32Scope);
+            }
 
             ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
             settings.Values[_currentScopeSettingName] = scope;
@@ -713,6 +895,10 @@ namespace Tempo
                         IsCustomApiScope = true;
                         break;
 
+                    case "IsWin32Scope":
+                        IsWin32Scope = true;
+                        break;
+
                     default:
                         IsWinPlatformScope = true;
                         break;
@@ -740,12 +926,22 @@ namespace Tempo
             {
                 EnsureWinAppScopeStarted();
             }
+            else if(_isWin32Scope)
+            {
+               EnsureWin32ScopeStarted();
+            }
             else
             {
                 Debug.Assert(_isCustomApiScope);
                 EnsureCustomScopeStarted(
                     DesktopManager2.CustomApiScopeFileNames.Value,
                     navigateToSearchResults: false);
+            }
+
+            // Also, if the baseline is loaded, reload it too
+            if (Manager.Settings.CompareToBaseline == true)
+            {
+                StartLoadBaselineScope(App.Instance.BaselineFilenames);
             }
         }
 
@@ -824,6 +1020,10 @@ namespace Tempo
                 {
                     return "Custom APIs";
                 }
+                else if(IsWin32Scope)
+                {
+                    return "Win32 APIs";
+                }
 
                 // Shouldn't ever get here, but it happens during bootstrapping
                 return "API Scope";
@@ -865,6 +1065,48 @@ namespace Tempo
                     (typeSet) => Manager.WindowsAppTypeSet = typeSet,
                     (b) => StartLoadWinAppScope(b));
         }
+
+
+
+
+        // IsWin32Scope means show the Win32 metadata project
+        static bool _isWin32Scope = false;
+        public bool IsWin32Scope
+        {
+            get { return _isWin32Scope; }
+            set
+            {
+                if (_isWin32Scope == value)
+                {
+                    return;
+                }
+
+                _isWin32Scope = value;
+                SaveCurrentScope();
+
+                if (value)
+                {
+                    EnsureWin32ScopeStarted();
+                }
+
+                RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+
+
+
+        /// <summary>
+        /// Ensure the Win32 Metadata is loaded or loading
+        /// </summary>
+        internal void EnsureWin32ScopeStarted()
+        {
+            EnsureScopeStarted(
+                    () => Manager.Win32TypeSet,
+                    (typeSet) => Manager.Win32TypeSet = typeSet,
+                    (b) => StartLoadWin32Scope(b));
+        }
+
 
 
         // IsCustomApiScope means show the APIs that were selected with a file picker
@@ -1090,7 +1332,7 @@ namespace Tempo
         void StartLoadWinAppScope(bool useWinRTProjections)
         {
             // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
-            if(_winAppScopeLoader != null)
+            if (_winAppScopeLoader != null)
             {
                 // Already a load in progress
                 return;
@@ -1143,6 +1385,74 @@ namespace Tempo
 
 
 
+
+
+        /// <summary>
+        /// Load the Win32 scope (doesn't complete synchronously)
+        /// </summary>
+        void StartLoadWin32Scope(bool useWinRTProjections)
+        {
+            // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
+            if (_win32ScopeLoader != null)
+            {
+                // Already a load in progress
+                return;
+            }
+
+            _win32ScopeLoader = new ApiScopeLoader();
+
+            _win32ScopeLoader.StartLoad(
+                offThreadLoadAction: () => // Runs *off* UI thread
+                {
+                    DesktopManager2.LoadWin32AssembliesSync(useWinRTProjections);
+                },
+
+                uiThreadCompletedAction: () => // Runs on UI thread (if succeeded)
+                {
+                    _win32ScopeLoader = null;
+                    if (_isWin32Scope)
+                    {
+                        Manager.CurrentTypeSet = Manager.Win32TypeSet;
+                    }
+                },
+
+                uiThreadCanceledAction: () => // Runs on UI thread (if canceled)
+                {
+                    _win32ScopeLoader = null;
+
+                    _ = MyMessageBox.Show(
+                            "Unable to load Win32 package\n\nSwitching to Windows Platform APIs",
+                            "Load error");
+
+                    // Go back to an API scope we know is there
+                    IsWinPlatformScope = true;
+                    App.GoHome();
+                });
+
+        }
+
+        static ApiScopeLoader _win32ScopeLoader = null;
+
+        /// <summary>
+        /// Ensure that the Win32 metadata is done loading
+        /// </summary>
+        internal async static Task<bool> EnsureWin32ScopeLoadedAsync()
+        {
+            var win32ScopeLoader = _win32ScopeLoader;
+            if (win32ScopeLoader == null)
+            {
+                return true;
+            }
+
+            return await win32ScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest Win32 metadata package ...");
+        }
+
+
+
+
+
+
+
         static bool _isCustomApiScope = false;
         static ApiScopeLoader _customApiScopeLoader = null;
 
@@ -1178,6 +1488,16 @@ namespace Tempo
             bool navigateToSearchResults,
             bool useWinRTProjections)
         {
+            if (navigateToSearchResults)
+            {
+                // We're going to navigate when this is done. Disable the home page
+                // so that you can't interact with it in the meantime and get interrupted
+                RootFrame.IsEnabled = false;
+
+                // bugbug: can't get this to work, doesn't change the cursor
+                //RootFrame.SetWaitCursor();
+            }
+
             CloseCustomScope(goHome: false);
 
             // Update the filenames now so it doesn't cause a flicker
@@ -1190,7 +1510,7 @@ namespace Tempo
             _customApiScopeLoader.StartLoad(
                 offThreadLoadAction: () =>
                 {
-                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames, useWinRTProjections);
+                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames);
                 },
 
                 uiThreadCompletedAction: async () =>
@@ -1205,12 +1525,10 @@ namespace Tempo
 
                         if (typeSet.TypeCount == 0)
                         {
-                            await (new ContentDialog()
-                            {
-                                Content = "No APIs found, switching to Windows Platform APIs",
-                                XamlRoot = HomePage.XamlRoot,
-                                CloseButtonText = "OK"
-                            }).ShowAsync();
+
+                            await MyMessageBox.Show(
+                                "No APIs found, switching to Windows Platform APIs",
+                                null, "OK");
 
                             // Go to a scope we know exists
                             GoToWindowsScopeAndGoHome();
@@ -1224,6 +1542,9 @@ namespace Tempo
                         if (navigateToSearchResults)
                         {
                             App.Instance.GotoSearch();
+
+                            // This should happen in App automatically, but playing it safe
+                            RootFrame.IsEnabled = true;
                         }
                     }
                 },
@@ -1231,6 +1552,9 @@ namespace Tempo
                 uiThreadCanceledAction: () =>
                 {
                     _customApiScopeLoader = null;
+
+                    // We're not going to navigate, so re-enable now
+                    RootFrame.IsEnabled = true;
 
                     // Go to a scope we know exists
                     GoToWindowsScopeAndGoHome();
@@ -1304,11 +1628,14 @@ namespace Tempo
         /// <param name="filenames"></param>
         public static void StartLoadBaselineScope(string[] filenames)
         {
-            DebugLog.Append($"Loading baseline scope {filenames[0]}");
-
             CloseBaselineScope();
 
-            App.Instance.BaselineFilenames = filenames.ToArray();
+            App.Instance.BaselineFilenames = filenames;
+
+            foreach (var filename in filenames)
+            {
+                DebugLog.Append($"Loading baseline scope {filename}");
+            }
 
             var typeSet = new MRTypeSet("Baseline", !App.Instance.UsingCppProjections);
             _baselineScopeLoader = new ApiScopeLoader();
@@ -1316,7 +1643,7 @@ namespace Tempo
             _baselineScopeLoader.StartLoad(
                 offThreadLoadAction: () =>
                 {
-                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames, useWinRTProjections: true);
+                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames);
                 },
 
                 uiThreadCompletedAction: async () =>
@@ -1324,18 +1651,14 @@ namespace Tempo
                     _baselineScopeLoader = null;
                     if (typeSet.TypeCount == 0)
                     {
-                        await (new ContentDialog()
-                        {
-                            Content = "No APIs found",
-                            XamlRoot = HomePage.XamlRoot,
-                            CloseButtonText = "OK"
-                        }).ShowAsync();
-
+                        await MyMessageBox.Show("No APIs found", null, "OK");
                         return;
                     }
 
                     Manager.BaselineTypeSet = typeSet;
                     Manager.Settings.CompareToBaseline = true;
+
+                    // IsBaselineScopeLoaded is a function of BaselineTypeSet
                     App.Instance.RaisePropertyChange(nameof(IsBaselineScopeLoaded));
                 },
 
@@ -1501,6 +1824,10 @@ namespace Tempo
             else if (_isCustomApiScope)
             {
                 return await EnsureCustomApiScopeAsync();
+            }
+            else if(_isWin32Scope)
+            {
+                return await EnsureWin32ScopeLoadedAsync();
             }
             else
             {
@@ -1763,7 +2090,7 @@ namespace Tempo
 #endif
         }
 
-        static private Frame RootFrame
+        static private RootFrame RootFrame
         {
             get; set;
         }
@@ -1775,7 +2102,21 @@ namespace Tempo
                 return;
             }
 
-            _ = Launcher.LaunchUriAsync(new Uri(MsdnHelper.CalculateDocPageAddress(CurrentItem)));
+            var address = MsdnHelper.CalculateDocPageAddress(CurrentItem);
+            if (string.IsNullOrEmpty(address))
+            {
+                return;
+            }
+
+            // Defense in depth: don't crash the app if we come up with a bad URI
+            try
+            {
+                _ = Launcher.LaunchUriAsync(new Uri(address));
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Append($"Failed to launch {address}: {ex.Message}");
+            }
         }
 
         static public List<TypeViewModel> AllTypes;
@@ -1787,8 +2128,12 @@ namespace Tempo
             None = 0,
             Control = 1,
             Alt = 2,
+            Shift = 4,
+
+            // Not reliable
+            //Windows = 8
         }
-        KeyModifiers _keyModifiers = KeyModifiers.None;
+        //KeyModifiers _keyModifiers = KeyModifiers.None;
         //bool _leftAlt = false;
         //bool _rightAlt = false;
 
@@ -1965,12 +2310,16 @@ namespace Tempo
                         _usingCppProjections = (bool)value;
                     }
 
+                    DebugLog.Append($"{(_usingCppProjections == true ? "C++" : "C#")} projections");
+
                 }
                 return _usingCppProjections == true;
             }
             set
             {
                 _usingCppProjections = value;
+
+                DebugLog.Append($"{(_usingCppProjections == true ? "C++" : "C#")} projections");
 
                 ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
                 settings.Values[nameof(UsingCppProjections)] = value;
@@ -1991,25 +2340,25 @@ namespace Tempo
             }
         }
 
-        private void RootFrame_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Control)
-                _keyModifiers |= KeyModifiers.Control;
+        //private void RootFrame_KeyDown(object sender, KeyRoutedEventArgs e)
+        //{
+        //    if (e.Key == VirtualKey.Control)
+        //        _keyModifiers |= KeyModifiers.Control;
 
-            // bugbug: Not sure how to track Alt.  When you do Alt-Tab, you see the Alt
-            // got down, but not come back up
-            //else if (e2.Key == VirtualKey.Menu)
-            //    _keyModifiers |= KeyModifiers.Alt;
+        //    // bugbug: Not sure how to track Alt.  When you do Alt-Tab, you see the Alt
+        //    // got down, but not come back up
+        //    //else if (e2.Key == VirtualKey.Menu)
+        //    //    _keyModifiers |= KeyModifiers.Alt;
 
-        }
-        private void RootFrame_KeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            // bugbug: no way to get key modifiers?
-            if (e.Key == VirtualKey.Control)
-                _keyModifiers &= ~KeyModifiers.Control;
-            else if (e.Key == VirtualKey.Menu)
-                _keyModifiers &= ~KeyModifiers.Alt;
-        }
+        //}
+        //private void RootFrame_KeyUp(object sender, KeyRoutedEventArgs e)
+        //{
+        //    // bugbug: no way to get key modifiers?
+        //    if (e.Key == VirtualKey.Control)
+        //        _keyModifiers &= ~KeyModifiers.Control;
+        //    else if (e.Key == VirtualKey.Menu)
+        //        _keyModifiers &= ~KeyModifiers.Alt;
+        //}
 
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {

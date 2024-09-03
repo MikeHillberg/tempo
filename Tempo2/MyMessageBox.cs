@@ -49,8 +49,19 @@ namespace Tempo
                 contentDialog.CloseButtonText = closeButtonText;
             }
 
-            var result = await contentDialog.ShowAsync();
-            return result;
+            try
+            {
+                var result = await contentDialog.ShowAsync();
+                return result;
+            }
+            catch(Exception ex)
+            {
+                // Ignore the COM exception we get when trying to open two ContentDialogs at the same time
+
+                DebugLog.Append("Failed MessageBox");
+                DebugLog.Append(ex.Message);
+                return ContentDialogResult.None;
+            }
         }
     }
 }

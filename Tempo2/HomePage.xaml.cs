@@ -11,6 +11,9 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using System.Diagnostics;
 using System.Threading;
+using Windows.UI.ViewManagement;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI;
 using System.IO.Pipes;
 using System.IO;
 using Windows.ApplicationModel;
@@ -168,6 +171,8 @@ namespace Tempo
 
             MainWindow.Instance.SetMicaBackdrop();
 
+            MonitorHighContrast();
+
             if (_initialLoad)
             {
                 _initialLoad = false;
@@ -188,6 +193,55 @@ namespace Tempo
 
             ShowTeachingTips();
         }
+
+        AccessibilitySettings _accessibilitySettings;
+
+        /// <summary>
+        /// Monitor high contrast settings in order to update the background
+        /// </summary>
+        private void MonitorHighContrast()
+        {
+            _accessibilitySettings = new AccessibilitySettings();
+
+            // Not supported in Desktop. Switch to ThemeSettings after updating to latest WinAppSDK
+            //_accessibilitySettings.HighContrastChanged += CheckHighContrast;
+
+
+            CheckHighContrast(null, null);
+        }
+
+        /// <summary>
+        /// Update the root background according to the current high contrast setting
+        /// </summary>
+        private void CheckHighContrast(AccessibilitySettings sender, object args)
+        {
+            if (_accessibilitySettings.HighContrast)
+            {
+                RootBackground = SystemControlBackgroundAltHighShape.Fill;
+            }
+            else
+            {
+                RootBackground = new SolidColorBrush() { Color = Colors.Transparent };
+            }
+        }
+
+
+
+        /// <summary>
+        /// Background for the root, may be transparent to allow for Mica backdrop
+        /// </summary>
+        public Brush RootBackground
+        {
+            get { return (Brush)GetValue(RootBackgroundProperty); }
+            set { SetValue(RootBackgroundProperty, value); }
+        }
+        public static readonly DependencyProperty RootBackgroundProperty =
+            DependencyProperty.Register("RootBackground", typeof(Brush), typeof(HomePage), 
+                new PropertyMetadata(new SolidColorBrush() {  Color = Colors.Transparent}));
+
+
+
+
 
         static public event EventHandler HomePageLoaded;
 

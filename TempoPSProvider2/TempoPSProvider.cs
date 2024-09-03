@@ -244,8 +244,10 @@ namespace TempoPSProvider
                     var typeSet = new MRTypeSet(MRTypeSet.CustomMRName, useWinRTProjections);
                     DesktopManager2.LoadTypeSetMiddleweightReflection(
                         typeSet,
-                        (from filename in filenames where !string.IsNullOrEmpty(filename) select filename).ToArray(),
-                        useWinRTProjections);
+                        (from filename in filenames 
+                         where !string.IsNullOrEmpty(filename) 
+                         select filename).ToArray());
+
                     Manager.CurrentTypeSet = typeSet;
                 }
 

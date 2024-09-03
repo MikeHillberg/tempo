@@ -38,9 +38,10 @@
             <AppBarButton Visibility="{x:Bind FilterVisibility, Mode=Oneway}" 
                     x:Name="_filterButton"
                     ToolTipService.ToolTip="Filter results"
+                          AutomationProperties.Name="Filter results"
                     Background="{x:Bind local:HomePage.AdaptiveSettings.FilterBackground, Mode=OneWay}" >
                 <local:DropDownAppBarButtonContent Symbol="Filter" Label="Filter"/>
-                
+
                 <Button.Flyout>
                     <local:FilterAppBarButtonMenu/>
                 </Button.Flyout>
@@ -96,8 +97,14 @@
             <!-- Button to choose the ApiScope -->
             <AppBarButton x:Name="_apiScopeButton"
                           Visibility="{x:Bind IsScopeVisible, Mode=OneWay}"
-                          ToolTipService.ToolTip="Choose an API scope" 
+                          AutomationProperties.Name="Choose an API scope"
                           ContextRequested="_apiScopeButton_ContextRequested">
+                <ToolTipService.ToolTip>
+                    <local:ComplexToolTip
+                        Title="{x:Bind ApiScopeTipText.Item1}"
+                        Subtitle="{x:Bind ApiScopeTipText.Item2}"/>
+                </ToolTipService.ToolTip>
+                
                 <local:DropDownAppBarButtonContent Symbol="Library" 
                                                    Label="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"/>
 
@@ -109,11 +116,21 @@
                                 <KeyboardAccelerator Modifiers="Control" Key="W" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
-                        
+
                         <ToggleMenuFlyoutItem Text="WinAppSDK APIs" Click="SelectWinAppSdkApis"
                                               IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="K" />
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+
+                        <ToggleMenuFlyoutItem Text="Win32 APIs" Click="SelectWin32Apis"
+                                              IsChecked="{x:Bind local:App.Instance.IsWin32Scope, Mode=OneWay}">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <!-- This is Control+2, but we have to set Key to 50 rather than "2", 
+                                because "2" gets interpreted as a number, which is VirtualKey.RightButton
+                                (50 is VirtualKey.Number2) -->
+                                <KeyboardAccelerator Modifiers="Control" Key="50"/>
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 

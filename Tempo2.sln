@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibraryStandard", "Cla
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiddleweightReflection", "middleweight-reflection\MiddleweightReflection\MiddleweightReflection.csproj", "{611083FE-E45F-4A32-94EC-B39A1E0CF9FB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TempoPSProvider2", "TempoPSProvider2\TempoPSProvider2.csproj", "{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,22 @@ Global
 		{611083FE-E45F-4A32-94EC-B39A1E0CF9FB}.Release|x64.Build.0 = Release|Any CPU
 		{611083FE-E45F-4A32-94EC-B39A1E0CF9FB}.Release|x86.ActiveCfg = Release|Any CPU
 		{611083FE-E45F-4A32-94EC-B39A1E0CF9FB}.Release|x86.Build.0 = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|arm64.Build.0 = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|x64.Build.0 = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Debug|x86.Build.0 = Debug|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|arm64.ActiveCfg = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|arm64.Build.0 = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|x64.ActiveCfg = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|x64.Build.0 = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|x86.ActiveCfg = Release|Any CPU
+		{758D13DD-7A24-433A-9B10-7FA1BDA6C7CF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

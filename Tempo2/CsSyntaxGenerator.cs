@@ -37,6 +37,7 @@ namespace Tempo
                 new PropertyMetadata(null, (s, e) => MemberChanged(s as RichTextBlock)));
 
 
+        // This is only being used in MemberDetailView.xaml  (targets RichTextBlock)
         private static void MemberChanged(RichTextBlock textBlock)
         {
             textBlock.Blocks.Clear();
@@ -101,7 +102,6 @@ namespace Tempo
             paragraph = new Paragraph();
             textBlock.Blocks.Add(paragraph);
             paragraph.Inlines.Add("}");
-
         }
 
         static void InsertConstructor(RichTextBlock textBlock, ConstructorViewModel constructor)
@@ -122,7 +122,7 @@ namespace Tempo
             if (grav != -1)
                 name = name.Substring(0, grav);
 
-            InsertParameters(textBlock, name, constructor.Parameters, inlines);
+            InsertMethodNameAndParameters(textBlock, name, constructor.Parameters, inlines);
 
             paragraph = new Paragraph() { Margin = Indent1 };
             textBlock.Blocks.Add(paragraph);
@@ -162,7 +162,7 @@ namespace Tempo
             inlines.Add(run);
 
 
-            if(ev.IsInvokerMatch && !ev.EventHandlerType.IsNameMatch)
+            if (ev.IsInvokerMatch && !ev.EventHandlerType.IsNameMatch)
             {
                 // Add an up arrow to the text to indicate that there's something
                 // in the base class that matches.
@@ -198,18 +198,20 @@ namespace Tempo
 
             var parameters = method.Parameters;
 
-            InsertParameters(textBlock, method.Name, parameters, inlines);
+            InsertMethodNameAndParameters(textBlock, method.Name, parameters, inlines);
 
             paragraph = new Paragraph() { Margin = Indent1 };
             textBlock.Blocks.Add(paragraph);
             paragraph.Inlines.Add("{...}");
         }
 
-        private static void InsertParameters(
+        private static void InsertMethodNameAndParameters(
             RichTextBlock textBlock, string methodName,
             IList<ParameterViewModel> parameters,
             InlineCollection inlines)
         {
+
+            // Method name and open paren
 
             var text = "\n" + methodName;
             if (parameters.Count == 0)
@@ -221,6 +223,8 @@ namespace Tempo
 
             if (parameters.Count != 0)
             {
+                // Put parameters in a new paragraph so that it can be indented
+
                 var paragraph = new Paragraph() { Margin = Indent2 };
                 textBlock.Blocks.Add(paragraph);
                 inlines = paragraph.Inlines;
@@ -232,36 +236,39 @@ namespace Tempo
                     if (i != 0)
                         inlines.Add("\n");
 
-                    if (parameter.IsOut)
-                    {
-                        var run = new Run() { Foreground = new SolidColorBrush(Colors.Blue) }; // bugbug
-                        run.Text = "out ";
-                        inlines.Add(run);
-                    }
-                    
-                    // If the parameter type doesn't match, then it won't get highlighted, so we need to highlight it here
-                    if (parameter.IsMatch 
-                        && !parameter.IsNameMatch
-                        && !parameter.ParameterType.IsMatch)
-                    {
-                        // Add an up arrow to the text to indicate that there's something
-                        // in the base class that matches.
-                        var upArrow = new Run() { Text = UpArrowCodePoint };
-                        upArrow.FontWeight = FontWeights.Bold;
-                        inlines.Add(upArrow);
-                    }
+                    InsertParameter(inlines, parameter);
 
-                    GenerateTypeName(parameter.ParameterType, inlines, withUpArrow: true);
-
-                    text = " " + parameter.Name;
                     if (i + 1 == parameters.Count)
-                        text += ")";
+                        inlines.Add(")");
                     else
-                        text += ",";
-
-                    inlines.AddWithSearchHighlighting(text);
+                        inlines.Add(",");
                 }
             }
+        }
+
+        private static void InsertParameter(InlineCollection inlines, ParameterViewModel parameter)
+        {
+            if (parameter.IsOut)
+            {
+                var run = new Run() { Foreground = new SolidColorBrush(Colors.Blue) }; // bugbug
+                run.Text = "out ";
+                inlines.Add(run);
+            }
+
+            // If the parameter type doesn't match, then it won't get highlighted, so we need to highlight it here
+            if (parameter.IsMatch
+                && !parameter.IsNameMatch
+                && !parameter.ParameterType.IsMatch)
+            {
+                // Add an up arrow to the text to indicate that there's something
+                // in the base class that matches.
+                var upArrow = new Run() { Text = UpArrowCodePoint };
+                upArrow.FontWeight = FontWeights.Bold;
+                inlines.Add(upArrow);
+            }
+
+            GenerateTypeName(parameter.ParameterType, inlines, withUpArrow: true);
+            inlines.Add($" {parameter.Name}");
         }
 
         static void InsertProperty(RichTextBlock textBlock, PropertyViewModel property)
@@ -312,6 +319,7 @@ namespace Tempo
 
         private static void TypeDeclarationChanged(TextBlock textBlock)
         {
+
             Run run;
             var type = GetTypeDeclaration(textBlock);
             if (type == null)
@@ -330,21 +338,34 @@ namespace Tempo
                 textBlock.Inlines.Add(run);
             }
 
+            // E.g. public, static
             string allModifiers = type.ModifierCodeString;
-            if (type.IsSealed && type.IsClass)
+            if (type.IsSealed && type.IsClass && !type.IsDelegate)
+            {
                 allModifiers = "sealed " + allModifiers;
+            }
+
+            string typeKind;
+            if (type.IsDelegate)
+            {
+                // Show delegate classes as a delegate rather than a class
+                typeKind = "delegate";
+            }
+            else
+            {
+                typeKind = type.TypeKind.ToString().ToLower();
+            }
 
             run = new Run()
             {
                 Foreground = new SolidColorBrush() { Color = Colors.Blue }, // bugbug
-                Text = allModifiers + " "
-                            + type.TypeKind.ToString().ToLower() + " "
+                Text = $"{allModifiers} {typeKind} "
             };
             textBlock.Inlines.Add(run);
 
             // We don't need to show the up arrow for the type, e.g. because its base class matched rather than its name,
             // because we're on the type batch and that will show up somewhere else
-            GenerateTypeName(type, textBlock.Inlines, withHyperlink: false, withUpArrow:false);
+            GenerateTypeName(type, textBlock.Inlines, withHyperlink: false, withUpArrow: false);
 
             if (type.TypeKind == TypeKind.Class
                 && (type.BaseType != null && !type.BaseType.ShouldIgnore || type.PublicInterfaces.Count != 0))
@@ -373,7 +394,29 @@ namespace Tempo
                 GenerateTypeName(iface, textBlock.Inlines);
             }
 
-            textBlock.Inlines.Add("\n{...}");
+            if (type.IsDelegate)
+            {
+                // Delegates are classes but don't have normal class syntax
+
+                textBlock.Inlines.Add("\n   (");
+                var parameters = type.DelegateParameters;
+                for (var i = 0; i < parameters.Count; i++)
+                {
+                    var parameter = parameters[i];
+                    InsertParameter(textBlock.Inlines, parameter);
+
+                    if (i + 1 < parameters.Count)
+                    {
+                        textBlock.Inlines.Add(", ");
+                    }
+
+                }
+                textBlock.Inlines.Add(");");
+            }
+            else
+            {
+                textBlock.Inlines.Add("\n{...}");
+            }
 
             SearchHighlighter.HighlightMatches(textBlock, App.SearchExpression?.MemberRegex);
         }
@@ -517,7 +560,7 @@ namespace Tempo
             {
                 //var baseType = type.BaseType;
                 //if (baseType != null && baseType.IsMatch)
-                if(type.IsMatch && !type.IsNameMatch)
+                if (type.IsMatch && !type.IsNameMatch)
                 {
                     // Add an up arrow to the text to indicate that there's something
                     // in the base class that matches.

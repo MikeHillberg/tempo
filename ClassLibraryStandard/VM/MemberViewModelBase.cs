@@ -62,6 +62,8 @@ namespace Tempo
             }
         }
 
+        public string NameThenNamespace => $"{PrettyName} ({Namespace})";
+
         protected void RaisePropertyChanged(string name)
         {
             if (this.PropertyChanged != null)
@@ -360,6 +362,10 @@ namespace Tempo
             else
             {
                 var helpText = await GetApiDescriptionAsync();
+                if(helpText == null)
+                {
+                    helpText = "";
+                }
                 _apiDescription = helpText;
             }
 
@@ -464,6 +470,13 @@ namespace Tempo
         // Get this member/type's API page from GitHub
         async public Task<StringReader> GetApiDocPageAsync()
         {
+            // bugbug
+            // Can't figure out the path to Win32 doc pages, so don't bother to burden github with a 404
+            if (this.DeclaringType.TypeSet.Name == Win32TypeSet.StaticName)
+            {
+                return null;
+            }
+
             // Type example (note the difference between winrt-api and winui-api)
             // https://raw.githubusercontent.com/MicrosoftDocs/winrt-api/docs/windows.devices.smartcards/smartcardcryptographickeyattestationstatus.md
             // https://raw.githubusercontent.com/MicrosoftDocs/winui-api/docs/microsoft.ui.xaml.controls/treeview.md
@@ -471,6 +484,7 @@ namespace Tempo
             var winRTorWinUI = this.DeclaringType.Namespace.StartsWith("Microsoft.") ? "winapps-winrt-api" : "winrt-api";
 
             var baseUri = $@"https://raw.githubusercontent.com/MicrosoftDocs/{winRTorWinUI}/docs/{this.DeclaringType.Namespace.ToLower()}/";
+
 
             // Get the right filename for this member (depends on if this is a type, properyt, method, etc).
             var filename = await GetGitUrlFilenameAsync(baseUri);

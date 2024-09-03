@@ -1,6 +1,7 @@
 ﻿using CommonLibrary;
 using Microsoft.Win32;
 using MiddleweightReflection;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -130,6 +131,7 @@ namespace Tempo
 
 
         public static string WinAppSdkPackageName => "Microsoft.WindowsAppSDK";
+        public static string Win32PackageName => "Microsoft.Windows.SDK.Win32Metadata";
 
 
 
@@ -312,7 +314,7 @@ namespace Tempo
         }
 
 
-        public static void LoadFromNupkg(string packageFilename, bool useWinrtProjections, MRTypeSet typeSet, MrLoadContext loadContext)
+        public static void LoadFromNupkg(string packageFilename, MRTypeSet typeSet, MrLoadContext loadContext)
         {
 
             // Open the nupkg zip file
@@ -328,19 +330,21 @@ namespace Tempo
                 {
                     var entryName = entry.Name.ToLower();
 
-                    // Only looking in the lib directory
-                    // I've seen the ZipFile API sometimes uses slashes and sometimes whacks, 
+                    // Bugbug: what exactly are the rules for the organization inside a .nupkg?
+                    // Only looking in the lib directory (pattern I mostly see)
+                    // plus the root directory (Win32Metadata is located here)
+                    // I've seen the ZipFile API sometimes use slashes and sometimes whacks, 
                     // so checking for both
-                    var fullName = entry.FullName.ToLower();
-                    if(!fullName.StartsWith("lib/")
-                        && !fullName.StartsWith(@"lib\"))
+                    var fullName = entry.FullName.ToLower().Replace('\\', '/');
+                    if(!fullName.StartsWith("lib/") // Not in lib folder
+                        && fullName.Contains("/") ) // Not at the root
                     {
                         continue;
                     }
 
                     //  We only care about winmds and dlls
-                    var isWinmd = entryName.EndsWith(".winmd");
-                    var isDll = entryName.EndsWith(".dll");
+                    var isWinmd = fullName.EndsWith(".winmd");
+                    var isDll = fullName.EndsWith(".dll");
                     if (!isWinmd && !isDll)
                     {
                         continue;
@@ -532,12 +536,11 @@ namespace Tempo
         // Load a set of filenames into a TypeSet, using MR code
         public static void LoadTypeSetMiddleweightReflection(
             MRTypeSet typeSet,
-            string[] typeSetFileNames,
-            bool useWinRTProjections)
+            string[] typeSetFileNames)
         {
             try
             {
-                var loadContext = new MrLoadContext(useWinRTProjections: useWinRTProjections);
+                var loadContext = new MrLoadContext(typeSet.UsesWinRTProjections);
                 var resolver = new MRAssemblyResolver();
                 loadContext.AssemblyPathFromName = resolver.ResolveCustomAssembly;
                 loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
@@ -551,7 +554,7 @@ namespace Tempo
                     {
                         if (filename.EndsWith(".nupkg"))
                         {
-                            DesktopManager2.LoadFromNupkg(filename, useWinRTProjections, typeSet, loadContext);
+                            DesktopManager2.LoadFromNupkg(filename, typeSet, loadContext);
                         }
                         else
                         {
@@ -671,6 +674,9 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// Load the Windows App SDK assemblies, downloading from nuget
+        /// </summary>
         static public void LoadWinAppSdkAssembliesSync(WinAppSDKChannel channel, bool useWinrtProjections, byte[] mscorlib = null)
         {
             var packageName = DesktopManager2.WinAppSdkPackageName;
@@ -682,6 +688,41 @@ namespace Tempo
             else if (channel == WinAppSDKChannel.Experimental)
                 prereleasePrefix = "experimental";
 
+            // Download the package and load into `typeSet`
+            var typeSet = new WindowsAppTypeSet(useWinrtProjections); 
+            LoadNugetHelper(typeSet, packageName, prereleasePrefix);
+            if(typeSet.Types != null)
+            {
+                Manager.WindowsAppTypeSet = typeSet;
+            }
+
+        }
+
+        /// <summary>
+        /// Load the Win32 Metadata, downloading from nuget
+        /// </summary>
+        static public void LoadWin32AssembliesSync(bool useWinrtProjections, byte[] mscorlib = null)
+        {
+            var packageName = DesktopManager2.Win32PackageName;
+            var typeSet = new Win32TypeSet(useWinrtProjections);
+
+
+            // All of the win32 metadata packages are "-preview"
+            // Bugbug: should handle the possibility that this changes
+            LoadNugetHelper(typeSet, packageName, "preview");
+            if (typeSet.Types != null)
+            {
+                Manager.Win32TypeSet = typeSet;
+            }
+
+        }
+
+
+        /// <summary>
+        /// Download the specified package from nuget and load into `typeSet`
+        /// </summary>
+        private static void LoadNugetHelper(MRTypeSet typeSet, string packageName, string prereleasePrefix = "")
+        {
             DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
             // Download the nupkg from nuget.org (or used the cached copy)
@@ -700,15 +741,14 @@ namespace Tempo
             try
             {
                 // Load the winmd files
-                var typeSet = new WindowsAppTypeSet(useWinrtProjections);
-                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename }, useWinrtProjections);
+                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename });
 
                 if (typeSet.Types != null)
                 {
                     // Indicate the version for everything in this type set
                     typeSet.Version = $"{packageName},{packageLocationAndVersion.Version}";
 
-                    Manager.WindowsAppTypeSet = typeSet;
+                    return;
                 }
                 else
                 {
@@ -722,11 +762,12 @@ namespace Tempo
                 SafeDelete(packageFilename);
                 throw;
             }
-
         }
 
-        // This is just a wrapper for File.Delete with an extra defense-in-depth check to make sure
-        // we're only deleting a Tempo file
+        /// <summary>
+        /// This is just a wrapper for File.Delete with an extra defense-in-depth check to make sure
+        /// we're only deleting a Tempo file (has "tempo" in its name somewhere).
+        /// </summary>
         static public void SafeDelete(string filename)
         {
             if (!filename.Contains("Tempo"))
@@ -743,6 +784,26 @@ namespace Tempo
         static public string GetCsTypeDefinition(TypeViewModel type, string msdnAddress)
         {
             var sb = new StringBuilder();
+
+            if(type.IsDelegate)
+            {
+                sb.Append($"{type.CodeModifiers} delegate void {type} (");
+
+                var firstParameter = true;
+                foreach (var parameter in type.DelegateParameters)
+                {
+                    if (!firstParameter)
+                        sb.Append(", ");
+                    firstParameter = false;
+
+                    sb.Append(parameter.ParameterType.CSharpName + " " + parameter.PrettyName);
+                }
+                sb.AppendLine(");");
+
+                sb.AppendLine("");
+                sb.AppendLine(msdnAddress);
+                return sb.ToString();
+            }
 
             if (type.IsFlagsEnum)
             {
@@ -791,7 +852,7 @@ namespace Tempo
                 sb.Append($"    {constructor.ModifierCodeString} {type.CSharpName} (");
 
                 var firstParameter = true;
-                foreach (var parameter in constructor.Parameters)// .GetParameters())
+                foreach (var parameter in constructor.Parameters)
                 {
                     if (!firstParameter)
                         sb.Append(", ");

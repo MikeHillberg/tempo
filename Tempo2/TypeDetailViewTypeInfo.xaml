@@ -43,7 +43,8 @@
 
                 <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _publicInterfacesList, Mode=OneWay}">
                     <local:StackListHeaderItem >Interfaces</local:StackListHeaderItem>
-                    <ItemsControl x:Name="_publicInterfacesList" ItemsSource="{x:Bind TypeVM.PublicInterfaces, Mode=OneWay}" >
+                    <ItemsControl x:Name="_publicInterfacesList" ItemsSource="{x:Bind TypeVM.PublicInterfaces, Mode=OneWay}" 
+                                  IsTabStop="False">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TypeViewModel">
                                 <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 
@@ -58,7 +59,8 @@
 
                 <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _ancestorsList, Mode=OneWay}">
                     <local:StackListHeaderItem>Ancestors</local:StackListHeaderItem>
-                    <ItemsControl ItemsSource="{x:Bind TypeVM.Ancestors, Mode=OneWay}" x:Name="_ancestorsList">
+                    <ItemsControl ItemsSource="{x:Bind TypeVM.Ancestors, Mode=OneWay}" x:Name="_ancestorsList"
+                                  IsTabStop="False">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TypeViewModel">
                                 <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 
@@ -70,7 +72,8 @@
                     </ItemsControl>
                 </StackPanel>
 
-                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _descendentsList, Mode=OneWay}" >
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _descendentsList, Mode=OneWay}" 
+                            IsTabStop="False">
                     <local:StackListHeaderItem >Descendants</local:StackListHeaderItem>
                     <ItemsControl ItemsSource="{x:Bind TypeVM.Descendents, Mode=Oneway}" x:Name="_descendentsList" >
                         <ItemsControl.ItemTemplate>
@@ -90,7 +93,8 @@
                                     <Run>Types that reference</Run> <Run Text="{x:Bind TypeVM.PrettyName, Mode=OneWay}" />
                     </TextBlock>
 
-                    <ItemsControl ItemsSource="{x:Bind TypeVM.ReferencedByAsync, Mode=OneWay}" x:Name="_referencedByItemsControl">
+                    <ItemsControl ItemsSource="{x:Bind TypeVM.ReferencedByAsync, Mode=OneWay}" x:Name="_referencedByItemsControl"
+                                  IsTabStop="False">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="local:TypeViewModel">
                                 <TextBlock local:CsSyntaxGenerator.TypeName="{x:Bind Mode=OneWay}" 

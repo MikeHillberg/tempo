@@ -490,7 +490,9 @@ namespace Tempo
                 }
 
                 App.OfferToCopyResultsToClipboard = false;
+                DebugLog.Append($"Found {Results.Count} results in {SearchDelay}ms");
             }
+
         }
 
 
@@ -1069,6 +1071,11 @@ namespace Tempo
 
             ReleasePointerCapture(e.Pointer);
             _activeSplitter = null;
+        }
+
+        private void ShowDebugLog_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            DebugLogViewer.Show();
         }
     }
 

@@ -687,7 +687,7 @@ namespace Tempo
                         var abort = false;
                         DebuggaBool meaningfulMatch = false;
 
-                        if (Manager.MatchesFilterString(regex, type, true, true, Manager.Settings, ref meaningfulMatch))
+                        if (Manager.TypeMatchesFilter(regex, type, true, true, Manager.Settings, ref meaningfulMatch))
                             return true;
 
                         foreach (var member in type.Members)

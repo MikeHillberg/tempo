@@ -225,8 +225,9 @@ namespace Tempo
                             });
                     }
 
-                    if (Constructors.Count != 0)
+                    if (Constructors.Count != 0 && !IsDelegate)
                     {
+                        // Delegates have a public constructor, but instead we'll show the invoker parameters
                         _groupedMembers.Add(
                             new MemberList(Constructors)
                             {
@@ -260,16 +261,32 @@ namespace Tempo
             }
         }
 
+        IList<ParameterViewModel> _delegateParameters = null;
         virtual public IList<ParameterViewModel> GetDelegateParameters()
         {
-            if (IsDelegate)
+            if (_delegateParameters == null)
             {
-                return Methods[0].Parameters;
+                if (IsDelegate)
+                {
+                    // In .Net Framework there's also Begin/EndInvoke methods
+                    foreach (var method in Methods)
+                    {
+                        if (method.Name == "Invoke")
+                        {
+                            _delegateParameters = method.Parameters;
+                            break;
+                        }
+                    }
+                    Debug.Assert(_delegateParameters != null, "Delegate should have an Invoke method");
+
+                    if (_delegateParameters == null)
+                    {
+                        _delegateParameters = new List<ParameterViewModel>();
+                    }
+                }
             }
-            else
-            {
-                return new List<ParameterViewModel>();
-            }
+
+            return _delegateParameters;
         }
 
         virtual public MethodViewModel DelegateInvoker
@@ -1016,7 +1033,7 @@ namespace Tempo
             get
             {
                 if (!IsDelegate)
-                    return null;
+                    return new List<ParameterViewModel>();
 
                 return this.GetDelegateParameters();
             }
@@ -2417,6 +2434,7 @@ namespace Tempo
         /// True if this type is in a TypeSet (not a generated/fake type)
         /// </summary>
         public bool IsInTypes { get; internal set; } = false;
+        public int TypeMatchesFilterInProgress { get; internal set; }
 
 
         /// <summary>

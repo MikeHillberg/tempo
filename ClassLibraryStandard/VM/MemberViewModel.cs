@@ -1186,7 +1186,7 @@ namespace Tempo
             }
         }
 
-        public static string GetParameterSignature(IList<ParameterViewModel> parameters)
+        public static string GetParameterSignature(IList<ParameterViewModel> parameters, bool parameterNameRatherThanType = false)
         {
             var sb = new StringBuilder("(");
             var first = true;
@@ -1196,7 +1196,14 @@ namespace Tempo
                     sb.Append(", ");
                 first = false;
 
-                sb.Append(parm.ParameterType.Name);
+                if (parameterNameRatherThanType)
+                {
+                    sb.Append(parm.PrettyName);
+                }
+                else
+                {
+                    sb.Append(parm.ParameterType.PrettyName);
+                }
             }
             sb.Append(")");
 
@@ -1527,6 +1534,10 @@ namespace Tempo
 
                 // Get the whole type page from GitHub
                 var reader = await this.DeclaringType.GetApiDocPageAsync();
+                if(reader == null)
+                {
+                    return "";
+                }
 
                 // Find the L2 section that describes all the fields
                 var found = false;
@@ -1548,7 +1559,7 @@ namespace Tempo
                 if (!found)
                 {
                     // Couldn't find any of the fields
-                    return null;
+                    return "";
                 }
 
                 // Find the L3 section for this field, example:
@@ -1674,7 +1685,9 @@ namespace Tempo
                     var sb = new StringBuilder();
                     sb.Append(DeclaringType.PrettyName);
                     sb.Append(" ");
-                    sb.Append(MethodViewModel.GetParameterSignature(Parameters));
+
+                    // Show the parameter names rather than the parameter types; more helpful in less space
+                    sb.Append(MethodViewModel.GetParameterSignature(Parameters, parameterNameRatherThanType: true));
 
                     _prettyName = sb.ToString();
                 }

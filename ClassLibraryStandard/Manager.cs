@@ -198,18 +198,18 @@ namespace Tempo
 
                 // ((System.Reflection.RuntimeConstructorInfo)(attr.m_ctor)).DeclaringType
                 var attributeClassName = attr.Name;// attr.Constructor.DeclaringType.Name;
-                if (MatchesFilter(filter, attributeClassName, ref meaningfulMatch))
+                if (MatchesRegex(filter, attributeClassName, ref meaningfulMatch))
                     return true;
 
                 // Write out the attribute's constructor arguments
                 foreach (var parameter in attr.ConstructorArguments)
                 {
-                    if (MatchesFilter(filter, parameter.ArgumentType.Name, ref meaningfulMatch))
+                    if (MatchesRegex(filter, parameter.ArgumentType.Name, ref meaningfulMatch))
                         return true;
 
                     if (parameter.Value != null)
                     {
-                        if (MatchesFilter(filter, parameter.Value.ToString(), ref meaningfulMatch))
+                        if (MatchesRegex(filter, parameter.Value.ToString(), ref meaningfulMatch))
                             return true;
                     }
                 }
@@ -217,12 +217,12 @@ namespace Tempo
                 // And write out the named arguments
                 foreach (var arg in attr.NamedArguments)
                 {
-                    if (MatchesFilter(filter, attr.Name, ref meaningfulMatch))
+                    if (MatchesRegex(filter, attr.Name, ref meaningfulMatch))
                         return true;
 
                     if (arg.TypedValue.Value != null)
                     {
-                        if (MatchesFilter(filter, arg.TypedValue.Value.ToString(), ref meaningfulMatch))
+                        if (MatchesRegex(filter, arg.TypedValue.Value.ToString(), ref meaningfulMatch))
                             return true;
                     }
                 }
@@ -273,7 +273,7 @@ namespace Tempo
         {
             return
                 TypeIsPublicVolatile(t)
-                   && MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref meaningfulMatch)
+                   && TypeMatchesFilter(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref meaningfulMatch)
                 ||
                 MatchesAttributes(t, filter, ref meaningfulMatch);
         }
@@ -283,7 +283,7 @@ namespace Tempo
         //    return MatchesFilterString(filter, t, Settings.FilterOnName, filterOnBaseTypes, settings, ref abort, ref meaningfulMatch);
         //}
 
-        static bool MatchesFilter(Regex filter, string name, ref DebuggaBool meaningfulMatch)
+        static bool MatchesRegex(Regex filter, string name, ref DebuggaBool meaningfulMatch)
         {
             if (filter == null || filter.ToString() == "")
                 return true;
@@ -452,6 +452,7 @@ namespace Tempo
         static public TypeSet WinFormsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet WinUI2TypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet WindowsAppTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
+        static public TypeSet Win32TypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
 
         static Settings _settings = null;
         static public Settings Settings
@@ -575,24 +576,48 @@ namespace Tempo
         /// Check if a type matches the regex filter. This is mostly about the type name,
         /// but also looks at DLL name, IID, namespaces, etc, and base classes
         /// </summary>
-        public static bool MatchesFilterString(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
+        public static bool TypeMatchesFilter(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
         {
 
             // This optimization allows 80% of the calls to be skipped, and it's called a lot,
             // but it doesn't actually have much of an effect on wall clock time
             var check = type.CheckMatchesCache(filter);
-            if(check != null)
+            if (check != null)
             {
                 return check == true;
             }
 
-            var matches = MatchesFilterStringWorker(filter, type, filterOnName, filterOnBaseTypes, settings, ref meaningfulMatch);
-            type.SetMatchesCache(filter, matches);
-            return matches;
+
+            // Keep track of the fact that we're here, to handle a type cycle case.
+            // The scenario is type A searching for C, and we're checking type B, but B references back to A.
+            // If we do nothing, we'll go into an infinite cycle.
+            // The root of the search is A, so if B references A we don't actually care.
+            // So break the cycle by just returning false. B might still reference C by some other member that
+            // doesn't reference A.
+            if(type.TypeMatchesFilterInProgress == Manager.MatchGeneration)
+            {
+                return false;
+            }
+            type.TypeMatchesFilterInProgress = Manager.MatchGeneration;
+
+            try
+            {
+                var matches = TypeMatchesFilterWorker(filter, type, filterOnName, filterOnBaseTypes, settings, ref meaningfulMatch);
+                type.SetMatchesCache(filter, matches);
+                return matches;
+            }
+            finally
+            {
+                type.TypeMatchesFilterInProgress = 0;
+            }
 
         }
 
-        public static bool MatchesFilterStringWorker(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
+        /// <summary>
+        /// Helper for TypeMatchesFilter that does the work but doesn't check the cache first
+        /// to see if it's already been checked for this type on this filter.
+        /// </summary>
+        static bool TypeMatchesFilterWorker(Regex filter, TypeViewModel type, bool filterOnName, bool filterOnBaseTypes, Settings settings, ref DebuggaBool meaningfulMatch)
         {
             if (!filterOnName || (filter == null || filter.ToString().Trim() == ""))
             {
@@ -604,18 +629,9 @@ namespace Tempo
                 return false;
             }
 
-
-            //if (settings != null && settings.FilterOnFullName)
-            //{
-            //    if (MatchesFilter(filter, type.Namespace, ref meaningfulMatch))
-            //    {
-            //        return true;
-            //    }
-            //}
-
-            if (type.DllPath != null && settings.FilterOnDllPath)
+            if (!string.IsNullOrEmpty(type.DllPath) && settings.FilterOnDllPath)
             {
-                if (MatchesFilter(filter, type.DllPath, ref meaningfulMatch))
+                if (MatchesRegex(filter, type.DllPath, ref meaningfulMatch))
                 {
                     return true;
                 }
@@ -623,7 +639,7 @@ namespace Tempo
 
             if (!string.IsNullOrEmpty(type.Guid))
             {
-                if (MatchesFilter(filter, type.Guid, ref meaningfulMatch))
+                if (MatchesRegex(filter, type.Guid, ref meaningfulMatch))
                 {
                     return true;
                 }
@@ -639,7 +655,7 @@ namespace Tempo
 
                 if (settings != null && settings.FilterOnFullName)
                 {
-                    if (MatchesFilter(filter, t.Namespace, ref meaningfulMatch))
+                    if (MatchesRegex(filter, t.Namespace, ref meaningfulMatch))
                     {
                         return true;
                     }
@@ -648,7 +664,7 @@ namespace Tempo
 
                 //if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), ref meaningfulMatch))
                 if (filterOnName
-                    && MatchesFilter(filter, t.PrettyName, ref meaningfulMatch))
+                    && MatchesRegex(filter, t.PrettyName, ref meaningfulMatch))
                 {
                     t.SetNameMatchGeneration();
                     return true;
@@ -659,14 +675,29 @@ namespace Tempo
                 {
                     foreach (var typeArg in t.GetGenericArguments())
                     {
-                        if (MatchesFilter(filter, typeArg.PrettyName, ref meaningfulMatch))//, true))
+                        if (MatchesRegex(filter, typeArg.PrettyName, ref meaningfulMatch))//, true))
                             return true;
                         //if (abort) return false;
                     }
 
-                    if (MatchesFilter(filter, t.PrettyName, ref meaningfulMatch))
+                    if (MatchesRegex(filter, t.PrettyName, ref meaningfulMatch))
                         return true;
                     //if (abort) return false;
+                }
+            }
+
+            // For a delegate type, we'll consider the invoker parameters as part of the type def
+            // For events this is usually explicit, e.g. the TArgs and TSender in
+            // TypedEventHandler<TSender,TArgs>, but for other delegate types it only shows up in the invoker method
+            if (type.IsDelegate)
+            {
+                foreach (var param in type.DelegateParameters)
+                {
+                    //if (TypeMatchesFilterWorker(filter, param.ParameterType, filterOnName, filterOnBaseTypes, settings, ref meaningfulMatch))
+                    if (TypeMatchesFilter(filter, param.ParameterType, filterOnName, filterOnBaseTypes, settings, ref meaningfulMatch))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -738,7 +769,7 @@ namespace Tempo
 
         static public IEnumerable<MemberOrTypeViewModelBase> GetMembersHelper(SearchExpression searchExpression, int iteration)
         {
-            DebugLog.Append($"GetMembersHelper ({iteration})");
+            DebugLog.Append($"GetMembersHelper (iteration: {iteration})");
             LastType = null;
             LastMember = null;
 
@@ -1268,14 +1299,25 @@ namespace Tempo
 
                 checker.TypeCheck(type, out matchesT, out meaningfulMatchT, out abortTypeT, ref abort);
 
+                // By default, checkers "match".
+                // E.g. if the checker is checking for a "don't care" filter: it matches
                 matchesCheckers &= matchesT;
 
-                meaningfulMatch = meaningfulMatch |= meaningfulMatchT;
+                if(matchesCheckers)
+                {
+                    meaningfulMatch = meaningfulMatch |= meaningfulMatchT;
+                }
+                else
+                {
+                    // If it's not a match, it's not a meaningful match either
+                    meaningfulMatch = false;
+                }
 
                 abortType |= abortTypeT;
 
                 if (abortType)
                 {
+                    // bugbug: should return too if matchesChecker is false
                     return;
                 }
 
@@ -1524,7 +1566,7 @@ namespace Tempo
                 meaningfulMatch = false;
                 var isEventInvoker = false;
 
-                if (Settings.FilterOnName && MatchesFilter(memberRegex, member.Name, ref meaningfulMatch))
+                if (Settings.FilterOnName && MatchesRegex(memberRegex, member.Name, ref meaningfulMatch))
                 {
                     filtersMatch = true;
                 }
@@ -1534,18 +1576,18 @@ namespace Tempo
                     if (Settings.FilterOnReturnType)
                     {
                         if (member is PropertyViewModel
-                            && MatchesFilterString(memberRegex, (member as PropertyViewModel).PropertyType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
+                            && TypeMatchesFilter(memberRegex, (member as PropertyViewModel).PropertyType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
                         else if (member is MethodViewModel
-                                 && MatchesFilterString(memberRegex, (member as MethodViewModel).ReturnType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
+                                 && TypeMatchesFilter(memberRegex, (member as MethodViewModel).ReturnType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
                         else if (member is FieldViewModel
                                  && !(member as FieldViewModel).DeclaringType.IsEnum
-                                 && MatchesFilterString(memberRegex, (member as FieldViewModel).FieldType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
+                                 && TypeMatchesFilter(memberRegex, (member as FieldViewModel).FieldType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
                         }
@@ -1607,7 +1649,7 @@ namespace Tempo
                     foreach (var parameter in parameters)
                     {
                         var nameMatch = false;
-                        if (Settings.FilterOnName && MatchesFilter(memberRegex, parameter.Name, ref meaningfulMatch))
+                        if (Settings.FilterOnName && MatchesRegex(memberRegex, parameter.Name, ref meaningfulMatch))
                         {
                             nameMatch = true;
                             parameter.SetNameMatchGeneration();
@@ -1615,14 +1657,14 @@ namespace Tempo
 
                         if (nameMatch
                             ||
-                            MatchesFilterString(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
+                            TypeMatchesFilter(memberRegex, parameter.ParameterType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                         {
                             filtersMatch = true;
 
                             // Trigger parameter.IsMatch
                             parameter.SetMatchGeneration();
 
-                            if(isEventInvoker)
+                            if (isEventInvoker)
                             {
                                 (member as EventViewModel).SetInvokerMatch();
                             }
@@ -1632,7 +1674,7 @@ namespace Tempo
 
                 if (!filtersMatch && Settings.FilterOnDeclaringType)
                 {
-                    if (MatchesFilterString(memberRegex, member.DeclaringType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
+                    if (TypeMatchesFilter(memberRegex, member.DeclaringType, true, /*filterOnBaseTypes*/ true, Settings, ref meaningfulMatch))
                     {
                         filtersMatch = true;
                     }

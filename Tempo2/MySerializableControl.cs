@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -132,6 +127,15 @@ namespace Tempo
             DependencyProperty.Register("IsSecondSearchPane", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(false));
 
 
+        //internal void SetWaitCursor()
+        //{
+        //    ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Wait);
+        //}
+
+        //internal void ClearCursor()
+        //{
+        //    ProtectedCursor = null;
+        //}
 
     }
 

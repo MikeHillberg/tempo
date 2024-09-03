@@ -35,7 +35,7 @@
                     <local:HeadingBar x:Name="_detailViewHeading"
                         Heading="{x:Bind TypeVM.PrettyName, Mode=OneWay}"
                         SubHeading="{x:Bind TypeVM.Namespace, Mode=OneWay}"
-                        SubSubHeading="{x:Bind TypeVM.TypeKindString, Mode=OneWay}"
+                        SubSubHeading="{x:Bind ConvertedTypeKind(TypeVM), Mode=OneWay}"
                         IsPreview="{x:Bind TypeVM.IsPreview, Mode=OneWay}"
                                   Margin="{StaticResource BottomVerticalMargin}"
                         />
