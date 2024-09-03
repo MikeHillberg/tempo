@@ -87,7 +87,7 @@
                     </TextBlock>
 
                     <TextBlock Margin="{StaticResource VerticalMargin}"
-                               ToolTipService.ToolTip="Search APIs in this scope using PowerShell on Windows">
+                               ToolTipService.ToolTip="Search APIs in this scope using PowerShell on Windows (Ctrl+Shift+P)">
                         <Hyperlink Click="GoToPSClick" >PowerShell</Hyperlink>
                     </TextBlock>
 

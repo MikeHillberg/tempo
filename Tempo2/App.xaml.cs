@@ -509,6 +509,18 @@ namespace Tempo
                 VirtualKeyModifiers.Control,
                 () => MoveToSearchBox());
 
+            // Control+Shift+P launches PowerShell
+            SetupAccelerator(
+                VirtualKey.P,
+                VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control,
+                () =>
+                {
+                    if (App.HomePage != null && App.HomePage.XamlRoot != null)
+                    {
+                        PSLauncher.GoToPS(App.HomePage.XamlRoot);
+                    }
+                });
+
             // Reset is Alt+Home to match Edge
             // A key accelerator doesn't work though if keyboard focus is in the ListView because of this issue:
             // https://github.com/microsoft/microsoft-ui-xaml/issues/9885
@@ -521,12 +533,12 @@ namespace Tempo
 
             RootFrame.PreviewKeyDown += (s, e2) =>
             {
-                if(e2.Key != VirtualKey.Home)
+                if (e2.Key != VirtualKey.Home)
                 {
                     return;
                 }
 
-                if( GetKeyModifiersForThread() == KeyModifiers.Alt)
+                if (GetKeyModifiersForThread() == KeyModifiers.Alt)
                 {
                     App.ResetAndGoHome();
                     e2.Handled = true;
@@ -615,6 +627,11 @@ namespace Tempo
 
                             case "windows":
                                 IsWinPlatformScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case "win32":
+                                IsWin32Scope = true;
                                 _initialScopeSet = true;
                                 break;
 
@@ -858,7 +875,7 @@ namespace Tempo
             {
                 scope = nameof(IsCustomApiScope);
             }
-            else if(IsWin32Scope)
+            else if (IsWin32Scope)
             {
                 scope = nameof(IsWin32Scope);
             }
@@ -926,9 +943,9 @@ namespace Tempo
             {
                 EnsureWinAppScopeStarted();
             }
-            else if(_isWin32Scope)
+            else if (_isWin32Scope)
             {
-               EnsureWin32ScopeStarted();
+                EnsureWin32ScopeStarted();
             }
             else
             {
@@ -1020,7 +1037,7 @@ namespace Tempo
                 {
                     return "Custom APIs";
                 }
-                else if(IsWin32Scope)
+                else if (IsWin32Scope)
                 {
                     return "Win32 APIs";
                 }
@@ -1825,7 +1842,7 @@ namespace Tempo
             {
                 return await EnsureCustomApiScopeAsync();
             }
-            else if(_isWin32Scope)
+            else if (_isWin32Scope)
             {
                 return await EnsureWin32ScopeLoadedAsync();
             }
@@ -1901,7 +1918,6 @@ namespace Tempo
         {
             InternalNavigate(typeof(NamespaceView), initial);
         }
-
 
         /// <summary>
         /// Show the search filters, either navigating or in a flyout
