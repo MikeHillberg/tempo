@@ -37,7 +37,7 @@ namespace Tempo
 
             // Run the startup script to load the Tempo: drive, then cd to it
             // Bypassing the execution policy check allows scripts to run
-            startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:";
+            startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:\Types";
             DebugLog.Append(startInfo.Arguments);
 
             // Pass in the exe name so it can call back

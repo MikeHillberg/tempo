@@ -98,7 +98,22 @@ namespace Tempo
             if (!shouldContinue)
                 return;
 
+            shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.PowerShell, _root, _psButton,
+                () => new TeachingTip()
+                {
+                    Title = PowerShellTipText.Title,
+                    Subtitle = PowerShellTipText.Subtitle,
+                });
+            if (!shouldContinue)
+                return;
+
         }
+
+        (string Title, string Subtitle) PowerShellTipText = (
+                "Search/Display in PowerShell",
+                "Types and members are objects, and PowerShell loves objects");
+
 
         // mikehill_ua:
         // Error CS0104	'WindowSizeChangedEventArgs' is an ambiguous reference between 'Windows.UI.Core.WindowSizeChangedEventArgs' and 'Microsoft.UI.Xaml.WindowSizeChangedEventArgs'	UwpTempo2 C:\Users\Mike\source\repos\TempoOnline\UwpTempo2\HomePage.xaml.cs	57	N/A
@@ -683,19 +698,16 @@ namespace Tempo
             App.Instance.GotoSearch();
         }
 
-        private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
-        {
-            _baseline.StartBringIntoView();
-        }
+        //private void Hyperlink_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        //{
+        //    _baseline.StartBringIntoView();
+        //}
 
 
-        private void GoToPSClick(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        private void GoToPSClick(object sender, object args)
         {
             PSLauncher.GoToPS(this.XamlRoot);
         }
-
-
-
     }
 
     public class SplitFilename
