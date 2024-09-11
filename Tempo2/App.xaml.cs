@@ -608,6 +608,10 @@ namespace Tempo
                 {
                     var queryParams = HttpUtility.ParseQueryString(query);
                     var scope = queryParams.Get("scope");
+
+                    // In the search results, what should be selected
+                    InitialSelection = queryParams.Get("selection");
+
                     if (scope != null)
                     {
                         // Set the ApiScope to the requested value. We'll set _initialScopeSet
@@ -643,6 +647,15 @@ namespace Tempo
 
                         }
                     }
+
+
+                    // Copy in the Settings if we got them in the arguments
+                    var settings = queryParams.Get("settings");
+                    if(settings != null)
+                    {
+                        Manager.Settings = Settings.FromJson(settings);
+                    }
+
                 }
 
 
@@ -660,7 +673,10 @@ namespace Tempo
         }
 
 
-
+        /// <summary>
+        /// In the first navigation to SearchResults, make this the selected item
+        /// </summary>
+        static internal string InitialSelection = null;
 
         /// <summary>
         /// Run an Action on the UI thread
@@ -834,7 +850,7 @@ namespace Tempo
         static public App Instance { get; private set; }
 
         // Main window so that we can get the XamlRoot and DispatcherQueue
-        static public FrameworkElement HomePage;
+        static public HomePage HomePage;
 
         // IsWinPlatformScope means show the Windows APIs
         static bool _isWinPlatformScope = false;

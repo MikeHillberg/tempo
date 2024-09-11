@@ -111,7 +111,7 @@ namespace Tempo
         }
 
         (string Title, string Subtitle) PowerShellTipText = (
-                "Search/Display in PowerShell",
+                "Search/Display in PowerShell (Ctrl+Shift+P)",
                 "Types and members are objects, and PowerShell loves objects");
 
 

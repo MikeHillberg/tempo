@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-//using Microsoft.Windows.Controls.Ribbon;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Reflection;
 using System.Collections;
 using System.Runtime.CompilerServices;
-using CommonLibrary;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Tempo
 {
@@ -31,6 +28,26 @@ namespace Tempo
         }
 
         bool? _isDefault = true;
+
+        public string ToJson()
+        {
+            var json = JsonSerializer.Serialize<Settings>(this);
+            return json;
+        }
+
+        public static Settings FromJson(string json)
+        {
+            // bugbug: 
+            // - Is there a way to have the Json only include non-default values?
+            // - If not, is there a way to skip the default values? 
+            //   JsonIgnoreCondition.WhenWritingDefault shouuld do this if I read the docs right,
+            //   but it doesn't seem to work
+            // - A lot of change notifications happen in the Deserialize(). Hopefully those are all no op.
+            //   Or should add suppression during construction
+
+            Settings settings = JsonSerializer.Deserialize<Settings>(json);
+            return settings;
+        }
 
         static public bool IsInUnitTest = false;
 
@@ -187,7 +204,8 @@ namespace Tempo
         public void NotifyChange(bool isReset = false, [CallerMemberName] string name = null)
         {
             DebugLog.Append($"Settings change (reset:{isReset}, caller:{name})");
-            _isDefault = isReset ? (bool?)true : null;
+            //_isDefault = isReset ? (bool?)true : null;
+            _isDefault = null;
 
             var args = new PropertyChangedEventArgs(name);
 

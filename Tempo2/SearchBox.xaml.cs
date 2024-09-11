@@ -36,6 +36,12 @@ namespace Tempo
             App.Instance.GotoSearch(_searchBox.Text);
         }
 
+        public string Text
+        {
+            get { return _searchBox.Text; }
+            set { _searchBox.Text = value; }
+        }
+
         public void Focus()
         {
             _ = _searchBox.Focus(FocusState.Programmatic);

@@ -19,6 +19,7 @@ using Windows.Foundation;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Shapes;
 using NuGet.Configuration;
+using System.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -393,6 +394,14 @@ namespace Tempo
 
             SearchString = _searchString;
 
+            // Make sure what the user sees is in sync
+            // (They can get out of sync if the search string came in as a command line argument)
+            if(_searchBox.Text != _searchString)
+            {
+                _searchBox.Text = _searchString;
+            }
+
+
             // Do the search
             var searchExpression = new SearchExpression();
             searchExpression.RawValue = SearchString;
@@ -765,8 +774,54 @@ namespace Tempo
 
             MemberOrTypeViewModelBase targetItem = null;
 
-            if (App.SearchExpression.MemberRegex == null
-                || App.SearchExpression.TypeRegex == null)
+            // InitialSelection will be set if the app was launched with a parameter
+            if (App.InitialSelection != null)
+            {
+                // App was launched with a parameter specifying which item to start selected
+                // E.g. "type:Windows.UI.Xaml.Controls.Button"
+                // (Could be a type or a member)
+
+                var parts = App.InitialSelection.Split(':');
+                App.InitialSelection = null;
+                if (parts == null || parts.Length != 2)
+                {
+                    return;
+                }
+
+                var name = parts[1];
+                var isType = false;
+                if (parts[0] == "type")
+                {
+                    isType = true;
+                }
+
+                // Search the items to find a match
+                foreach (var item in _listView.Items)
+                {
+                    var itemVM = item as MemberOrTypeViewModelBase;
+                    if(isType)
+                    {
+                        var typeVM = item as TypeViewModel;
+                        if (typeVM != null && typeVM.FullName == name)
+                        {
+                            targetItem = itemVM;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        var memberVM = item as MemberViewModelBase;
+                        if(memberVM != null && memberVM.FullName == name)
+                        {
+                            targetItem = memberVM;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            else if (App.SearchExpression.MemberRegex == null
+                   || App.SearchExpression.TypeRegex == null)
             {
                 // We're showing everything, not searching.
 
