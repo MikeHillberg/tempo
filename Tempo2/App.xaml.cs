@@ -46,6 +46,15 @@ namespace Tempo
 
             this.InitializeComponent();
 
+            // Initialize all the scope loaders. This doesn't cause anything to load yet
+            // (Must be done after App.Instance has been set)
+            _winPlatformScopeLoader = new WinPlatScopeLoader();
+            _winAppScopeLoader = new WinAppScopeLoader();
+            _win32ScopeLoader = new Win32ScopeLoader();
+            CustomApiScopeLoader = new CustomScopeLoader();
+            BaselineApiScopeLoader = new BaselineScopeLoader();
+
+
             // mikehill_ua
             //this.Suspending += OnSuspending;
 
@@ -87,7 +96,7 @@ namespace Tempo
         /// <summary>
         /// INPC helper
         /// </summary>
-        void RaisePropertyChange([CallerMemberName] string name = "")
+        internal void RaisePropertyChange([CallerMemberName] string name = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -782,10 +791,7 @@ namespace Tempo
 
                 DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
 
-                App.StartLoadCustomScope(
-                    DesktopManager2.CustomApiScopeFileNames.Value,
-                    navigateToSearchResults: true,
-                    useWinRTProjections: !App.Instance.UsingCppProjections);
+                CustomApiScopeLoader.StartMakeCurrent(navigateToSearchResults: true);
 
                 // Switch to Custom API scope. Don't use the property setter because it will trigger a FilePicker
                 _isCustomApiScope = true;
@@ -797,7 +803,7 @@ namespace Tempo
             // If this was a /diff command line, start opening the baseline filenames
             if (baselineFilename != null)
             {
-                StartLoadBaselineScope(new string[] { baselineFilename });
+                BaselineApiScopeLoader.StartMakeCurrent(new string[] { baselineFilename });
             }
 
         }
@@ -831,7 +837,8 @@ namespace Tempo
 
                 if (value)
                 {
-                    EnsureWinPlatformScopeStarted();
+                    // bugbug: optimize this so that if it's already started, don't start again?
+                    _winPlatformScopeLoader.StartMakeCurrent();
                 }
 
                 RaisePropertyChange();
@@ -892,7 +899,14 @@ namespace Tempo
                         break;
 
                     case "IsCustomApiScope":
-                        IsCustomApiScope = true;
+                        if (CustomApiScopeLoader.HasFile)
+                        {
+                            IsCustomApiScope = true;
+                        }
+                        else
+                        {
+                            IsWinPlatformScope = true;
+                        }
                         break;
 
                     case "IsWin32Scope":
@@ -920,64 +934,41 @@ namespace Tempo
         {
             if (_isWinPlatformScope)
             {
-                EnsureWinPlatformScopeStarted();
+                _winPlatformScopeLoader.StartMakeCurrent();
             }
             else if (_isWinAppScope)
             {
-                EnsureWinAppScopeStarted();
+                //EnsureWinAppScopeStarted();
+                _winAppScopeLoader.StartMakeCurrent();
             }
             else if(_isWin32Scope)
             {
-               EnsureWin32ScopeStarted();
+                //EnsureWin32ScopeStarted();
+                _win32ScopeLoader.StartMakeCurrent();
             }
             else
             {
-                Debug.Assert(_isCustomApiScope);
-                EnsureCustomScopeStarted(
-                    DesktopManager2.CustomApiScopeFileNames.Value,
-                    navigateToSearchResults: false);
+                CustomApiScopeLoader.StartMakeCurrent();
             }
 
             // Also, if the baseline is loaded, reload it too
             if (Manager.Settings.CompareToBaseline == true)
             {
-                StartLoadBaselineScope(App.Instance.BaselineFilenames);
+                BaselineApiScopeLoader.StartMakeCurrent(App.Instance.BaselineFilenames);
             }
         }
+
+        static WinAppScopeLoader _winAppScopeLoader = null;
 
         /// <summary>
         /// Call StartLoadWinPlatformScope if necessary and get Manager.WindowsTypeSet set
         /// </summary>
-        internal void EnsureWinPlatformScopeStarted()
-        {
-            EnsureScopeStarted(
-                () => Manager.WindowsTypeSet,
-                (typeSet) => Manager.WindowsTypeSet = typeSet,
-                (b) => StartLoadWinPlatformScope(b));
-        }
 
         /// <summary>
         /// Helper for callers like EnsureWinPlatformScopeStarted
         /// </summary>
-        static private void EnsureScopeStarted(
-            Func<TypeSet> getTypeScope,
-            Action<TypeSet> setTypeScope,
-            Action<bool> startLoad)
-        {
-            // If we have everything we need, set CurrentTypeSet
-            // (Given that it does this, this method could use a better name)
-            if (getTypeScope() != null
-                && getTypeScope().UsesWinRTProjections == !App.Instance.UsingCppProjections)
-            {
-                Manager.CurrentTypeSet = getTypeScope();
-                return;
-            }
 
-            setTypeScope(null);
 
-            // Start loading the APIs. Later when we call Ensure we'll make sure it's done
-            startLoad(!App.Instance.UsingCppProjections);
-        }
 
 
 
@@ -1002,7 +993,7 @@ namespace Tempo
 
 
         /// <summary>
-        /// Name of the API scope ("Windows", "WinAppSDK", "Custom")
+        /// Name of the API scope ("Windows", "WinAppSDK", "Win32", "Custom")
         /// </summary>
         public string ApiScopeName
         {
@@ -1047,26 +1038,13 @@ namespace Tempo
 
                 if (value)
                 {
-                    EnsureWinAppScopeStarted();
+                    _winAppScopeLoader.StartMakeCurrent();
                 }
 
                 RaisePropertyChange();
                 RaisePropertyChange(nameof(ApiScopeName));
             }
         }
-
-        /// <summary>
-        /// Call StartLoadWinAppScope if necessary and get Manager.WindowsAppTypeSet set
-        /// </summary>
-        internal void EnsureWinAppScopeStarted()
-        {
-            EnsureScopeStarted(
-                    () => Manager.WindowsAppTypeSet,
-                    (typeSet) => Manager.WindowsAppTypeSet = typeSet,
-                    (b) => StartLoadWinAppScope(b));
-        }
-
-
 
 
         // IsWin32Scope means show the Win32 metadata project
@@ -1086,26 +1064,20 @@ namespace Tempo
 
                 if (value)
                 {
-                    EnsureWin32ScopeStarted();
+                    _win32ScopeLoader.StartMakeCurrent();
                 }
 
                 RaisePropertyChange();
                 RaisePropertyChange(nameof(ApiScopeName));
             }
         }
+        static Win32ScopeLoader _win32ScopeLoader = null;
 
 
 
         /// <summary>
         /// Ensure the Win32 Metadata is loaded or loading
         /// </summary>
-        internal void EnsureWin32ScopeStarted()
-        {
-            EnsureScopeStarted(
-                    () => Manager.Win32TypeSet,
-                    (typeSet) => Manager.Win32TypeSet = typeSet,
-                    (b) => StartLoadWin32Scope(b));
-        }
 
 
 
@@ -1125,7 +1097,7 @@ namespace Tempo
 
                 if (value)
                 {
-                    _ = SelectAndStartLoadCustomApiScopeAsync();
+                    CustomApiScopeLoader.EnsurePickedAndStartMakeCurrent();
                 }
 
                 RaisePropertyChange();
@@ -1137,51 +1109,13 @@ namespace Tempo
         /// Figure out what custom APIs to load and start loading them, or select them if already loaded
         /// </summary>
         /// <returns></returns>
-        static public async Task SelectAndStartLoadCustomApiScopeAsync()
-        {
-            if (App.Instance.IsCustomApiScopeLoaded)
-            {
-                Manager.CurrentTypeSet = Manager.CustomMRTypeSet;
-            }
-            else if (_customApiScopeLoader != null)
-            {
-                // A load is already running
-                return;
-            }
-            else
-            {
-                var filenames = DesktopManager2.CustomApiScopeFileNames.Value;
-                if (filenames == null
-                    || filenames.Length == 0
-                    || filenames.Length == 1 && string.IsNullOrEmpty(filenames[0]))
-                {
-                    // No filenames saved in app settings from last time
-                    await PickAndStartLoadCustomApiScopeAsync();
-                }
-                else
-                {
-                    EnsureCustomScopeStarted(filenames, navigateToSearchResults: false);
-                }
-            }
 
-        }
 
         /// <summary>
         /// Call StartLoadCustomScope if necessary and get Manager.CustomMRTypeSet set
         /// </summary>
         /// <param name="files"></param>
         /// <param name="navigateToSearchResults"></param>
-        static internal void EnsureCustomScopeStarted(
-            string[] files,
-            bool navigateToSearchResults)
-        {
-            EnsureScopeStarted(
-                () => Manager.CustomMRTypeSet,
-                (typeSet) => Manager.CustomMRTypeSet = typeSet,
-                (b) => StartLoadCustomScope(files,
-                                            navigateToSearchResults,
-                                            b));
-        }
 
         /// <summary>
         /// Close the custom API scope and load it again
@@ -1192,7 +1126,7 @@ namespace Tempo
             if (App.Instance.IsCustomApiScope)
             {
                 // Already selected, pick and load
-                _ = App.SelectAndStartLoadCustomApiScopeAsync();
+                CustomApiScopeLoader.StartMakeCurrent();
             }
             else
             {
@@ -1202,48 +1136,15 @@ namespace Tempo
         }
 
 
-        public bool IsCustomApiScopeLoaded
-        {
-            get { return _isCustomApiScopeLoaded; }
-            set
-            {
-                if (value != _isCustomApiScopeLoaded)
-                {
-                    value = _isCustomApiScopeLoaded;
-                    RaisePropertyChange();
-                }
-            }
-        }
-        bool _isCustomApiScopeLoaded = false;
 
         /// <summary>
         /// Pick new custom metadata files and add to the current set
         /// </summary>
-        async public void PickAndAddCustomApis()
-        {
-            var newFilenames = await TryPickMetadataFilesAsync();
-            if (newFilenames == null)
-            {
-                return;
-            }
 
-            AddCustomApis(newFilenames.ToArray());
-        }
 
-        /// <summary>
-        /// Add new custom metadata files to the current set
-        /// </summary>
-        public void AddCustomApis(string[] newFilenames)
-        {
-            var currentFilenames = DesktopManager2.CustomApiScopeFileNames.Value;
 
-            CloseCustomScope(false);
 
-            DesktopManager2.CustomApiScopeFileNames.Value
-                = currentFilenames.Union(newFilenames).ToArray();
 
-            ReloadCustomApiScope();
-        }
 
         /// <summary>
         /// Replace the current custom filenames with a new array, re-loading files
@@ -1276,23 +1177,8 @@ namespace Tempo
         /// Show the file open picker to load metadata files, then start the load
         /// </summary>
         /// <returns></returns>
-        static public async Task PickAndStartLoadCustomApiScopeAsync()
-        {
-            var filenames = await TryPickMetadataFilesAsync();
 
-            if (filenames == null)
-            {
-                // Canceled. Go back to the OS APIs since we know that they're there
-                App.Instance.IsWinPlatformScope = true;
-                App.GoHome();
-                return;
-            }
 
-            // Start the load
-            App.EnsureCustomScopeStarted(
-                filenames.ToArray(),
-                navigateToSearchResults: true);
-        }
 
 
         /// <summary>
@@ -1326,126 +1212,16 @@ namespace Tempo
         }
 
 
-        /// <summary>
-        /// Load the WinAppAPI scope (doesn't complete synchronously)
-        /// </summary>
-        void StartLoadWinAppScope(bool useWinRTProjections)
-        {
-            // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
-            if (_winAppScopeLoader != null)
-            {
-                // Already a load in progress
-                return;
-            }
-
-            _winAppScopeLoader = new ApiScopeLoader();
-
-            _winAppScopeLoader.StartLoad(
-                offThreadLoadAction: () => // Runs *off* UI thread
-                {
-                    DesktopManager2.LoadWinAppSdkAssembliesSync(WinAppSDKChannel.Stable, useWinRTProjections);
-                },
-
-                uiThreadCompletedAction: () => // Runs on UI thread (if succeeded)
-                {
-                    _winAppScopeLoader = null;
-                    if (_isWinAppScope)
-                    {
-                        Manager.CurrentTypeSet = Manager.WindowsAppTypeSet;
-                    }
-                },
-
-                uiThreadCanceledAction: () => // Runs on UI thread (if canceled)
-                {
-                    _winAppScopeLoader = null;
-
-                    _ = MyMessageBox.Show(
-                            "Unable to load WinAppSDK package\n\nSwitching to Windows Platform APIs",
-                            "Load error");
-
-                    // Go back to an API scope we know is there
-                    IsWinPlatformScope = true;
-                    App.GoHome();
-                });
-
-        }
-
-        static ApiScopeLoader _winAppScopeLoader = null;
-
-        internal async static Task<bool> EnsureWinAppScopeLoadedAsync()
-        {
-            var winAppScopeLoader = _winAppScopeLoader;
-            if (winAppScopeLoader == null)
-            {
-                return true;
-            }
-
-            return await winAppScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest WinAppSDK package ...");
-        }
 
 
 
 
 
-        /// <summary>
-        /// Load the Win32 scope (doesn't complete synchronously)
-        /// </summary>
-        void StartLoadWin32Scope(bool useWinRTProjections)
-        {
-            // Test: delete downloaded, start on Windows, then switch back/forth a bunch rapidly
-            if (_win32ScopeLoader != null)
-            {
-                // Already a load in progress
-                return;
-            }
 
-            _win32ScopeLoader = new ApiScopeLoader();
 
-            _win32ScopeLoader.StartLoad(
-                offThreadLoadAction: () => // Runs *off* UI thread
-                {
-                    DesktopManager2.LoadWin32AssembliesSync(useWinRTProjections);
-                },
 
-                uiThreadCompletedAction: () => // Runs on UI thread (if succeeded)
-                {
-                    _win32ScopeLoader = null;
-                    if (_isWin32Scope)
-                    {
-                        Manager.CurrentTypeSet = Manager.Win32TypeSet;
-                    }
-                },
 
-                uiThreadCanceledAction: () => // Runs on UI thread (if canceled)
-                {
-                    _win32ScopeLoader = null;
 
-                    _ = MyMessageBox.Show(
-                            "Unable to load Win32 package\n\nSwitching to Windows Platform APIs",
-                            "Load error");
-
-                    // Go back to an API scope we know is there
-                    IsWinPlatformScope = true;
-                    App.GoHome();
-                });
-
-        }
-
-        static ApiScopeLoader _win32ScopeLoader = null;
-
-        /// <summary>
-        /// Ensure that the Win32 metadata is done loading
-        /// </summary>
-        internal async static Task<bool> EnsureWin32ScopeLoadedAsync()
-        {
-            var win32ScopeLoader = _win32ScopeLoader;
-            if (win32ScopeLoader == null)
-            {
-                return true;
-            }
-
-            return await win32ScopeLoader.EnsureLoadedAsync("Checking nuget.org for latest Win32 metadata package ...");
-        }
 
 
 
@@ -1454,7 +1230,7 @@ namespace Tempo
 
 
         static bool _isCustomApiScope = false;
-        static ApiScopeLoader _customApiScopeLoader = null;
+        internal static CustomScopeLoader CustomApiScopeLoader = null;
 
         /// <summary>
         /// Close the custom API scope, clear the settings, and go to the Windows APIs
@@ -1466,11 +1242,8 @@ namespace Tempo
             Manager.CustomMRTypeSet = Manager.CustomTypeSet = null;
 
             // Bugbug: workaround for x:Bind ignoring the two-way binding when this value is null
-            DesktopManager2.CustomApiScopeFileNames.Value = new string[0];
-            SaveCustomFilenamesToSettings();
 
-            _customApiScopeLoader = null;
-            App.Instance.IsCustomApiScopeLoaded = false;
+            App.CustomApiScopeLoader.Close();
 
             if (isCurrent && goHome)
             {
@@ -1483,98 +1256,28 @@ namespace Tempo
         /// Start loading the custom API scope (doesn't complete synchronously)
         /// </summary>
         /// <param name="filenames"></param>
-        public static void StartLoadCustomScope(
-            string[] filenames,
-            bool navigateToSearchResults,
-            bool useWinRTProjections)
-        {
-            if (navigateToSearchResults)
-            {
-                // We're going to navigate when this is done. Disable the home page
-                // so that you can't interact with it in the meantime and get interrupted
-                RootFrame.IsEnabled = false;
 
-                // bugbug: can't get this to work, doesn't change the cursor
-                //RootFrame.SetWaitCursor();
-            }
 
-            CloseCustomScope(goHome: false);
 
-            // Update the filenames now so it doesn't cause a flicker
-            DesktopManager2.CustomApiScopeFileNames.Value = filenames;
-            SaveCustomFilenamesToSettings();
 
-            var typeSet = new MRTypeSet(MRTypeSet.CustomMRName, !App.Instance.UsingCppProjections);
-            _customApiScopeLoader = new ApiScopeLoader();
 
-            _customApiScopeLoader.StartLoad(
-                offThreadLoadAction: () =>
-                {
-                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames);
-                },
 
-                uiThreadCompletedAction: async () =>
-                {
-                    _customApiScopeLoader = null;
 
-                    // Since this is completing what started off thread, the custom API scope might
-                    // not be selected anymore (user might have clicked away)
 
-                    if (_isCustomApiScope)
-                    {
 
-                        if (typeSet.TypeCount == 0)
-                        {
 
-                            await MyMessageBox.Show(
-                                "No APIs found, switching to Windows Platform APIs",
-                                null, "OK");
 
-                            // Go to a scope we know exists
-                            GoToWindowsScopeAndGoHome();
-                            return;
-                        }
 
-                        Manager.CustomMRTypeSet = typeSet;
-                        Manager.CurrentTypeSet = Manager.CustomMRTypeSet;
-                        App.Instance.IsCustomApiScopeLoaded = true;
 
-                        if (navigateToSearchResults)
-                        {
-                            App.Instance.GotoSearch();
 
-                            // This should happen in App automatically, but playing it safe
-                            RootFrame.IsEnabled = true;
-                        }
-                    }
-                },
 
-                uiThreadCanceledAction: () =>
-                {
-                    _customApiScopeLoader = null;
 
-                    // We're not going to navigate, so re-enable now
-                    RootFrame.IsEnabled = true;
 
-                    // Go to a scope we know exists
-                    GoToWindowsScopeAndGoHome();
-                });
-        }
 
         /// <summary>
         /// Complete when StartCustomApiScope has finished
         /// </summary>
-        async static Task<bool> EnsureCustomApiScopeAsync()
-        {
-            if (_customApiScopeLoader == null)
-            {
-                // Already finished
-                return true;
-            }
 
-            // Wait for it to finish
-            return await _customApiScopeLoader.EnsureLoadedAsync("Loading ...");
-        }
 
 
 
@@ -1589,23 +1292,10 @@ namespace Tempo
             }
         }
 
-        static ApiScopeLoader _baselineScopeLoader = null;
-
         /// <summary>
         /// Make IsBaselineScopeLoaded go false
         /// </summary>
-        public static void CloseBaselineScope()
-        {
-            if (_baselineScopeLoader == null)
-            {
-                return;
-            }
 
-            Manager.Settings.CompareToBaseline = false;
-            _baselineScopeLoader = null;
-            Manager.BaselineTypeSet = null;
-            App.Instance.RaisePropertyChange(nameof(IsBaselineScopeLoaded));
-        }
 
         /// <summary>
         /// Filenames that make up the baseline API scope (for comparissons)
@@ -1621,52 +1311,21 @@ namespace Tempo
         }
         string[] _baselineFilenames = null;
 
+        internal static BaselineScopeLoader BaselineApiScopeLoader = null;
+
 
         /// <summary>
         /// Start loading the baseline API scope (doesn't complete synchronously)
         /// </summary>
         /// <param name="filenames"></param>
-        public static void StartLoadBaselineScope(string[] filenames)
-        {
-            CloseBaselineScope();
 
-            App.Instance.BaselineFilenames = filenames;
 
-            foreach (var filename in filenames)
-            {
-                DebugLog.Append($"Loading baseline scope {filename}");
-            }
 
-            var typeSet = new MRTypeSet("Baseline", !App.Instance.UsingCppProjections);
-            _baselineScopeLoader = new ApiScopeLoader();
 
-            _baselineScopeLoader.StartLoad(
-                offThreadLoadAction: () =>
-                {
-                    DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, filenames);
-                },
 
-                uiThreadCompletedAction: async () =>
-                {
-                    _baselineScopeLoader = null;
-                    if (typeSet.TypeCount == 0)
-                    {
-                        await MyMessageBox.Show("No APIs found", null, "OK");
-                        return;
-                    }
 
-                    Manager.BaselineTypeSet = typeSet;
-                    Manager.Settings.CompareToBaseline = true;
 
-                    // IsBaselineScopeLoaded is a function of BaselineTypeSet
-                    App.Instance.RaisePropertyChange(nameof(IsBaselineScopeLoaded));
-                },
 
-                uiThreadCanceledAction: () =>
-                {
-                    _baselineScopeLoader = null;
-                });
-        }
 
 
         /// <summary>
@@ -1674,14 +1333,14 @@ namespace Tempo
         /// </summary>
         public async static Task<bool> EnsureBaselineScopeAsync()
         {
-            if (_baselineScopeLoader == null)
+            if (BaselineApiScopeLoader == null)
             {
                 // Already finished
                 return true;
             }
 
             // Wait for it to finish
-            return await _baselineScopeLoader.EnsureLoadedAsync("Loading baseline ...");
+            return await BaselineApiScopeLoader.EnsureLoadedAsync();
         }
 
 
@@ -1699,7 +1358,7 @@ namespace Tempo
         /// <summary>
         /// Save CustomApiScopeFileNames to ApplicationData settings
         /// </summary>
-        static void SaveCustomFilenamesToSettings()
+        static internal void SaveCustomFilenamesToSettings()
         {
             ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
@@ -1731,7 +1390,7 @@ namespace Tempo
             ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 
             var setting = localSettings.Values[_customFilenamesKey] as string;
-            if (setting != null)
+            if (!string.IsNullOrEmpty(setting))
             {
                 var filenames = setting.Split(';').ToArray();
                 DesktopManager2.CustomApiScopeFileNames.Value = filenames;
@@ -1743,64 +1402,15 @@ namespace Tempo
         /// <summary>
         /// Start loading the Windows APIs (doesn't complete synchronously)
         /// </summary>
-        static void StartLoadWinPlatformScope(bool useWinRTProjections)
-        {
-            if (_winPlatformScopeLoader != null)
-            {
-                // Already loading
-                return;
-            }
 
-            _winPlatformScopeLoader = new ApiScopeLoader();
 
-            _winPlatformScopeLoader.StartLoad(
-                offThreadLoadAction: () => // Runs *off* UI thread
-                {
-                    DesktopManager2.LoadWindowsTypesWithMR(
-                        useWinRTProjections,
-                        (assemblyName) => LocateAssembly(assemblyName));
-                },
 
-                uiThreadCompletedAction: () => // Runs on UI thread (if succeeded)
-                {
-                    _winPlatformScopeLoader = null;
 
-                    // The API scope selection could have changed while we were away on the other thread
-                    if (_isWinPlatformScope)
-                    {
-                        Manager.CurrentTypeSet = Manager.WindowsTypeSet;
-                    }
 
-                    // This needs to wait until CurrentTypeSet is set
-                    // Bugbug: should be doing this for other api scopes too
-                    _ = BackgroundHelper2.DoWorkAsync<object>(() =>
-                    {
-                        // Warm the cache
-                        var filter = new SearchExpression();
-                        filter.RawValue = "Hello";
-                        var iteration = ++Manager.RecalculateIteration;
-                        Manager.GetMembers(filter, iteration);
 
-                        return null;
-                    });
-                },
 
-                uiThreadCanceledAction: () => // Runs on UI thread (if canceled)
-                {
-                    _winPlatformScopeLoader = null;
-                });
-        }
 
-        internal async static Task<bool> EnsureWinPlatformScopeLoaded()
-        {
-            var winPlatformScopeLoader = _winPlatformScopeLoader;
-            if (winPlatformScopeLoader == null)
-            {
-                return true;
-            }
 
-            return await winPlatformScopeLoader.EnsureLoadedAsync("Loading");
-        }
 
 
 
@@ -1811,56 +1421,33 @@ namespace Tempo
         async public static Task<bool> EnsureApiScopeLoadedAsync()
         {
             // Regardless of what's selected, also ensure the baseline is selected
-            if (_baselineScopeLoader != null)
+            if (BaselineApiScopeLoader.IsLoadingOrLoaded)
             {
-                await _baselineScopeLoader.EnsureLoadedAsync("Loading baseline");
+                await BaselineApiScopeLoader.EnsureLoadedAsync();
             }
 
             if (_isWinAppScope)
             {
                 // Returns false if the user cancels the load
-                return await EnsureWinAppScopeLoadedAsync();
+                return await _winAppScopeLoader.EnsureLoadedAsync();
             }
             else if (_isCustomApiScope)
             {
-                return await EnsureCustomApiScopeAsync();
+                return await CustomApiScopeLoader.EnsureLoadedAsync();
             }
             else if(_isWin32Scope)
             {
-                return await EnsureWin32ScopeLoadedAsync();
+                return await _win32ScopeLoader.EnsureLoadedAsync();
             }
             else
             {
-                return await EnsureWinPlatformScopeLoaded();
+                return await _winPlatformScopeLoader.EnsureLoadedAsync();
             }
         }
 
 
-        /// <summary>
-        /// Called by the MR loader when it can't find an assembly
-        /// </summary>
-        static string LocateAssembly(string assemblyName)
-        {
-            // Mostly, if a referenced assembly can't be found, let it be faked.
-            // But we need some WinRT interop assemblies for things like GridLength
-            if (_specialSystemAssemblyNames.Contains(assemblyName))
-            {
-                var task = StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assemblies/{assemblyName}.dll"));
-                task.AsTask().Wait();
-                return task.GetResults().Path;
-            }
 
-            return null;
-        }
 
-        static string[] _specialSystemAssemblyNames = new string[]
-        {
-            "System.Runtime.InteropServices.WindowsRuntime",
-            "System.Runtime.WindowsRuntime",
-            "System.Runtime.WindowsRuntime.UI.Xaml",
-            "System.Runtime",
-            "System.Private.CoreLib"
-        };
 
 
         //TextReader GetAppTextResource(string name)
@@ -2093,6 +1680,11 @@ namespace Tempo
         static private RootFrame RootFrame
         {
             get; set;
+        }
+
+        static internal void EnableRoot()
+        {
+            RootFrame.IsEnabled = true;
         }
 
         internal static void GoToMsdn()

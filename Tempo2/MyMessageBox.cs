@@ -51,6 +51,7 @@ namespace Tempo
 
             try
             {
+                DebugLog.Append($"Showing message box: {message}");
                 var result = await contentDialog.ShowAsync();
                 return result;
             }

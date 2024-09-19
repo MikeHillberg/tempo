@@ -364,14 +364,23 @@ namespace Tempo
                 sb.AppendLine(filePart);
                 sb.AppendLine($"   {pathPart}");
             }
-
+            
             return sb.ToString();
         }
 
 
-        private void OpenCustomClick(object sender, RoutedEventArgs e)
+        private async void OpenCustomClick(object sender, RoutedEventArgs e)
         {
-            App.Instance.PickAndAddCustomApis();
+            var pickedSomething = await App.CustomApiScopeLoader.PickAndAddCustomApis();
+            if(pickedSomething)
+            {
+                App.Instance.IsCustomApiScope = true;
+            }
+            else if(!App.CustomApiScopeLoader.HasFile)
+            {
+                App.Instance.IsWinPlatformScope = true;
+                App.GoHome();
+            }
         }
 
 
@@ -408,26 +417,15 @@ namespace Tempo
 
             // Set them as the baseline
             //App.Instance.OpenBaseline(filenames);
-            App.StartLoadBaselineScope(filenames.ToArray());
+            //App.StartLoadBaselineScope(filenames.ToArray());
+            App.BaselineApiScopeLoader.StartMakeCurrent(filenames.ToArray());
         }
 
 
         private void CloseBaseline(object sender, RoutedEventArgs e)
         {
-            App.CloseBaselineScope();
-            Settings.CompareToBaseline = false;
+            App.BaselineApiScopeLoader.Close();
 
-            // bugbug: if you set this to null, the x:Bind for some reason ignores it
-            // (note that it's a function xBind), due to this generated code.
-            // Workaround is to set to an empty array
-            //private void Update_Tempo_App_Instance_BaselineFilenames(global::System.String[] obj, int phase)
-            //{
-            //    if (obj != null)
-            //    {
-            //        this.Update_M_FilenamesToText_965212445(phase);
-            //    }
-            //}
-            App.Instance.BaselineFilenames = new string[0]; //null;
 
         }
 
@@ -508,7 +506,7 @@ namespace Tempo
                     }
                 }
 
-                App.Instance.AddCustomApis(paths.ToArray());
+                App.CustomApiScopeLoader.AddCustomApis(paths.ToArray());
             }
             finally
             {
@@ -583,7 +581,7 @@ namespace Tempo
                         return;
                     }
 
-                    App.StartLoadBaselineScope(new string[] { storageFile.Path });
+                    App.BaselineApiScopeLoader.StartMakeCurrent(new string[] { storageFile.Path });
                 }
             }
             finally

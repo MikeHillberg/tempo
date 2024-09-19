@@ -385,8 +385,10 @@ namespace Tempo
             // If we're in /diff mode, make sure the baseline files are loaded too
             if (Manager.Settings.CompareToBaseline == true)
             {
-                shouldContinue = await App.EnsureBaselineScopeAsync();
-                if (!shouldContinue)
+                // Ignore the result of this Ensure() call; it will always return false because the baseline is never selected/current
+                // Instead just check that it's really loaded
+                _ = await App.EnsureBaselineScopeAsync();
+                if (!App.BaselineApiScopeLoader.IsLoaded)
                 {
                     return;
                 }

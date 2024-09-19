@@ -73,7 +73,6 @@ namespace Tempo
             var typeSet = new MRTypeSet(
                 useWinRTProjections ? MRTypeSet.WindowsCSName : MRTypeSet.WindowsCppName,
                 useWinRTProjections);
-            Manager.WindowsTypeSet = typeSet;
 
             var projectionString = useWinRTProjections ? "c#" : "c++";
             DebugLog.Append($"Loading from {_winMDDir} for {projectionString}");
@@ -124,6 +123,9 @@ namespace Tempo
             // This has to happen after the WinUI versions are set above
             //DesktopTypeSet.LoadContracts(typeSet);
             typeSet.LoadContracts();
+
+            // Do this last, after it's valid
+            Manager.WindowsTypeSet = typeSet;
 
             // This doesn't need to complete for the load to have completed. So we do this at the end, and
             // let this method return void rather than Task

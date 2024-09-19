@@ -317,18 +317,14 @@ namespace Tempo
         }
 
 
-        private async void SelectCustomApiScope(object sender, RoutedEventArgs e)
+        private void SelectCustomApiScope(object sender, RoutedEventArgs e)
         {
-            if (App.Instance.IsCustomApiScope)
-            {
-                return;
-            }
-
-            // Might need to show the file picker
-            await App.SelectAndStartLoadCustomApiScopeAsync();
-
             App.Instance.IsCustomApiScope = true;
             App.Instance.GotoSearch();
+
+
+            // Might need to show the file picker
+
         }
 
         private void ShowHelp(object sender, RoutedEventArgs e)
