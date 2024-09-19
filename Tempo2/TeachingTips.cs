@@ -175,7 +175,8 @@ namespace Tempo
         CommandPrompt = 8,
         SearchSyntax = 16,
         CppProjection = 32,
-        Win32Scope = 64,
+        PowerShell = 64,
+        NewWindow = 128
 
     }
 }

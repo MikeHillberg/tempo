@@ -7,7 +7,9 @@ using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -187,6 +189,7 @@ namespace Tempo
 
         void ShowTeachingTips()
         {
+            // Filter button
             var shouldContinue = TeachingTips.TryShow(
                 TeachingTipIds.Filters, _root, _filterButton,
                 () => new TeachingTip()
@@ -197,10 +200,30 @@ namespace Tempo
             if (!shouldContinue)
                 return;
 
+            // API scope selector
+            // This is a separate method because it has an extra test/demo feature
             shouldContinue = ShowScopeTeachingTip();
             if (!shouldContinue)
                 return;
+
+            // New window button
+            shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.NewWindow, _root, _newWindowButton,
+                () => new TeachingTip()
+                {
+                    Title = NewWindowTipText.Title,
+                    Subtitle = NewWindowTipText.Subtitle
+                });
+            if (!shouldContinue)
+                return;
+
         }
+
+        // Content for the teach tip and tool tip of the New Window button
+        (string Title, string Subtitle) NewWindowTipText = (
+            "Create a new window (Ctrl+Shift+N)",
+            "Clone this window to a second copy");
+
 
         bool ShowScopeTeachingTip(bool force = false)
         {
@@ -336,6 +359,44 @@ namespace Tempo
         {
             // Show the API scope button teaching tip (just here to be demo-able)
             ShowScopeTeachingTip(force: true);
+        }
+
+        /// <summary>
+        /// Create a new window (really, a new process), with the same state as the current one
+        /// </summary>
+        private void NewWindow(object sender, RoutedEventArgs e)
+        {
+            // We'll launch "tempo:..." to launch the new process.
+            // Pass all the state as parameters. Basically
+            // "tempo:button?selection=type:Windows.UI.Xaml.Controls&settings=[json]"
+
+            // Encode the search string
+            var encodedSearchText = WebUtility.UrlEncode(App.Instance.SearchText);
+
+            // Pass the name of the current selected item so that that can be
+            // selected again in the new window
+
+            string currentItemString = "";
+            var currentItem = App.CurrentItem;
+            if(currentItem != null)
+            {
+                if(currentItem is TypeViewModel currentType)
+                {
+                    currentItemString = $"type:{currentType.FullName}";
+                }
+                else if(currentItem is MemberViewModelBase currentMember)
+                {
+                    currentItemString = $"member:{currentMember.FullName}";
+                }
+            }
+            currentItemString = $"selection={WebUtility.UrlEncode(currentItemString)}";
+
+            // Carry the Settings across as Json
+            var settings = Manager.Settings.ToJson();
+            settings = $"settings={WebUtility.UrlEncode(settings)}";
+
+            var uri = new Uri($"tempo:{encodedSearchText}?{currentItemString}&{settings}");
+            _ = Launcher.LaunchUriAsync(uri);
         }
     }
 }

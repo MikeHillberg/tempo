@@ -518,6 +518,18 @@ namespace Tempo
                 VirtualKeyModifiers.Control,
                 () => MoveToSearchBox());
 
+            // Control+Shift+P launches PowerShell
+            SetupAccelerator(
+                VirtualKey.P,
+                VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control,
+                () =>
+                {
+                    if (App.HomePage != null && App.HomePage.XamlRoot != null)
+                    {
+                        PSLauncher.GoToPS(App.HomePage.XamlRoot);
+                    }
+                });
+
             // Reset is Alt+Home to match Edge
             // A key accelerator doesn't work though if keyboard focus is in the ListView because of this issue:
             // https://github.com/microsoft/microsoft-ui-xaml/issues/9885
@@ -530,12 +542,12 @@ namespace Tempo
 
             RootFrame.PreviewKeyDown += (s, e2) =>
             {
-                if(e2.Key != VirtualKey.Home)
+                if (e2.Key != VirtualKey.Home)
                 {
                     return;
                 }
 
-                if( GetKeyModifiersForThread() == KeyModifiers.Alt)
+                if (GetKeyModifiersForThread() == KeyModifiers.Alt)
                 {
                     App.ResetAndGoHome();
                     e2.Handled = true;
@@ -605,6 +617,10 @@ namespace Tempo
                 {
                     var queryParams = HttpUtility.ParseQueryString(query);
                     var scope = queryParams.Get("scope");
+
+                    // In the search results, what should be selected
+                    InitialSelection = queryParams.Get("selection");
+
                     if (scope != null)
                     {
                         // Set the ApiScope to the requested value. We'll set _initialScopeSet
@@ -627,6 +643,11 @@ namespace Tempo
                                 _initialScopeSet = true;
                                 break;
 
+                            case "win32":
+                                IsWin32Scope = true;
+                                _initialScopeSet = true;
+                                break;
+
                             default:
                                 // We haven't set _initialScopeSet,
                                 // so later we'll restore to whatever scope was used the last time
@@ -635,6 +656,15 @@ namespace Tempo
 
                         }
                     }
+
+
+                    // Copy in the Settings if we got them in the arguments
+                    var settings = queryParams.Get("settings");
+                    if(settings != null)
+                    {
+                        Manager.Settings = Settings.FromJson(settings);
+                    }
+
                 }
 
 
@@ -652,7 +682,10 @@ namespace Tempo
         }
 
 
-
+        /// <summary>
+        /// In the first navigation to SearchResults, make this the selected item
+        /// </summary>
+        static internal string InitialSelection = null;
 
         /// <summary>
         /// Run an Action on the UI thread
@@ -823,7 +856,7 @@ namespace Tempo
         static public App Instance { get; private set; }
 
         // Main window so that we can get the XamlRoot and DispatcherQueue
-        static public FrameworkElement HomePage;
+        static public HomePage HomePage;
 
         // IsWinPlatformScope means show the Windows APIs
         static bool _isWinPlatformScope = false;
@@ -865,7 +898,7 @@ namespace Tempo
             {
                 scope = nameof(IsCustomApiScope);
             }
-            else if(IsWin32Scope)
+            else if (IsWin32Scope)
             {
                 scope = nameof(IsWin32Scope);
             }
@@ -938,12 +971,10 @@ namespace Tempo
             }
             else if (_isWinAppScope)
             {
-                //EnsureWinAppScopeStarted();
                 _winAppScopeLoader.StartMakeCurrent();
             }
-            else if(_isWin32Scope)
+            else if (_isWin32Scope)
             {
-                //EnsureWin32ScopeStarted();
                 _win32ScopeLoader.StartMakeCurrent();
             }
             else
@@ -1011,7 +1042,7 @@ namespace Tempo
                 {
                     return "Custom APIs";
                 }
-                else if(IsWin32Scope)
+                else if (IsWin32Scope)
                 {
                     return "Win32 APIs";
                 }
@@ -1435,7 +1466,7 @@ namespace Tempo
             {
                 return await CustomApiScopeLoader.EnsureLoadedAsync();
             }
-            else if(_isWin32Scope)
+            else if (_isWin32Scope)
             {
                 return await _win32ScopeLoader.EnsureLoadedAsync();
             }
@@ -1488,7 +1519,6 @@ namespace Tempo
         {
             InternalNavigate(typeof(NamespaceView), initial);
         }
-
 
         /// <summary>
         /// Show the search filters, either navigating or in a flyout

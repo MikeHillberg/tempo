@@ -140,6 +140,17 @@
                 </AppBarButton.Flyout>
             </AppBarButton>
 
+            <AppBarButton x:Name="_newWindowButton" Label="New Window" Icon="NewWindow" Click="NewWindow">
+                <AppBarButton.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control,Shift"/>
+                </AppBarButton.KeyboardAccelerators>
+                <ToolTipService.ToolTip>
+                    <local:ComplexToolTip
+                        Title="{x:Bind NewWindowTipText.Item1}"
+                        Subtitle="{x:Bind NewWindowTipText.Item2}"/>
+                </ToolTipService.ToolTip>
+            </AppBarButton>
+
             <AppBarButton Label="Help" Icon="Help" Click="ShowHelp">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Key="F1"/>

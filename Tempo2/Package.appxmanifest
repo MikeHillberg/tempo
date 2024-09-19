@@ -38,6 +38,7 @@
 					</uap3:AppExecutionAlias>
 				</uap3:Extension>
 				<uap:Extension Category="windows.protocol">
+					<!-- E.g. tempo:Button -->
 					<uap:Protocol Name="tempo"/>
 				</uap:Extension>
 			</Extensions>

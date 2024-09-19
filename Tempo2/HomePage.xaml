@@ -72,17 +72,55 @@
                            Style="{StaticResource SubtitleTextBlockStyle}" />
 
                 <StackPanel Grid.Row="1" Grid.Column="1" 
-                            Margin="0,7,0,0"
-                            Spacing="0"
                             HorizontalAlignment="Left">
 
-                    <TextBlock>
-                        <Hyperlink Click="ShowAll" >Show everything</Hyperlink>
-                    </TextBlock>
+                    <local:UniformStackPanel Spacing="5" Orientation="Horizontal" >
+                        <Button Click="ShowAll"
+                                HorizontalAlignment="Stretch"
+                                ToolTipService.ToolTip="Show all types and members in this API scope (then you can do search from there)">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <!-- Bulleted list -->
+                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe8fd;"/>
+                                <TextBlock >Everything</TextBlock>
+                            </StackPanel>
+                        </Button>
 
-                    <TextBlock Margin="{StaticResource VerticalMargin}">
-                        <Hyperlink Click="BrowseAll" >Browse by namespace</Hyperlink>
-                    </TextBlock>
+                        <Button Click="ShowNamespaces"
+                                HorizontalAlignment="Stretch"
+                                ToolTipService.ToolTip="Navigate types in a hierarchy of namespaces">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <!-- Relationship symbol is closest I could find to a hierarchy -->
+                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xF003;"/>
+                                <TextBlock>Namespaces</TextBlock>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="_psButton" Click="GoToPSClick"
+                                HorizontalAlignment="Stretch" >
+                            <ToolTipService.ToolTip>
+                                <local:ComplexToolTip
+                                            Title="{x:Bind PowerShellTipText.Item1}"
+                                            Subtitle="{x:Bind PowerShellTipText.Item2}"/>
+                            </ToolTipService.ToolTip>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <!-- CommandPrompt -->
+                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe756;"/>
+                                <TextBlock>PowerShell</TextBlock>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Click="ShowHelp" HorizontalAlignment="Stretch">
+                            <Button.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="F1"/>
+                            </Button.KeyboardAccelerators>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <SymbolIcon Symbol="Help"/>
+                                <TextBlock>Help</TextBlock>
+                            </StackPanel>
+                        </Button>
+                    </local:UniformStackPanel>
 
                 </StackPanel>
 
@@ -141,8 +179,8 @@
                     </RadioButton>
 
 
-                    
-                    
+
+
                     <!-- Custom API scope -->
                     <Grid VerticalAlignment="Top">
                         <Border Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
