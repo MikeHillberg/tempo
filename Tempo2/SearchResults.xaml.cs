@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Popups;
@@ -11,15 +10,9 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI;
-using System.Threading;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Input;
-using CommunityToolkit.WinUI.UI.Controls;
-using Windows.Foundation;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Shapes;
-using NuGet.Configuration;
-using System.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 

@@ -168,15 +168,16 @@ namespace Tempo
     [Flags]
     internal enum TeachingTipIds
     {
-        None = 0,
-        CustomFiles = 1,
-        Filters = 2,
-        ApiScopeSwitcher = 4,
-        CommandPrompt = 8,
-        SearchSyntax = 16,
-        CppProjection = 32,
-        PowerShell = 64,
-        NewWindow = 128
+        None              = 0,
+        CustomFiles       = 0x001,
+        Filters           = 0x002,
+        ApiScopeSwitcher  = 0x004,
+        CommandPrompt     = 0x008,
+        SearchSyntax      = 0x010,
+        CppProjection     = 0x020,
+        PowerShell        = 0x040,
+        NewWindow         = 0x080,
+        Win32Scope        = 0x100
 
     }
 }
