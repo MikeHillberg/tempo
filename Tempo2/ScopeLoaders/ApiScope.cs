@@ -165,9 +165,6 @@ namespace Tempo
 
             if (loadCompletedEvent != _loadCompletedEvent)
             {
-                // Don't think this can happen?
-                Debug.Assert(false);
-
                 // By the time this load thread completed another load had started for this type set
                 // Don't call OnCanceled; subclasses use that to pop a dialog to the user
                 DebugLog.Append("Load aborted because another load started");

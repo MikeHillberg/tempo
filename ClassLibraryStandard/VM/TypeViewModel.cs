@@ -35,6 +35,7 @@ namespace Tempo
         public virtual string Threading => null;
         public virtual string ActivationType => null;
 
+        internal int AllMembersWhereForTypeGeneration;
 
 
         public bool HasProperties { get { return Properties != null && Properties.Count != 0; } }
@@ -364,8 +365,6 @@ namespace Tempo
 
         public override string ToString()
         {
-            //return "TempoType: " + this.PrettyName;
-
             // Query depends on name
             return PrettyName;
         }

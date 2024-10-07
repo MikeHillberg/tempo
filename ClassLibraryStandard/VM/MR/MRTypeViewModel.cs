@@ -93,6 +93,11 @@ namespace Tempo
             }
         }
 
+        readonly string[] _delegateBaseNames = new string[] 
+        { 
+            "System.Delegate",
+            "System.MulticastDelegate" 
+        };
         bool? _isDelegate = null;
         public override bool IsDelegate
         {
@@ -106,8 +111,14 @@ namespace Tempo
                         return false;
                     }
 
+
                     var baseName = baseType.GetFullName();
-                    _isDelegate = baseName == "System.Delegate" || baseName == "System.MulticastDelegate";
+                    _isDelegate = _delegateBaseNames.Contains(baseName);
+                    if(_isDelegate == true)
+                    {
+                        // If this actually _is_ Delegate, it doesn't have an Invoke method, and isn't really a "delegate"
+                        _isDelegate = !_delegateBaseNames.Contains(this.FullName);
+                    }
                 }
                 return _isDelegate == true;
             }
@@ -202,10 +213,16 @@ namespace Tempo
             get
             {
                 var ns = Type.GetNamespace();
-                if (ns == null)
-                    return string.Empty;
+                if (string.IsNullOrEmpty(ns))
+                {
+                    // Confusing in too many places to not have a namespace,
+                    // so follow C# syntax
+                    return "global";
+                }
                 else
+                {
                     return ns;
+                }
             }
         }
 
@@ -282,6 +299,7 @@ namespace Tempo
         {
             // bugbug: why both Settings.InternalInterfaces and includeInternal?
             return (from iface in this.Type.GetInterfaces()
+                    where iface != null 
                     where iface.IsPublic || Manager.Settings.InternalInterfaces || includeInternal
                     select MRTypeViewModel.GetFromCache(iface, this.TypeSet))
              .ToList();
@@ -293,6 +311,7 @@ namespace Tempo
             if (_allInterfaces == null)
             {
                 var allInterfaces = from iface in Type.GetInterfaces()
+                                    where iface != null // bugbug, try loading all of .net 8
                                     select GetFromCache(iface, TypeSet);
                 _allInterfaces = allInterfaces.Union(GetStaticInterfaces());
             }
@@ -337,10 +356,6 @@ namespace Tempo
             if (_genericArguments == null)
             {
                 var mrTypes = Type.GetGenericArguments();
-                //if(mrTypes.Length == 0)
-                //{
-                //    mrTypes = Type.GetGenericTypeParameters();
-                //}
 
                 _genericArguments = mrTypes
                                     .Select(a => GetFromCache(a, TypeSet))

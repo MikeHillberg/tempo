@@ -254,11 +254,6 @@ namespace Tempo
                    || t.Namespace.StartsWith("Windows.Foundation") && !t.IsInterface;
         }
 
-        //public static bool TypeIsPublicVolatile(TypeInfo ti)
-        //{
-        //    return TypeIsPublicVolatileDynamic2(ti);
-        //}
-
 
         static public bool TypeIsPublicVolatileDynamic2(object t1)
         {
@@ -447,6 +442,7 @@ namespace Tempo
         static public TypeSet Custom2TypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet WPTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet DotNetTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
+        static public TypeSet DotNetWindowsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet XamFormsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet CardsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet WinFormsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }

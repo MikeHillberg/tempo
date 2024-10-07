@@ -22,6 +22,7 @@ using Windows.UI.Core;
 using Microsoft.UI.Input;
 using NuGet.Configuration;
 using System.Web;
+using Windows.Foundation.Collections;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -51,6 +52,8 @@ namespace Tempo
             _winPlatformScopeLoader = new WinPlatScopeLoader();
             _winAppScopeLoader = new WinAppScopeLoader();
             _win32ScopeLoader = new Win32ScopeLoader();
+            _dotNetScopeLoader = new DotNetScopeLoader();
+            _dotNetWindowsScopeLoader = new DotNetWindowsScopeLoader();
             CustomApiScopeLoader = new CustomScopeLoader();
             BaselineApiScopeLoader = new BaselineScopeLoader();
 
@@ -1105,6 +1108,68 @@ namespace Tempo
         static Win32ScopeLoader _win32ScopeLoader = null;
 
 
+        public bool IsDotNetScope
+        {
+            get { return _isDotNetScope; }
+            set
+            {
+                if (_isDotNetScope == value)
+                {
+                    return;
+                }
+
+                _isDotNetScope = value;
+                SaveCurrentScope();
+
+                if (value)
+                {
+                    _dotNetScopeLoader.StartMakeCurrent();
+                }
+
+                RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+        static DotNetScopeLoader _dotNetScopeLoader = null;
+        static bool _isDotNetScope = false;
+
+
+
+        public bool IsDotNetWindowsScope
+        {
+            get { return _isDotNetWindowsScope; }
+            set
+            {
+                if (_isDotNetWindowsScope == value)
+                {
+                    return;
+                }
+
+                _isDotNetWindowsScope = value;
+                SaveCurrentScope();
+
+                if (value)
+                {
+                    _dotNetWindowsScopeLoader.StartMakeCurrent();
+                }
+
+                RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+        static DotNetWindowsScopeLoader _dotNetWindowsScopeLoader = null;
+        static bool _isDotNetWindowsScope = false;
+
+
+        internal static string DotNetCorePath;
+        internal static string DotNetCoreVersion;
+        internal bool IsDotNetCoreEnabled => DotNetCorePath != null;
+
+        internal static string DotNetWindowsPath;
+        internal static string DotNetWindowsVersion;
+        internal bool IsDotNetWindowsEnabled => DotNetWindowsPath != null;
+
+
 
         /// <summary>
         /// Ensure the Win32 Metadata is loaded or loading
@@ -1410,7 +1475,61 @@ namespace Tempo
             setting = sb.ToString();
 
             // Write to the ApplicationDataContainer
-            localSettings.Values[_customFilenamesKey] = setting;
+            // There's a size limit on these values and it can throw
+            try
+            {
+                //localSettings.Values[_customFilenamesKey] = setting;
+                WriteSetting(localSettings.Values, _customFilenamesKey, setting);
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Append($"Failed to save custom filenames setting: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Write a value to an IPropertySet, which is an ApplicationDataContainer storage.
+        /// This works around the size limitation to ADC by spreading over multiple values
+        /// </summary>
+        static void WriteSetting(IPropertySet properties, string key, string setting)
+        {
+            // Clear out any old settings
+            for(int i = 0; i < _maxSettingsValues;i ++)
+            {
+                string keyT;
+                if (i == 0)
+                    keyT = key;
+                else
+                    keyT = key + i.ToString();
+
+                properties.Remove(keyT);
+            }
+
+            // Write the setting to as many values as is necessary
+            // (Write 8000 bytes at a time, the limit is 8192?)
+            for(int i = 0; i < _maxSettingsValues; i++)
+            {
+                // The first key is just whatever was input. Then it's "foo1", "foo2", ...
+                string keyT;
+                if (i == 0)
+                    keyT = key;
+                else
+                    keyT = key + i.ToString();
+
+                if (setting.Length < _maxSettingsValueSize)
+                {
+                    // What's left to write is small enough, write it and we're done
+                    properties[keyT] = setting;
+                    return;
+                }
+
+                // Write the first chunk of bytes, remove it from the bytes to write, then move on
+                properties[keyT] = setting.Substring(0, _maxSettingsValueSize);
+                setting = setting.Substring(_maxSettingsValueSize);
+            }
+
+            throw new Exception("Setting too long");
+
         }
 
         /// <summary>
@@ -1420,33 +1539,47 @@ namespace Tempo
         {
             ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 
-            var setting = localSettings.Values[_customFilenamesKey] as string;
-            if (!string.IsNullOrEmpty(setting))
+            var sb = new StringBuilder();
+            var key = _customFilenamesKey;
+
+            // Read the value, which may be spread over multiple keys due to ADC value size limit
+            for(int i = 0; i < _maxSettingsValues; i++)
             {
-                var filenames = setting.Split(';').ToArray();
-                DesktopManager2.CustomApiScopeFileNames.Value = filenames;
+                // First value is "foo", then "foo1", "foo2", etc.
+                string keyT;
+                if (i == 0)
+                    keyT = key;
+                else
+                    keyT = key + i.ToString();
+
+                var value = localSettings.Values[keyT] as string;
+                if(string.IsNullOrEmpty(value))
+                {
+                    // We've run out of values to read. Take what's been accumlated and use that
+                    var string2 = sb.ToString();
+                    if(string.IsNullOrEmpty(string2))
+                    {
+                        return;
+                    }
+
+                    var filenames = sb.ToString().Split(';').ToArray();
+                    DesktopManager2.CustomApiScopeFileNames.Value = filenames;
+                    return;
+                }
+
+                sb.Append(value);
             }
         }
 
+        const int _maxSettingsValues = 10;
+        const int _maxSettingsValueSize = 4000;
+
         static ApiScopeLoader _winPlatformScopeLoader = null;
 
-        /// <summary>
-        /// Start loading the Windows APIs (doesn't complete synchronously)
-        /// </summary>
-
-
-
-
-
-
-
-
-
-
-
 
         /// <summary>
-        /// Ensure that the current API scope is done loading
+        /// Ensure that the current API scope is done loading.
+        /// Returns false if canceled
         /// </summary>
         /// <returns></returns>
         async public static Task<bool> EnsureApiScopeLoadedAsync()
@@ -1469,6 +1602,14 @@ namespace Tempo
             else if (_isWin32Scope)
             {
                 return await _win32ScopeLoader.EnsureLoadedAsync();
+            }
+            else if (_isDotNetScope)
+            {
+                return await _dotNetScopeLoader.EnsureLoadedAsync();
+            }
+            else if (_isDotNetWindowsScope)
+            {
+                return await _dotNetWindowsScopeLoader.EnsureLoadedAsync();
             }
             else
             {

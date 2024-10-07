@@ -72,10 +72,10 @@
         <!-- Row 1 -->
         <!-- Use UniformGrid so that the buttons have the same width -->
         <local:UniformStackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
-                              HorizontalAlignment="Left"
+                                 HorizontalAlignment="Left"
                                  Spacing="5"
                                  Orientation="Horizontal"
-                              Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
+                                 Visibility="{x:Bind IsAllVisible, Mode=OneWay}">
 
             <!-- Button to open the filters dialog -->
             <Button Content="Filters"

@@ -38,6 +38,8 @@ namespace Tempo
             //CoreWindow_SizeChanged(coreWindow, null);
 
             //MainWindow.Instance.SizeChanged += Window_SizeChanged;
+
+            CheckForDotNet();
         }
 
         static public HomePage Instance = null;
@@ -118,6 +120,25 @@ namespace Tempo
             if (!shouldContinue)
                 return;
 
+            shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.DotNetScope, _root, _dotNetScopeLabel,
+                () => new TeachingTip()
+                {
+                    Title = ".Net APIs",
+                    Subtitle = "View the .Net APIs installed on this PC",
+                });
+            if (!shouldContinue)
+                return;
+
+            shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.DotNetScope, _root, _dotNetWindowsScopeLabel,
+                () => new TeachingTip()
+                {
+                    Title = ".Net Windows Desktop APIs",
+                    Subtitle = "View the .Net Windows Desktop APIs installed on this PC (includes WPF and WinForms)",
+                });
+            if (!shouldContinue)
+                return;
         }
 
         (string Title, string Subtitle) PowerShellTipText = (
@@ -207,7 +228,7 @@ namespace Tempo
                 // Check the AppActivationArguments first, and if it doesn't do anything then the command line
                 App.Instance.ProcessActivationArgs();
 
-                if(Manager.Settings.CompareToBaseline == true)
+                if (Manager.Settings.CompareToBaseline == true)
                 {
                     _baselineExpander.IsExpanded = true;
                 }
@@ -261,8 +282,8 @@ namespace Tempo
             set { SetValue(RootBackgroundProperty, value); }
         }
         public static readonly DependencyProperty RootBackgroundProperty =
-            DependencyProperty.Register("RootBackground", typeof(Brush), typeof(HomePage), 
-                new PropertyMetadata(new SolidColorBrush() {  Color = Colors.Transparent}));
+            DependencyProperty.Register("RootBackground", typeof(Brush), typeof(HomePage),
+                new PropertyMetadata(new SolidColorBrush() { Color = Colors.Transparent }));
 
 
 
@@ -301,7 +322,7 @@ namespace Tempo
 
         private void ShowNamespaces(object sender, RoutedEventArgs e)
         {
-            App.GotoNamespaces("Windows");
+            App.GotoNamespaces("");
         }
 
         public Settings Settings { get { return Manager.Settings; } }
@@ -355,6 +376,113 @@ namespace Tempo
             SendFeedbackHelper();
         }
 
+
+
+        /// <summary>
+        /// Check if DotNet is available (SDK is installed)
+        /// </summary>
+        static void CheckForDotNet()
+        {
+            DebugLog.Append("Checking for dotnet");
+            var dotNetPath = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "dotnet");
+            if (!Directory.Exists(dotNetPath))
+            {
+                DebugLog.Append($"DotNet not found at {dotNetPath}");
+                return;
+            }
+
+            var dotNetCorePath = Path.Combine(dotNetPath, @"shared\Microsoft.NETCore.App");
+            if (!Directory.Exists(dotNetCorePath))
+            {
+                DebugLog.Append($"Couldn't find '{dotNetCorePath}'");
+                return;
+            }
+
+            var version = FindHighestVersionDirectory(dotNetCorePath);
+            if (version == null)
+            {
+                DebugLog.Append($"Couldn't find version in {dotNetCorePath}");
+                return;
+            }
+            App.DotNetCorePath = Path.Combine(dotNetCorePath, version);
+            DebugLog.Append($"Found {App.DotNetCorePath}");
+
+
+            var dotNetWindowsPath = Path.Combine(dotNetPath, @"shared\Microsoft.WindowsDesktop.App");
+            if (!Directory.Exists(dotNetWindowsPath))
+            {
+                DebugLog.Append($"Couldn't find '{dotNetWindowsPath}'");
+                return;
+            }
+
+            version = FindHighestVersionDirectory(dotNetWindowsPath);
+            if (version == null)
+            {
+                DebugLog.Append($"Couldn't find version in {dotNetWindowsPath}");
+            }
+            App.DotNetWindowsPath = Path.Combine(dotNetWindowsPath, version);
+            DebugLog.Append($"Found {App.DotNetWindowsPath}");
+        }
+
+        /// <summary>
+        /// Search subdirectories that are 3-part versions for the highest
+        /// </summary>
+        static string FindHighestVersionDirectory(string path)
+        {
+            var subdirs = Directory.GetDirectories(path);
+            if (subdirs == null || subdirs.Length == 0)
+            {
+                return null;
+            }
+
+            DebugLog.Append($"Directories in {path}: {string.Join(", ", subdirs)}");
+
+            string highest = null;
+            var highestVersion = (0, 0, 0);
+            foreach (var dir in subdirs)
+            {
+                var dirLeaf = Path.GetFileName(dir);
+
+                // dirLeave should be in format "1.2.3"
+                var parts = dirLeaf.Split('.');
+                if (parts == null || parts.Length != 3)
+                {
+                    return null;
+                }
+
+                if (!Int32.TryParse(parts[0], out int part1)
+                    || !Int32.TryParse(parts[1], out int part2)
+                    || !Int32.TryParse(parts[2], out int part3))
+                {
+                    return null;
+                }
+
+                var version = (part1, part2, part3);
+                var newHigh = false;
+                if (highest == null)
+                {
+                    newHigh = true;
+                }
+                else
+                {
+                    int comparisson = highestVersion.CompareTo(version);
+                    if (comparisson < 0)
+                    {
+                        newHigh = true;
+                    }
+                }
+
+                if (newHigh)
+                {
+                    highest = dirLeaf;
+                    highestVersion = version;
+                }
+            }
+
+            return highest;
+        }
+
+
         /// <summary>
         /// Move focus to the search box
         /// </summary>
@@ -382,7 +510,7 @@ namespace Tempo
                 sb.AppendLine(filePart);
                 sb.AppendLine($"   {pathPart}");
             }
-            
+
             return sb.ToString();
         }
 
@@ -390,11 +518,11 @@ namespace Tempo
         private async void OpenCustomClick(object sender, RoutedEventArgs e)
         {
             var pickedSomething = await App.CustomApiScopeLoader.PickAndAddCustomApis();
-            if(pickedSomething)
+            if (pickedSomething)
             {
                 App.Instance.IsCustomApiScope = true;
             }
-            else if(!App.CustomApiScopeLoader.HasFile)
+            else if (!App.CustomApiScopeLoader.HasFile)
             {
                 App.Instance.IsWinPlatformScope = true;
                 App.GoHome();
@@ -638,7 +766,7 @@ namespace Tempo
         IEnumerable<SplitFilename> SplitFilenames(string[] filenames)
         {
             var splitFilenames = new List<SplitFilename>();
-            if(filenames == null)
+            if (filenames == null)
             {
                 // First time startup
                 return splitFilenames;
@@ -646,7 +774,7 @@ namespace Tempo
 
             foreach (var filename in filenames)
             {
-                if(string.IsNullOrEmpty(filename))
+                if (string.IsNullOrEmpty(filename))
                 {
                     continue;
                 }
@@ -673,9 +801,9 @@ namespace Tempo
 
             var oldList = DesktopManager2.CustomApiScopeFileNames.Value;
             var newList = new List<string>();
-            foreach(var filename in oldList)
+            foreach (var filename in oldList)
             {
-                if(filename != path)
+                if (filename != path)
                 {
                     newList.Add(filename);
                 }
@@ -698,7 +826,7 @@ namespace Tempo
             obj.SetValue(TextElementTagProperty, value);
         }
         public static readonly DependencyProperty TextElementTagProperty =
-            DependencyProperty.RegisterAttached("Tag", typeof(object), typeof(HomePage), 
+            DependencyProperty.RegisterAttached("Tag", typeof(object), typeof(HomePage),
                     new PropertyMetadata(null));
 
         private void ApiScope_RadioButton_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)

@@ -71,7 +71,9 @@
                 </Grid.RowDefinitions>
 
                 <ListViewHeaderItem Grid.Row="0" Grid.Column="0">Child namespaces</ListViewHeaderItem>
-                <ListView Grid.Row="1" Grid.Column="0" ItemsSource="{x:Bind Namespaces}" 
+                
+                <!-- Namespaces property is async, so need a OneWay binding -->
+                <ListView Grid.Row="1" Grid.Column="0" ItemsSource="{x:Bind Namespaces, Mode=OneWay}" 
                           IsItemClickEnabled="True" ItemClick="ListView_ItemClick" />
 
                 <ListViewHeaderItem Grid.Row="0" Grid.Column="1"

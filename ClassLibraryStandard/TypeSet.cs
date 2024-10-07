@@ -320,12 +320,21 @@ namespace Tempo
 
                 //_fullNamespaces = (from t in Types select t.Namespace).Distinct().OrderBy(t => t).ToList<string>();
 
-                var namespaces = (from t in Types select t.Namespace).Distinct();
+
+                // Bugbug: we're caching based on the current state of Settings
+                // (TypeIsPublicVolatile looks at Settings)
+                var namespaces = (from t in Types
+                                  where Manager.TypeIsPublicVolatile(t)
+                                  select t.Namespace).Distinct();
                 var namespaceList = new List<string>();
 
                 foreach (var ns in namespaces)
                 {
                     var ns2 = ns;
+
+                    // If the namespace is A.B.C, add all of: A.B.C, A.B, and A namespaces
+                    // Otherwise if a namespace didn't have any types, but did have child namespaces,
+                    // we'd miss it
 
                     while (true)
                     {

@@ -137,7 +137,6 @@ namespace Tempo
 
 
 
-
         // Set the WinUI version in the WinUI types
         public static void SetWinUIVersions(string winUIWinMDFilename, IEnumerable<TypeViewModel> types)
         {
@@ -564,8 +563,16 @@ namespace Tempo
 
                             resolver.DirectoryName = System.IO.Path.GetDirectoryName(filename);
                             DebugLog.Append("Loading custom file " + filename);
-                            loadContext.LoadAssemblyFromPath(filename);
-                            typeSet.AssemblyLocations.Add(new AssemblyLocation(filename));
+                            var assembly = loadContext.LoadAssemblyFromPath(filename);
+                            if (assembly == null)
+                            {
+                                DebugLog.Append($"Not a metadata file: {filename}");
+                            }
+                            else
+                            {
+                                DebugLog.Append($"Loading {filename}");
+                                typeSet.AssemblyLocations.Add(new AssemblyLocation(filename));
+                            }
                         }
                     }
                     else
@@ -579,7 +586,7 @@ namespace Tempo
 
                 if (loadContext.LoadedAssemblies == null || loadContext.LoadedAssemblies.Count == 0)
                 {
-                    typeSet = null;
+                    typeSet.Types = (new List<TypeViewModel>()).AsReadOnly();
                     return;
                 }
 
@@ -718,6 +725,28 @@ namespace Tempo
             }
 
         }
+
+
+        // Microsoft.NETCore.App
+        static public void LoadDotNetAssembliesSync(bool useWinrtProjections, string[] paths)
+        {
+            var typeSet = new DotNetTypeSet2(useWinrtProjections);
+
+            DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, paths);
+            Manager.DotNetTypeSet = typeSet;
+        }
+
+
+        // Microsoft.WindowsDesktop.App
+        static public void LoadDotNetWindowsAssembliesSync(bool useWinrtProjections, string[] paths)
+        {
+            var typeSet = new DotNetTypeSet2(useWinrtProjections);
+
+            DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, paths);
+            Manager.DotNetWindowsTypeSet = typeSet;
+        }
+
+
 
 
         /// <summary>

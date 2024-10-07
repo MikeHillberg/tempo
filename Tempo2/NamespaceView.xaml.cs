@@ -161,7 +161,7 @@ namespace Tempo
             DependencyProperty.Register("SelectedNamespace", typeof(string), typeof(NamespaceView), new PropertyMetadata(null));
 
 
-        private void Initialize(string selectedNamespace)
+        private async void Initialize(string selectedNamespace)
         {
             // The namespace we're to show
             SelectedNamespace = selectedNamespace;
@@ -179,14 +179,18 @@ namespace Tempo
 
             UpButtonVisibility = SelectedNamespace == "" ? Visibility.Collapsed : Visibility.Visible;
 
+            var shouldContinue = await App.EnsureApiScopeLoadedAsync();
+            if (!shouldContinue)
+            {
+                return;
+            }
+
             // bugbug: async
             // bugbug: Should combine this with desktop Types2Namespaces.  But moving NamespaceTreeNode into
             // Common breaks the build for NamespaceViewer.xaml; for some reason the Xaml compiler refuses to recognize
             // a type in that project.
             var fullNamespaces = Manager.CurrentTypeSet.FullNamespaces;
 
-            // bugbug: need an entry for the root, which has no types
-            fullNamespaces.Insert(0, "Windows");
 
             // Find the child namespaces of the selected namespace.
             // For example, if we're looking for "Foo", find "Foo.Bar" and "Foo.Baz",
@@ -218,7 +222,8 @@ namespace Tempo
             // Find the types in the selected namespace
             Types = (from t in Manager.CurrentTypeSet.Types
                      where t.Namespace == SelectedNamespace
-                     where t.IsPublic && !t.ShouldIgnore
+                     //where t.IsPublic && !t.ShouldIgnore
+                     where Manager.TypeIsPublicVolatile(t)
                      select t
                      ).ToList();
 
@@ -271,11 +276,22 @@ namespace Tempo
 
         private void DetailViewHeading_UpButtonClick(object sender, EventArgs e)
         {
+            if (SelectedNamespace == "")
+            {
+                return;
+            }
+
+            string ns;
             var index = SelectedNamespace.LastIndexOf('.');
             if (index == -1)
-                return;
+            {
+                ns = "";
+            }
+            else
+            {
+                ns = SelectedNamespace.Substring(0, index);
+            }
 
-            var ns = SelectedNamespace.Substring(0, index);
             App.GotoNamespaces(ns);
         }
     }

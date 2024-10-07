@@ -104,12 +104,12 @@ namespace Tempo
 
                 // Helper method that gets all the member for one type
                 var members = AllMembersWhereForType(type, checkOutOnly, typeCheck, typeFilter);
-                if(members == null)
+                if (members == null)
                 {
                     continue;
                 }
 
-                foreach(var member in members)
+                foreach (var member in members)
                 {
                     yield return member.Item1;
                 }
@@ -117,16 +117,22 @@ namespace Tempo
             }
         }
 
+        static int _allMembersWhereForTypeGeneration = 0;
+
         /// <summary>
         /// Return all members for a type that matches the callbacks
         /// </summary>
-        public static IEnumerable<(MemberOrTypeViewModelBase,TypeViewModel)> AllMembersWhereForType(
+        public static IEnumerable<(MemberOrTypeViewModelBase, TypeViewModel)> AllMembersWhereForType(
             TypeViewModel type,
             bool checkOutOnly, // Only check [out] parameters
             Func<TypeViewModel, MemberViewModelBase, bool> typeCheck,
             Func<TypeViewModel, bool> typeFilter = null)
 
         {
+            // Mark this type so that we don't go into an infinite recursion if we see
+            // it again on this walk
+            type.AllMembersWhereForTypeGeneration = ++_allMembersWhereForTypeGeneration;
+
             if (typeFilter != null && !typeFilter(type))
             {
                 yield break;
@@ -141,7 +147,7 @@ namespace Tempo
             {
                 if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, prop, typeCheck))
                 {
-                    yield return  (prop, prop.PropertyType);
+                    yield return (prop, prop.PropertyType);
                 }
             }
 
@@ -177,7 +183,7 @@ namespace Tempo
             // For most types, look for [out] parameters. For Delegate types,
             // look at the Invoker method, which is essentially an "out"
             IList<MethodViewModel> methods;
-            if(type.DelegateInvoker == null)
+            if (type.DelegateInvoker == null)
             {
                 methods = type.Methods;
             }
@@ -232,14 +238,22 @@ namespace Tempo
 
         }
 
+        static int _depth = 0;
         static bool WalkTypesInAncestorsOrGenericArguments(
-            TypeViewModel candidateType, 
+            TypeViewModel candidateType,
             MemberViewModelBase member,
-            Func<TypeViewModel, MemberViewModelBase, bool>  check)
+            Func<TypeViewModel, MemberViewModelBase, bool> check)
         {
+
             // bugbug: don't do early returns here when we find the first matching type, because one usage of this method
             // is to find all matching types.
             var result = false;
+
+            if (candidateType.AllMembersWhereForTypeGeneration == _allMembersWhereForTypeGeneration)
+            {
+                return false;
+            }
+            candidateType.AllMembersWhereForTypeGeneration = _allMembersWhereForTypeGeneration;
 
             if (candidateType.FullName == "System.Void")
                 return false;
@@ -295,7 +309,7 @@ namespace Tempo
             foreach (var iface in ifaces)
             {
                 //bugbug: Seeing this with ReflectypTypeViewModel
-                if(iface == null)
+                if (iface == null)
                 {
                     continue;
                 }
@@ -599,7 +613,7 @@ namespace Tempo
                 }
             }
 
-            foreach (var constructor in findType.Constructors) 
+            foreach (var constructor in findType.Constructors)
             {
                 foreach (var parameter in constructor.Parameters)
                 {
@@ -614,7 +628,7 @@ namespace Tempo
 
             foreach (var field in findType.Fields)
             {
-                if(field.FieldType == null)
+                if (field.FieldType == null)
                 {
                     // bugbug: global::ItemStructMap<T>.Value has a null FieldType
                     // Global namespace in PresentationFramework.dll

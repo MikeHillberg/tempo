@@ -176,10 +176,18 @@ namespace Tempo
         }
     }
 
+    // .Net type set for Tempo1
     public class DotNetTypeSet : DesktopTypeSet
     {
         public static string StaticName = "DotNet";
         public DotNetTypeSet() : base(StaticName) { }
+    }
+
+    // .Net type set for Tempo2
+    public class DotNetTypeSet2 : MRTypeSet
+    {
+        public static string StaticName = "DotNet";
+        public DotNetTypeSet2(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
     }
 
 
