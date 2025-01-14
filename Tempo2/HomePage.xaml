@@ -179,9 +179,9 @@
                                  VerticalAlignment="Top"
                                  GroupName="Test"
                                  DoubleTapped="ApiScope_RadioButton_DoubleTapped"
-                                 AccessKey="2">
+                                 AccessKey="3">
                         <StackPanel>
-                            <TextBlock x:Name="_win32ScopeLabel">Win3<Underline>2</Underline></TextBlock>
+                            <TextBlock x:Name="_webView2ScopeLabel">Win<Underline>3</Underline>2</TextBlock>
                             <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                 Search the Win32 API, downloading it from nuget.org<LineBreak/>
                                 Note that this uses the <Hyperlink NavigateUri="https://github.com/microsoft/win32metadata">Win32 Metadata project</Hyperlink>,
@@ -192,7 +192,21 @@
                         </StackPanel>
                     </RadioButton>
 
-                    
+                    <RadioButton Grid.Row="1" Grid.Column="1" 
+                                 IsChecked="{x:Bind ((local:App)local:App.Current).IsWebView2Scope, Mode=TwoWay}" 
+                                 VerticalAlignment="Top"
+                                 GroupName="Test"
+                                 DoubleTapped="ApiScope_RadioButton_DoubleTapped"
+                                 AccessKey="2">
+                        <StackPanel>
+                            <TextBlock x:Name="_win32ScopeLabel">WebView<Underline>2</Underline></TextBlock>
+                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                WebView2 APIs, downloaded from nuget.org
+                            </TextBlock>
+                        </StackPanel>
+                    </RadioButton>
+
+
                     <RadioButton Grid.Row="2" Grid.Column="0" 
                                  IsEnabled="{x:Bind local:App.Instance.IsDotNetCoreEnabled}"
                                  IsChecked="{x:Bind ((local:App)local:App.Current).IsDotNetScope, Mode=TwoWay}" 
@@ -201,7 +215,7 @@
                                  DoubleTapped="ApiScope_RadioButton_DoubleTapped"
                                  AccessKey="D">
                         <StackPanel>
-                            <TextBlock x:Name="_dotNetScopeLabel"><Underline>D</Underline>otNet Runtime</TextBlock>
+                            <TextBlock x:Name="_dotNetScopeLabel"><Underline>D</Underline>otNet Runtime <Run Text="{x:Bind local:Utils.Parenthesize(local:App.Instance.DotNetCoreVersion)}"/></TextBlock>
                             <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                 The base runtime, used by all frameworks.
                                 So for example this has String and List&lt;T&gt;, but not WPF or WinForms.

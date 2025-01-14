@@ -89,7 +89,7 @@ IsType:True AND Namespace:(controls OR devices)
 ```
 
 To see all properties available, look at a type or member and click on
-the "All model properties" link.
+the "All search properties" link.
 That will show you an example for that item of all the properties and values.
 
 ![screenshot of link to all model properties list](Assets/all-model-properties-link.jpg)

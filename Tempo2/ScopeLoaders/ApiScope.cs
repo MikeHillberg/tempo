@@ -195,7 +195,7 @@ namespace Tempo
                     // Only occurs for Baseline (since it's never selected)?
                     if (!Name.Contains("Baseline"))
                     {
-                        DebugLog.Append($"Making current but not selected: {Name}");
+                        DebugLog.Append($"Making current but not selected: {Name}, {App.Instance.ApiScopeName}");
                     }
                 }
 

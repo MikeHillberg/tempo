@@ -35,7 +35,7 @@ namespace Tempo
                 VM = vm
             };
 
-            window.Title = "All model properties";
+            window.Title = "All search (AQS) properties";
             window.Activate();
         }
 

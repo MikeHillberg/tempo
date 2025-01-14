@@ -173,7 +173,7 @@
 
                         <TextBlock Margin="0,15,0,0"
                                    HorizontalAlignment="Left"><Hyperlink Click="ShowAllModelProperties_Click"
-                                     >All model properties</Hyperlink></TextBlock>
+                                     >All search (AQS) properties</Hyperlink></TextBlock>
                     </StackPanel>
                 </StackPanel>
 

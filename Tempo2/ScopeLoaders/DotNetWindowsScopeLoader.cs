@@ -10,7 +10,7 @@ namespace Tempo
 
         protected override string Name => "DotNetWindows";
 
-        protected override string LoadingMessage => "";
+        protected override string LoadingMessage => "Loading DotNet Windows types ...";
 
 
         protected override void DoOffThreadLoad()

@@ -96,6 +96,13 @@ namespace Tempo
             // CoreWebView2 has special addresses
             var coreWebView2Address = @"https://learn.microsoft.com/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/";
 
+
+            // DotNet Desktop
+            // https://learn.microsoft.com/dotnet/api/system.windows.controls.ribbon.ribbontooltip
+            var dotNetAddress = @"https://learn.microsoft.com/dotnet/api/";
+
+
+
             string typeName;
             if (declaringType.IsGenericType)
             {
@@ -120,6 +127,10 @@ namespace Tempo
             {
                 isCoreWebView2 = true;
                 address = new StringBuilder(coreWebView2Address);
+            }
+            else if(typeName.StartsWith("System."))
+            {
+                address = new StringBuilder(dotNetAddress);
             }
             else
             {

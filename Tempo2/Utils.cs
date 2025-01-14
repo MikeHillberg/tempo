@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.VisualBasic;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -34,6 +35,16 @@ namespace Tempo
         static public bool Or(bool b1, bool b2)
         {
             return b1 || b2;
+        }
+
+        static public string Parenthesize(string value)
+        {
+            if(string.IsNullOrEmpty(value))
+            {
+                return "";
+            }
+
+            return $"({value})";
         }
 
         /// <summary>

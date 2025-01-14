@@ -165,6 +165,17 @@ namespace Tempo
         }
     }
 
+    public class WebView2TypeSet : MRTypeSet
+    {
+        public static string StaticName = "WebView2";
+        public WebView2TypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
+
+        protected override string GetXmlFileName(Assembly a)
+        {
+            return null;
+        }
+    }
+
     public class Win32TypeSet : MRTypeSet
     {
         public static string StaticName = "Win32";

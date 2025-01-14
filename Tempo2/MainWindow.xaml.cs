@@ -28,6 +28,14 @@ namespace Tempo
             this.InitializeComponent();
 
             SetWindowIcon();
+
+            App.Instance.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(App.ApiScopeName))
+                {
+                    Title = $"Tempo - {App.Instance.ApiScopeName}";
+                }
+            };
         }
 
         // Helpers for SetMicaBackrop

@@ -106,33 +106,58 @@
                 </ToolTipService.ToolTip>
                 
                 <local:DropDownAppBarButtonContent Symbol="Library" 
-                                                   Label="{x:Bind local:App.Instance.ApiScopeName, Mode=OneWay}"/>
+                                                   Label="API Scope"/>
 
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <ToggleMenuFlyoutItem Text="Windows APIs" Click="SelectWindowsApis" 
+                        <ToggleMenuFlyoutItem Text="Windows" Click="SelectWindowsApis" 
                                               IsChecked="{x:Bind local:App.Instance.IsWinPlatformScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="W" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
-                        <ToggleMenuFlyoutItem Text="WinAppSDK APIs" Click="SelectWinAppSdkApis"
+                        <ToggleMenuFlyoutItem Text="WinAppSDK" Click="SelectWinAppSdkApis"
                                               IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="K" />
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
-                        <ToggleMenuFlyoutItem Text="Win32 APIs" Click="SelectWin32Apis"
+                        <ToggleMenuFlyoutItem Text="Win32" Click="SelectWin32Apis"
                                               IsChecked="{x:Bind local:App.Instance.IsWin32Scope, Mode=OneWay}">
                             <ToggleMenuFlyoutItem.KeyboardAccelerators>
-                                <!-- This is Control+2, but we have to set Key to 50 rather than "2", 
-                                because "2" gets interpreted as a number, which is VirtualKey.RightButton
-                                (50 is VirtualKey.Number2) -->
+                                <!-- This is Control+2, but we have to set Key to 51 rather than "3", 
+                                because "3" gets interpreted as a number, which is VirtualKey.RightButton
+                                (51 is VirtualKey.Number2) -->
+                                <KeyboardAccelerator Modifiers="Control" Key="51"/>
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        </ToggleMenuFlyoutItem>
+
+
+                        <ToggleMenuFlyoutItem Text="WebView2" Click="SelectWebView2Apis"
+                                              IsChecked="{x:Bind local:App.Instance.IsWebView2Scope, Mode=OneWay}">
+                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Modifiers="Control" Key="50"/>
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
+
+                        <ToggleMenuFlyoutItem Text="DotNet Runtime" Click="SelectDotNetApis"
+                                              IsEnabled="{x:Bind local:App.Instance.IsDotNetCoreEnabled}"
+                                              IsChecked="{x:Bind local:App.Instance.IsDotNetScope, Mode=OneWay}">
+                            <!--<ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="o"/>
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>-->
+                        </ToggleMenuFlyoutItem>
+
+                        <ToggleMenuFlyoutItem Text="DotNet Windows" Click="SelectDotNetWindowsApis"
+                                              IsEnabled="{x:Bind local:App.Instance.IsDotNetWindowsEnabled}"
+                                              IsChecked="{x:Bind local:App.Instance.IsDotNetWindowsScope, Mode=OneWay}">
+                            <!--<ToggleMenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Modifiers="Control" Key="o"/>
+                            </ToggleMenuFlyoutItem.KeyboardAccelerators>-->
+                        </ToggleMenuFlyoutItem>
+
 
                         <ToggleMenuFlyoutItem Text="Custom APIs" Click="SelectCustomApiScope"
                                               IsChecked="{x:Bind local:App.Instance.IsCustomApiScope, Mode=OneWay}"/>

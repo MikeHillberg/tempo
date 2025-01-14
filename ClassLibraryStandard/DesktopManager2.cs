@@ -133,6 +133,7 @@ namespace Tempo
 
 
         public static string WinAppSdkPackageName => "Microsoft.WindowsAppSDK";
+        public static string WebView2PackageName => "Microsoft.Web.WebView2";
         public static string Win32PackageName => "Microsoft.Windows.SDK.Win32Metadata";
 
 
@@ -703,6 +704,23 @@ namespace Tempo
             if(typeSet.Types != null)
             {
                 Manager.WindowsAppTypeSet = typeSet;
+            }
+
+        }
+
+        /// <summary>
+        /// Load the WebView2 assemblies, downloading from nuget
+        /// </summary>
+        static public void LoadWebView2AssembliesSync(WinAppSDKChannel channel, bool useWinrtProjections, byte[] mscorlib = null)
+        {
+            var packageName = DesktopManager2.WebView2PackageName;
+
+            // Download the package and load into `typeSet`
+            var typeSet = new WebView2TypeSet(useWinrtProjections);
+            LoadNugetHelper(typeSet, packageName);
+            if (typeSet.Types != null)
+            {
+                Manager.WebView2TypeSet = typeSet;
             }
 
         }

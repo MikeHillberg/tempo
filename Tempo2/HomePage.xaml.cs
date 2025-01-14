@@ -405,6 +405,7 @@ namespace Tempo
                 return;
             }
             App.DotNetCorePath = Path.Combine(dotNetCorePath, version);
+            App.Instance.DotNetCoreVersion = version;
             DebugLog.Append($"Found {App.DotNetCorePath}");
 
 

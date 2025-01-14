@@ -9,7 +9,7 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*"  Padding="30" HorizontalAlignment="Stretch" MaxWidth="800"
           Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}">
 
-        <TextBlock TextWrapping="Wrap">Below are all model properties for <Run FontWeight="Bold" Text="{x:Bind VM.MemberPrettyName, Mode=OneWay}"/></TextBlock>
+        <TextBlock TextWrapping="Wrap">Below are all the search (AQS) properties for <Run FontWeight="Bold" Text="{x:Bind VM.MemberPrettyName, Mode=OneWay}"/></TextBlock>
 
         <TextBlock Grid.Row="1" Margin="{StaticResource VerticalMargin}" TextWrapping="Wrap">
             For example, you can search for "button Namespace:Controls"

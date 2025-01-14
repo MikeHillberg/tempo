@@ -339,6 +339,40 @@ namespace Tempo
             App.Instance.GotoSearch();
         }
 
+        private void SelectDotNetApis(object sender, RoutedEventArgs e)
+        {
+            if (App.Instance.IsDotNetScope)
+            {
+                return;
+            }
+
+            App.Instance.IsDotNetScope = true;
+            App.Instance.GotoSearch();
+        }
+
+        private void SelectDotNetWindowsApis(object sender, RoutedEventArgs e)
+        {
+            if (App.Instance.IsDotNetWindowsScope)
+            {
+                return;
+            }
+
+            App.Instance.IsDotNetWindowsScope = true;
+            App.Instance.GotoSearch();
+        }
+
+
+        private void SelectWebView2Apis(object sender, RoutedEventArgs e)
+        {
+            if (App.Instance.IsWebView2Scope)
+            {
+                return;
+            }
+
+            App.Instance.IsWebView2Scope = true;
+            App.Instance.GotoSearch();
+        }
+
 
         private void SelectCustomApiScope(object sender, RoutedEventArgs e)
         {

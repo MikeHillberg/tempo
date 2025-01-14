@@ -448,6 +448,7 @@ namespace Tempo
         static public TypeSet WinFormsTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet WinUI2TypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet WindowsAppTypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
+        static public TypeSet WebView2TypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
         static public TypeSet Win32TypeSet { get { return GetTypeSet(); } set { SetTypeSet(value); } }
 
         static Settings _settings = null;

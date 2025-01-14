@@ -23,6 +23,7 @@ using Microsoft.UI.Input;
 using NuGet.Configuration;
 using System.Web;
 using Windows.Foundation.Collections;
+using System.Runtime.InteropServices;
 
 // mikehill_ua: got this error
 // Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
@@ -51,6 +52,7 @@ namespace Tempo
             // (Must be done after App.Instance has been set)
             _winPlatformScopeLoader = new WinPlatScopeLoader();
             _winAppScopeLoader = new WinAppScopeLoader();
+            _webView2ScopeLoader = new WebView2ScopeLoader();
             _win32ScopeLoader = new Win32ScopeLoader();
             _dotNetScopeLoader = new DotNetScopeLoader();
             _dotNetWindowsScopeLoader = new DotNetWindowsScopeLoader();
@@ -85,6 +87,7 @@ namespace Tempo
                 }
             };
         }
+
 
         //private void App_TestEvent2(object sender, EventArgs e)
         //{
@@ -663,7 +666,7 @@ namespace Tempo
 
                     // Copy in the Settings if we got them in the arguments
                     var settings = queryParams.Get("settings");
-                    if(settings != null)
+                    if (settings != null)
                     {
                         Manager.Settings = Settings.FromJson(settings);
                     }
@@ -897,6 +900,18 @@ namespace Tempo
             {
                 scope = nameof(IsWinAppScope);
             }
+            else if (IsWebView2Scope)
+            {
+                scope = nameof(IsWebView2Scope);
+            }
+            else if (IsDotNetScope)
+            {
+                scope = nameof(IsDotNetScope);
+            }
+            else if (IsDotNetWindowsScope)
+            {
+                scope = nameof(IsDotNetWindowsScope);
+            }
             else if (IsCustomApiScope)
             {
                 scope = nameof(IsCustomApiScope);
@@ -905,9 +920,15 @@ namespace Tempo
             {
                 scope = nameof(IsWin32Scope);
             }
+            else
+            {
+                Debug.Assert(scope == nameof(IsWinPlatformScope));
+            }
 
             ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
             settings.Values[_currentScopeSettingName] = scope;
+
+            RaisePropertyChange(nameof(ApiScopeName));
         }
 
         /// <summary>
@@ -945,11 +966,24 @@ namespace Tempo
                         }
                         break;
 
+                    case "IsWebView2Scope":
+                        IsWebView2Scope = true;
+                        break;
+
+                    case "IsDotNetScope":
+                        IsDotNetScope = true;
+                        break;
+
+                    case "IsDotNetWindowsScope":
+                        IsDotNetWindowsScope = true;
+                        break;
+
                     case "IsWin32Scope":
                         IsWin32Scope = true;
                         break;
 
                     default:
+                        Debug.Assert((scope as string) == nameof(IsWinPlatformScope));
                         IsWinPlatformScope = true;
                         break;
                 }
@@ -1033,13 +1067,15 @@ namespace Tempo
         {
             get
             {
+                // bugbug: redo this
+
                 if (IsWinPlatformScope)
                 {
                     return "Windows APIs";
                 }
                 else if (IsWinAppScope)
                 {
-                    return "WASDK APIs";
+                    return "WindowsAppSdk APIs";
                 }
                 else if (IsCustomApiScope)
                 {
@@ -1049,9 +1085,21 @@ namespace Tempo
                 {
                     return "Win32 APIs";
                 }
+                else if (IsWebView2Scope)
+                {
+                    return "WebView2 APIs";
+                }
+                else if(IsDotNetScope)
+                {
+                    return "DotNet Runtime APIs";
+                }
+                else if(IsDotNetWindowsScope)
+                {
+                    return "DotNet Windows Desktop APIs";
+                }
 
-                // Shouldn't ever get here, but it happens during bootstrapping
-                return "API Scope";
+                // can get here if everything's false temporarily during a transition
+                return "";
             }
         }
 
@@ -1079,6 +1127,33 @@ namespace Tempo
                 RaisePropertyChange(nameof(ApiScopeName));
             }
         }
+
+
+        // IsWebView2Scope means show the WebView2 APIs
+        public bool IsWebView2Scope
+        {
+            get { return _isWebView2Scope; }
+            set
+            {
+                if (_isWebView2Scope == value)
+                {
+                    return;
+                }
+
+                _isWebView2Scope = value;
+                SaveCurrentScope();
+
+                if (value)
+                {
+                    _webView2ScopeLoader.StartMakeCurrent();
+                }
+
+                RaisePropertyChange();
+                RaisePropertyChange(nameof(ApiScopeName));
+            }
+        }
+        static bool _isWebView2Scope = false;
+        static WebView2ScopeLoader _webView2ScopeLoader = null;
 
 
         // IsWin32Scope means show the Win32 metadata project
@@ -1160,9 +1235,9 @@ namespace Tempo
         static DotNetWindowsScopeLoader _dotNetWindowsScopeLoader = null;
         static bool _isDotNetWindowsScope = false;
 
-
+        // bugbug: move these to api scope loaders
         internal static string DotNetCorePath;
-        internal static string DotNetCoreVersion;
+        internal string DotNetCoreVersion;
         internal bool IsDotNetCoreEnabled => DotNetCorePath != null;
 
         internal static string DotNetWindowsPath;
@@ -1472,7 +1547,7 @@ namespace Tempo
                 sb.Remove(sb.Length - 1, 1);
             }
 
-            setting = sb.ToString();
+            setting = sb.ToString(); 
 
             // Write to the ApplicationDataContainer
             // There's a size limit on these values and it can throw
@@ -1494,7 +1569,7 @@ namespace Tempo
         static void WriteSetting(IPropertySet properties, string key, string setting)
         {
             // Clear out any old settings
-            for(int i = 0; i < _maxSettingsValues;i ++)
+            for (int i = 0; i < _maxSettingsValues; i++)
             {
                 string keyT;
                 if (i == 0)
@@ -1507,7 +1582,7 @@ namespace Tempo
 
             // Write the setting to as many values as is necessary
             // (Write 8000 bytes at a time, the limit is 8192?)
-            for(int i = 0; i < _maxSettingsValues; i++)
+            for (int i = 0; i < _maxSettingsValues; i++)
             {
                 // The first key is just whatever was input. Then it's "foo1", "foo2", ...
                 string keyT;
@@ -1543,7 +1618,7 @@ namespace Tempo
             var key = _customFilenamesKey;
 
             // Read the value, which may be spread over multiple keys due to ADC value size limit
-            for(int i = 0; i < _maxSettingsValues; i++)
+            for (int i = 0; i < _maxSettingsValues; i++)
             {
                 // First value is "foo", then "foo1", "foo2", etc.
                 string keyT;
@@ -1553,11 +1628,11 @@ namespace Tempo
                     keyT = key + i.ToString();
 
                 var value = localSettings.Values[keyT] as string;
-                if(string.IsNullOrEmpty(value))
+                if (string.IsNullOrEmpty(value))
                 {
                     // We've run out of values to read. Take what's been accumlated and use that
                     var string2 = sb.ToString();
-                    if(string.IsNullOrEmpty(string2))
+                    if (string.IsNullOrEmpty(string2))
                     {
                         return;
                     }
@@ -1595,6 +1670,11 @@ namespace Tempo
                 // Returns false if the user cancels the load
                 return await _winAppScopeLoader.EnsureLoadedAsync();
             }
+            else if (_isWebView2Scope)
+            {
+                // Returns false if the user cancels the load
+                return await _webView2ScopeLoader.EnsureLoadedAsync();
+            }
             else if (_isCustomApiScope)
             {
                 return await CustomApiScopeLoader.EnsureLoadedAsync();
@@ -1613,6 +1693,7 @@ namespace Tempo
             }
             else
             {
+                Debug.Assert(_isWinPlatformScope);
                 return await _winPlatformScopeLoader.EnsureLoadedAsync();
             }
         }
@@ -1868,12 +1949,14 @@ namespace Tempo
             var address = MsdnHelper.CalculateDocPageAddress(CurrentItem);
             if (string.IsNullOrEmpty(address))
             {
+                DebugLog.Append($"No MSDN address for {CurrentItem}");
                 return;
             }
 
             // Defense in depth: don't crash the app if we come up with a bad URI
             try
             {
+                DebugLog.Append($"Launching {address}");
                 _ = Launcher.LaunchUriAsync(new Uri(address));
             }
             catch (Exception ex)

@@ -24,6 +24,9 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <AppxPackageDir>C:\Users\MikeHill\source\repos\tempo\AppPackages\</AppxPackageDir>
     <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
+	  
+	  <!-- bugbug: remove this when picking up cswinrt with the bug fix -->
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -299,7 +299,6 @@ namespace Tempo
         {
             // bugbug: why both Settings.InternalInterfaces and includeInternal?
             return (from iface in this.Type.GetInterfaces()
-                    where iface != null 
                     where iface.IsPublic || Manager.Settings.InternalInterfaces || includeInternal
                     select MRTypeViewModel.GetFromCache(iface, this.TypeSet))
              .ToList();
@@ -311,7 +310,6 @@ namespace Tempo
             if (_allInterfaces == null)
             {
                 var allInterfaces = from iface in Type.GetInterfaces()
-                                    where iface != null // bugbug, try loading all of .net 8
                                     select GetFromCache(iface, TypeSet);
                 _allInterfaces = allInterfaces.Union(GetStaticInterfaces());
             }
