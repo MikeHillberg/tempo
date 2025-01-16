@@ -55,7 +55,10 @@ namespace Tempo
         static public IEnumerable<TypeViewModel> FindReferencesToOtherNamespaces(AsyncCounter counter, string fromNamespace)
         {
             var matchingTypes = new List<TypeViewModel>();
-            var members = AllMembersWhere(counter, /*checkOutOnly*/false,
+            var members = AllMembersWhere(
+                                counter, 
+                                checkOutOnly: false,
+                                firstMemberOnlyPerType: true,
                 (type, _) =>
                 {
                     var matches = !type.Namespace.StartsWith(fromNamespace); // Return types from other namespaces
@@ -77,7 +80,8 @@ namespace Tempo
         {
             return AllMembersWhere(
                 counter,
-                /*checkOutOnly*/true,
+                checkOutOnly: true,
+                firstMemberOnlyPerType: false,
                 (type, _) => type == soughtType);
         }
 
@@ -88,6 +92,7 @@ namespace Tempo
         static public IEnumerable<MemberOrTypeViewModelBase> AllMembersWhere(
             AsyncCounter counter,
             bool checkOutOnly, // Only check [out] parameters
+            bool firstMemberOnlyPerType, // Not necessary to find more than one member per type
             Func<TypeViewModel, MemberViewModelBase, bool> typeCheck,
             Func<TypeViewModel, bool> typeFilter = null)
         {
@@ -103,7 +108,7 @@ namespace Tempo
                 }
 
                 // Helper method that gets all the member for one type
-                var members = AllMembersWhereForType(type, checkOutOnly, typeCheck, typeFilter);
+                var members = AllMembersWhereForType(type, checkOutOnly, firstMemberOnlyPerType, typeCheck, typeFilter);
                 if (members == null)
                 {
                     continue;
@@ -125,6 +130,7 @@ namespace Tempo
         public static IEnumerable<(MemberOrTypeViewModelBase, TypeViewModel)> AllMembersWhereForType(
             TypeViewModel type,
             bool checkOutOnly, // Only check [out] parameters
+            bool firstMemberOnlyPerType, // Not necessary to return multiple members for a type
             Func<TypeViewModel, MemberViewModelBase, bool> typeCheck,
             Func<TypeViewModel, bool> typeFilter = null)
 
@@ -145,7 +151,7 @@ namespace Tempo
 
             foreach (var prop in type.Properties)
             {
-                if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, prop, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, prop, firstMemberOnlyPerType, typeCheck))
                 {
                     yield return (prop, prop.PropertyType);
                 }
@@ -153,7 +159,7 @@ namespace Tempo
 
             foreach (var ev in type.Events)
             {
-                if (WalkTypesInAncestorsOrGenericArguments(ev.EventHandlerType, ev, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(ev.EventHandlerType, ev, firstMemberOnlyPerType, typeCheck))
                 {
                     yield return (ev, ev.EventHandlerType);
                 }
@@ -169,7 +175,7 @@ namespace Tempo
                     {
                         foreach (var param in parameters)
                         {
-                            if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, ev, typeCheck))
+                            if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, ev, firstMemberOnlyPerType, typeCheck))
                             {
                                 yield return (ev, param.ParameterType);
                                 break;
@@ -194,7 +200,7 @@ namespace Tempo
 
             foreach (var method in methods)
             {
-                if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, method, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, method, firstMemberOnlyPerType, typeCheck))
                 {
                     yield return (method, method.ReturnType);
                     continue;
@@ -203,7 +209,7 @@ namespace Tempo
                 foreach (var param in method.Parameters)
                 {
                     if ((param.IsOut || !checkOutOnly || type.DelegateInvoker != null)
-                        && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, method, typeCheck)))
+                        && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, method, firstMemberOnlyPerType, typeCheck)))
                     {
                         yield return (method, param.ParameterType);
                     }
@@ -214,7 +220,7 @@ namespace Tempo
             {
                 foreach (var constructor in type.Constructors)
                 {
-                    if (WalkTypesInAncestorsOrGenericArguments(constructor.ReturnType, constructor, typeCheck))
+                    if (WalkTypesInAncestorsOrGenericArguments(constructor.ReturnType, constructor, firstMemberOnlyPerType, typeCheck))
                     {
                         yield return (constructor, constructor.ReturnType);
                         continue;
@@ -222,7 +228,7 @@ namespace Tempo
 
                     foreach (var param in constructor.Parameters)
                     {
-                        if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, constructor, typeCheck))
+                        if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, constructor, firstMemberOnlyPerType, typeCheck))
                         {
                             yield return (constructor, param.ParameterType);
                             break;
@@ -230,7 +236,7 @@ namespace Tempo
                     }
                 }
 
-                if (WalkTypesInAncestorsOrGenericArguments(type, null, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(type, null, firstMemberOnlyPerType, typeCheck))
                 {
                     yield return (type, type);
                 }
@@ -242,6 +248,7 @@ namespace Tempo
         static bool WalkTypesInAncestorsOrGenericArguments(
             TypeViewModel candidateType,
             MemberViewModelBase member,
+            bool firstMemberOnlyPerType, // Only necessary to return one member for a type
             Func<TypeViewModel, MemberViewModelBase, bool> check)
         {
 
@@ -249,9 +256,13 @@ namespace Tempo
             // is to find all matching types.
             var result = false;
 
-            if (candidateType.AllMembersWhereForTypeGeneration == _allMembersWhereForTypeGeneration)
+            if (firstMemberOnlyPerType)
             {
-                return false;
+                // If this type has already been visited, we don't need to check it again
+                if (candidateType.AllMembersWhereForTypeGeneration == _allMembersWhereForTypeGeneration)
+                {
+                    return false;
+                }
             }
             candidateType.AllMembersWhereForTypeGeneration = _allMembersWhereForTypeGeneration;
 
@@ -297,7 +308,7 @@ namespace Tempo
                             skipArg = false;
                             continue;
                         }
-                        if (WalkTypesInAncestorsOrGenericArguments(arg, member, check))
+                        if (WalkTypesInAncestorsOrGenericArguments(arg, member, firstMemberOnlyPerType, check))
                             result = true;
                     }
                 }

@@ -144,7 +144,6 @@ namespace Tempo
             {
                 try
                 {
-                    Thread.Sleep(5000);
                     DoOffThreadLoad();
                 }
                 catch (Exception)

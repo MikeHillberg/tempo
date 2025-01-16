@@ -89,7 +89,9 @@ namespace Tempo
             _isFullyOpenGenericType = bool.Parse(v);
         }
 
-        public bool IsArray { get { return BaseType != null && BaseType.FullName == "System.Array"; } }
+        public virtual TypeViewModel UnmodifiedType => null;
+
+        virtual public bool IsArray { get { return BaseType != null && BaseType.FullName == "System.Array"; } }
 
         public override string MsdnRelativePath
         {

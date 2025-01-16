@@ -29,6 +29,7 @@ namespace Tempo
             _ = AcidInfo;
         }
 
+        public override bool IsArray => this.Type.IsArray;
         public override bool IsAssembly => IsInternal;
         public override bool IsInternal => !this.IsPublic; // bugbug: should handle nested case
 

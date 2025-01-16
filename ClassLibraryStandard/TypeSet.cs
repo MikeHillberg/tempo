@@ -258,6 +258,7 @@ namespace Tempo
                     _ = TypeReferenceHelper.AllMembersWhereForType(
                                             type,
                                             checkOutOnly: true,
+                                            firstMemberOnlyPerType: false, // Find all members for each type
                                             (returnedType, member) =>
                                             {
                                                 // If the returned type isn't itself, and is in the TypeSet
