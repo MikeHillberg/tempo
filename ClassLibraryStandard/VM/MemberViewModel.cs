@@ -926,6 +926,8 @@ namespace Tempo
             get { return _matchGeneration == Manager.MatchGeneration; }
         }
 
+        public bool IsUnsafe => this.ParameterType.IsPointer;
+
         /// <summary>
         /// True if the parameter name matched in the current search
         /// </summary>
@@ -958,6 +960,8 @@ namespace Tempo
         abstract public bool IsIn { get; }
 
         abstract public bool IsOut { get; }
+
+        virtual public bool IsRef { get => false; }
 
         public override bool IsStatic
         {
@@ -1057,6 +1061,24 @@ namespace Tempo
             }
 
             return $"{theName.ToLower()}";
+        }
+
+        public bool IsUnsafe
+        {
+            get
+            {
+                var isUnsafe = false;
+                foreach(var parameter in this.Parameters)
+                {
+                    if(parameter.IsUnsafe)
+                    {
+                        isUnsafe = true;
+                        break;
+                    }
+                }
+
+                return isUnsafe;
+            }
         }
 
         // Given the md for a method in the docs (from GitHub), get the method's parameter count

@@ -210,7 +210,6 @@ namespace Tempo
             IList<ParameterViewModel> parameters,
             InlineCollection inlines)
         {
-
             // Method name and open paren
 
             var text = "\n" + methodName;
@@ -248,10 +247,12 @@ namespace Tempo
 
         private static void InsertParameter(InlineCollection inlines, ParameterViewModel parameter)
         {
-            if (parameter.IsOut)
+            if (parameter.IsOut || parameter.IsRef)
             {
                 var run = new Run() { Foreground = new SolidColorBrush(Colors.Blue) }; // bugbug
-                run.Text = "out ";
+
+                run.Text = parameter.IsOut ? "out " : "ref ";
+
                 inlines.Add(run);
             }
 
@@ -517,17 +518,18 @@ namespace Tempo
                 return;
             }
 
-            if (!type.IsInCurrentTypeSet)
-            {
-                withHyperlink = false;
-            }
-
             string typeNameBase;
             TypeViewModel targetType = type;
             if (type.IsGenericType)
             {
                 typeNameBase = type.GenericTypeName;
                 targetType = type.GetGenericTypeDefinition();
+            }
+            else if(type.UnmodifedType != null)
+            {
+                // E.g. in Foo[] this is Foo
+                typeNameBase = type.UnmodifedType.Name;
+                targetType = type.UnmodifedType;
             }
             else if (!string.IsNullOrEmpty(type.CSharpName))
             {
@@ -538,11 +540,9 @@ namespace Tempo
                 typeNameBase = type.Name;
             }
 
-            var ampIndex = typeNameBase.LastIndexOf('&');
-            if (ampIndex != -1)
+            if (!targetType.IsInCurrentTypeSet)
             {
-                // [out] parameter
-                typeNameBase = typeNameBase.Substring(0, ampIndex);
+                withHyperlink = false;
             }
 
             if (!firstArgument)
@@ -577,21 +577,33 @@ namespace Tempo
                 typeNameBase,
                 withHyperlink ? targetType : null);
 
-            if (!type.IsGenericType)
+            if (type.IsGenericType)
             {
-                return;
+                inlines.Add(new Run() { Text = "<" });
+
+                firstArgument = true;
+                foreach (var ta in type.GetGenericArguments())
+                {
+                    GenerateTypeName(ta, inlines, highlightMatch: highlightMatch, firstArgument: firstArgument);
+                    firstArgument = false;
+
+                }
+                inlines.Add(new Run() { Text = ">" });
             }
 
-            inlines.Add(new Run() { Text = "<" });
-
-            firstArgument = true;
-            foreach (var ta in type.GetGenericArguments())
+            if (type.IsModifiedType)
             {
-                GenerateTypeName(ta, inlines, highlightMatch: highlightMatch, firstArgument: firstArgument);
-                firstArgument = false;
+                // Handle pointer and array. Ref is handled with the 'out' and 'ref' key words
+                if (type.IsPointer)
+                {
+                    inlines.Add(new Run() { Text = "*" });
+                }
 
+                if (type.IsArray)
+                {
+                    inlines.Add(new Run() { Text = "[]" });
+                }
             }
-            inlines.Add(new Run() { Text = ">" });
 
         }
 

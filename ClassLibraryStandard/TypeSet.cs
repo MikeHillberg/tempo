@@ -420,7 +420,9 @@ namespace Tempo
 #if DEBUG
                         var found = _typeVMCache.TryGetValue(t, out var vm2);
                         Debug.Assert(found);
-                        Debug.Assert(t.Equals((vm2 as MRTypeViewModel).Type));
+
+                        // This is a useful check but really slow
+                        //Debug.Assert(t.Equals((vm2 as MRTypeViewModel).Type));
 #endif
                         // This is so that we can do enumeration
                         _typeVMWeakList.Add(new WeakReference<TypeViewModel>(vm));

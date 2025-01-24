@@ -91,6 +91,7 @@ namespace Tempo
                     throw new Exception("Can't find system metadata files");
                 }
 
+                DebugLog.Append($"Loading: '{winmdFile}'");
                 loadContext.LoadAssemblyFromPath(winmdFile);
                 typeSet.AssemblyLocations.Add(new AssemblyLocation(winmdFile));
             }
@@ -99,6 +100,7 @@ namespace Tempo
             //var winUIWinMDFilename = GetWinUIWinMDFilename();
             if (winUIWinMDFilename != null)
             {
+                DebugLog.Append($"Loading from '{winUIWinMDFilename}'");
                 loadContext.LoadAssemblyFromPath(winUIWinMDFilename);
                 typeSet.AssemblyLocations.Add(new AssemblyLocation(winUIWinMDFilename));
             }
@@ -276,7 +278,8 @@ namespace Tempo
             // the system at runtime. For example Windows.Foundation types are in Windows.Foundation.WinMD at runtime
             // but Windows.Foundation.FoundationContract.WinMD in the SDK. If we have what looks like one of those
             // cases, just look for the type in all loaded assemblies.
-            if (!e.AssemblyName.StartsWith("Windows.")
+            if (e.AssemblyName != null
+                && !e.AssemblyName.StartsWith("Windows.")
                 && !e.AssemblyName.Contains("Contract.")
                 && !e.TypeName.StartsWith("Windows.Foundation."))
             {
@@ -318,6 +321,7 @@ namespace Tempo
 
         public static void LoadFromNupkg(string packageFilename, MRTypeSet typeSet, MrLoadContext loadContext)
         {
+            DebugLog.Append($"Loading nupkg: '{packageFilename}'");
 
             // Open the nupkg zip file
             ZipArchive packageZip;
@@ -388,6 +392,7 @@ namespace Tempo
                 // Load all the DLLs or WinMDs we found
                 foreach (var entryName in entryNames.Values)
                 {
+                    DebugLog.Append($"Loading from nupkg: '{entryName}'");
                     var entry = packageZip.GetEntry(entryName);
                     using (var entryStream = entry.Open())
                     {
@@ -563,7 +568,7 @@ namespace Tempo
                             // Either a .DLL or a .WinMD
 
                             resolver.DirectoryName = System.IO.Path.GetDirectoryName(filename);
-                            DebugLog.Append("Loading custom file " + filename);
+                            DebugLog.Append($"Loading '{filename}'");
                             var assembly = loadContext.LoadAssemblyFromPath(filename);
                             if (assembly == null)
                             {
@@ -629,10 +634,6 @@ namespace Tempo
             return;
         }
 
-        private static void LoadContext_FakeTypeRequired1(object sender, MrLoadContext.FakeTypeRequiredEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
 
         public static void LoadCustomWinMDFileNamesFromRegistry()
         {

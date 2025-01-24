@@ -94,10 +94,10 @@ namespace Tempo
             }
         }
 
-        readonly string[] _delegateBaseNames = new string[] 
-        { 
+        readonly string[] _delegateBaseNames = new string[]
+        {
             "System.Delegate",
-            "System.MulticastDelegate" 
+            "System.MulticastDelegate"
         };
         bool? _isDelegate = null;
         public override bool IsDelegate
@@ -115,7 +115,7 @@ namespace Tempo
 
                     var baseName = baseType.GetFullName();
                     _isDelegate = _delegateBaseNames.Contains(baseName);
-                    if(_isDelegate == true)
+                    if (_isDelegate == true)
                     {
                         // If this actually _is_ Delegate, it doesn't have an Invoke method, and isn't really a "delegate"
                         _isDelegate = !_delegateBaseNames.Contains(this.FullName);
@@ -170,6 +170,8 @@ namespace Tempo
             }
         }
 
+        public override bool IsModifiedType => Type.IsModifiedType;
+
         public override GenericParameterAttributes GenericParameterAttributes
         {
             get
@@ -207,6 +209,31 @@ namespace Tempo
                 return _isGenericTypeDefinition == true;
             }
         }
+
+        bool _unmodifedTypeChecked = false;
+        TypeViewModel _unmodifiedType = null;
+
+        override public TypeViewModel UnmodifedType
+        {
+            get
+            {
+                if (!_unmodifedTypeChecked)
+                {
+                    _unmodifedTypeChecked = true;
+
+                    var mrType = this.Type.GetUnmodifiedType();
+                    if (mrType != null)
+                    {
+                        _unmodifiedType = GetFromCache(mrType, this.TypeSet);
+                    }
+                }
+
+                return _unmodifiedType;
+            }
+        }
+
+        public override bool IsPointer => this.Type.IsPointer;
+        public override bool IsReference => this.Type.IsReference;
 
 
         public override string Namespace
@@ -391,9 +418,31 @@ namespace Tempo
             if (!AcidInfo.AcidMap.TryGetValue(type, out acidInfo))
             {
                 acidInfo = new AcidInfo();
-                var key = Registry.LocalMachine.OpenSubKey(
-                    @"SOFTWARE\Microsoft\WindowsRuntime\ActivatableClassId\" + type.PrettyFullName,
-                    writable: false);
+                RegistryKey key = null;
+
+                // ACID info is in the registry in HKLM
+                var keyName = @"SOFTWARE\Microsoft\WindowsRuntime\ActivatableClassId\" + type.PrettyFullName;
+
+                // According to the exception message, key names can't be more than 255,
+                // and .Net has a type that exceeds that (has many type parameters)
+                if (keyName.Length <= 255)
+                {
+                    // Since we're checking for string length this shouldn't throw,
+                    // but I don't fully trust it anymore
+                    try
+                    {
+                        key = Registry.LocalMachine.OpenSubKey(keyName, writable: false);
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugLog.Append("Error getting AcidInfo for " + type.FullName + ": " + ex.Message);
+                        key = null;
+                    }
+                }
+                else
+                {
+                    DebugLog.Append($"Key name for AcidInfo too long: {keyName}");
+                }
 
                 if (key != null)
                 {

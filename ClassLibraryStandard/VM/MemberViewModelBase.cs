@@ -903,6 +903,16 @@ namespace Tempo
                 if (IsStatic)
                     sb.Append("static ");
 
+                // bugbug: should handle unsafe properties too. Need to find a test case
+                var methodVM = this as MethodViewModel;
+                if (methodVM != null)
+                {
+                    if (methodVM.IsUnsafe)
+                    {
+                        sb.Append("unsafe ");
+                    }
+                }
+
                 if (IsPublic)
                     sb.Append("public ");
                 else if (IsInternal)
@@ -916,9 +926,9 @@ namespace Tempo
                 if (!IsSealed)
                 {
                     if (IsAbstract)
-                        sb.Append("abstract");
+                        sb.Append("abstract ");
                     else if (IsVirtual)
-                        sb.Append("virtual");
+                        sb.Append("virtual ");
                 }
 
                 return sb.ToString().Trim();

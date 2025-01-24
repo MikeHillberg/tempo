@@ -56,7 +56,7 @@ namespace Tempo
         {
             var matchingTypes = new List<TypeViewModel>();
             var members = AllMembersWhere(
-                                counter, 
+                                counter,
                                 checkOutOnly: false,
                                 firstMemberOnlyPerType: true,
                 (type, _) =>
@@ -122,7 +122,9 @@ namespace Tempo
             }
         }
 
-        static int _allMembersWhereForTypeGeneration = 0;
+        // This is used in the WalkTypesInAncestorsOrGenericArgumentsGeneration method
+        // to prevent recursion
+        static int _walkTypesInAncestorsOrGenericArgumentsGeneration = 0;
 
         /// <summary>
         /// Return all members for a type that matches the callbacks
@@ -135,9 +137,6 @@ namespace Tempo
             Func<TypeViewModel, bool> typeFilter = null)
 
         {
-            // Mark this type so that we don't go into an infinite recursion if we see
-            // it again on this walk
-            type.AllMembersWhereForTypeGeneration = ++_allMembersWhereForTypeGeneration;
 
             if (typeFilter != null && !typeFilter(type))
             {
@@ -151,15 +150,23 @@ namespace Tempo
 
             foreach (var prop in type.Properties)
             {
-                if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, prop, firstMemberOnlyPerType, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(prop.PropertyType, prop, typeCheck))
                 {
                     yield return (prop, prop.PropertyType);
                 }
             }
 
+            foreach (var field in type.Fields)
+            {
+                if (WalkTypesInAncestorsOrGenericArgumentsRecursive(field.FieldType, field, typeCheck))
+                {
+                    yield return (field, field.FieldType);
+                }
+            }
+
             foreach (var ev in type.Events)
             {
-                if (WalkTypesInAncestorsOrGenericArguments(ev.EventHandlerType, ev, firstMemberOnlyPerType, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(ev.EventHandlerType, ev, typeCheck))
                 {
                     yield return (ev, ev.EventHandlerType);
                 }
@@ -175,7 +182,7 @@ namespace Tempo
                     {
                         foreach (var param in parameters)
                         {
-                            if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, ev, firstMemberOnlyPerType, typeCheck))
+                            if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, ev, typeCheck))
                             {
                                 yield return (ev, param.ParameterType);
                                 break;
@@ -200,7 +207,7 @@ namespace Tempo
 
             foreach (var method in methods)
             {
-                if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, method, firstMemberOnlyPerType, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(method.ReturnType, method, typeCheck))
                 {
                     yield return (method, method.ReturnType);
                     continue;
@@ -209,7 +216,7 @@ namespace Tempo
                 foreach (var param in method.Parameters)
                 {
                     if ((param.IsOut || !checkOutOnly || type.DelegateInvoker != null)
-                        && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, method, firstMemberOnlyPerType, typeCheck)))
+                        && (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, method, typeCheck)))
                     {
                         yield return (method, param.ParameterType);
                     }
@@ -220,7 +227,7 @@ namespace Tempo
             {
                 foreach (var constructor in type.Constructors)
                 {
-                    if (WalkTypesInAncestorsOrGenericArguments(constructor.ReturnType, constructor, firstMemberOnlyPerType, typeCheck))
+                    if (WalkTypesInAncestorsOrGenericArguments(constructor.ReturnType, constructor, typeCheck))
                     {
                         yield return (constructor, constructor.ReturnType);
                         continue;
@@ -228,7 +235,7 @@ namespace Tempo
 
                     foreach (var param in constructor.Parameters)
                     {
-                        if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, constructor, firstMemberOnlyPerType, typeCheck))
+                        if (WalkTypesInAncestorsOrGenericArguments(param.ParameterType, constructor, typeCheck))
                         {
                             yield return (constructor, param.ParameterType);
                             break;
@@ -236,7 +243,7 @@ namespace Tempo
                     }
                 }
 
-                if (WalkTypesInAncestorsOrGenericArguments(type, null, firstMemberOnlyPerType, typeCheck))
+                if (WalkTypesInAncestorsOrGenericArguments(type, null, typeCheck))
                 {
                     yield return (type, type);
                 }
@@ -244,32 +251,55 @@ namespace Tempo
 
         }
 
-        static int _depth = 0;
+        /// <summary>
+        /// Walk up the base class hierarchy and any type arguments, calling a delegate on each one.
+        /// The 'member' parameter is just context.
+        /// </summary>
         static bool WalkTypesInAncestorsOrGenericArguments(
             TypeViewModel candidateType,
             MemberViewModelBase member,
-            bool firstMemberOnlyPerType, // Only necessary to return one member for a type
             Func<TypeViewModel, MemberViewModelBase, bool> check)
         {
+            // Increment the generation number so that we can detect recursion
+            candidateType.WalkTypesInAncestorsOrGenericArgumentsGeneration = _walkTypesInAncestorsOrGenericArgumentsGeneration++;
 
-            // bugbug: don't do early returns here when we find the first matching type, because one usage of this method
-            // is to find all matching types.
+            // Do the real work
+            return WalkTypesInAncestorsOrGenericArgumentsRecursive(
+                        candidateType,
+                        member,
+                        check);
+        }
+
+        /// <summary>
+        /// Worker version of WalkTypesInAncestorsOrGenericArguments that recurses into ifself
+        /// </summary>
+        static bool WalkTypesInAncestorsOrGenericArgumentsRecursive(
+            TypeViewModel candidateType,
+            MemberViewModelBase member,
+            Func<TypeViewModel, MemberViewModelBase, bool> check)
+        {
             var result = false;
 
-            if (firstMemberOnlyPerType)
+            // If this type has already been visited, we don't need to check it again
+            if (candidateType.WalkTypesInAncestorsOrGenericArgumentsGeneration == _walkTypesInAncestorsOrGenericArgumentsGeneration)
             {
-                // If this type has already been visited, we don't need to check it again
-                if (candidateType.AllMembersWhereForTypeGeneration == _allMembersWhereForTypeGeneration)
-                {
-                    return false;
-                }
+                return false;
             }
-            candidateType.AllMembersWhereForTypeGeneration = _allMembersWhereForTypeGeneration;
+            candidateType.WalkTypesInAncestorsOrGenericArgumentsGeneration = _walkTypesInAncestorsOrGenericArgumentsGeneration;
 
             if (candidateType.FullName == "System.Void")
                 return false;
             else if (candidateType.FullName == "Windows.Foundation.IAsyncAction")
                 return false;
+
+            // If this is e.g. Foo[], walk Foo
+            if (candidateType.UnmodifedType != null)
+            {
+                if(WalkTypesInAncestorsOrGenericArgumentsRecursive(candidateType.UnmodifedType, null, check))
+                {
+                    result = true;
+                }
+            }
 
             var ancestor = candidateType;
             while (ancestor != null
@@ -308,7 +338,7 @@ namespace Tempo
                             skipArg = false;
                             continue;
                         }
-                        if (WalkTypesInAncestorsOrGenericArguments(arg, member, firstMemberOnlyPerType, check))
+                        if (WalkTypesInAncestorsOrGenericArgumentsRecursive(arg, member, check))
                             result = true;
                     }
                 }
@@ -336,37 +366,6 @@ namespace Tempo
         }
 
 
-        //static bool IsTypeInTypeArguments(TypeViewModel soughtType, TypeViewModel candidateType)
-        //{
-        //    if (!candidateType.IsGenericType)
-        //        return false;
-
-        //    // bugbug: What is the difference between this method and FindTypeInAncestorsOrGenericArguments?
-        //    // If searching for Foo, don't return Foo.BarEvent, even though the event args has a Foo-typed sender,
-        //    // because it's too noisy.
-        //    bool skipArg = false;
-        //    if (candidateType.PrettyFullName.StartsWith("Windows.Foundation.TypedEventHandler<"))
-        //    {
-        //        skipArg = true;
-        //    }
-
-        //    foreach (var typeArg in candidateType.GetGenericArguments())
-        //    {
-        //        if(skipArg)
-        //        {
-        //            skipArg = false;
-        //            continue;
-        //        }
-
-        //        if (typeArg == soughtType)
-        //            return true;
-
-        //        if (IsTypeInTypeArguments(soughtType, typeArg))
-        //            return true;
-        //    }
-
-        //    return false;
-        //}
 
         static public IEnumerable<TypeViewModel> FindReferencingTypes(
             TypeViewModel findType,

@@ -27,6 +27,10 @@ namespace Tempo
         public override bool IsInternal => false;
         public override bool IsOut => _parameter.Attributes.HasFlag(ParameterAttributes.Out);
 
+        public override bool IsRef => ParameterType.Name.EndsWith("&") && !IsOut;
+
+        //public override bool IsRetval => _parameter.Attributes.HasFlag(ParameterAttributes.Retval);
+
         public override bool IsPublic => true;
 
         public override bool IsVirtual => false;

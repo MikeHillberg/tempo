@@ -35,8 +35,9 @@ namespace Tempo
         public virtual string Threading => null;
         public virtual string ActivationType => null;
 
-        internal int AllMembersWhereForTypeGeneration;
-
+        // This is used to terimate recursions in
+        // TypeReferenceHelper.WalkTypesInAncestorsOrGenericArguments
+        internal int WalkTypesInAncestorsOrGenericArgumentsGeneration;
 
         public bool HasProperties { get { return Properties != null && Properties.Count != 0; } }
         public bool HasMethods { get { return Methods != null && Methods.Count != 0; } }
@@ -371,6 +372,12 @@ namespace Tempo
             return PrettyName;
         }
 
+        virtual public TypeViewModel UnmodifedType => null;
+
+        virtual public bool IsModifiedType => false;
+
+        virtual public bool IsPointer => false;
+        virtual public bool IsReference => false;
 
         TempoMarshalingType? _marshalingType = null;
         public virtual TempoMarshalingType MarshalingType
