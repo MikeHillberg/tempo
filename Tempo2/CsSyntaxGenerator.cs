@@ -137,6 +137,11 @@ namespace Tempo
             textBlock.Blocks.Add(paragraph);
             var inlines = paragraph.Inlines;
 
+            if(field.IsConst)
+            {
+                inlines.Add("const ");
+            }
+
             if (!field.DeclaringType.IsEnum)
             {
                 GenerateTypeName(field.FieldType, inlines, highlightMatch: true, withUpArrow: true);
