@@ -60,6 +60,8 @@ namespace Tempo
 
         protected override sealed void OnNavigatedTo(NavigationEventArgs e)
         {
+            DebugLog.Append($"Navigated to {this.GetType().Name}");
+
             base.OnNavigatedTo(e);
 
             if (e.NavigationMode == NavigationMode.New)

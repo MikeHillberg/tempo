@@ -10,13 +10,13 @@
     Background="Transparent"
     RequestedTheme="{x:Bind local:App.Instance.ElementTheme, Mode=OneWay}">
 
-    <ScrollViewer Padding="20" Margin="50" MaxWidth="800" 
-                  Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
+    <ScrollViewer Margin="50" MaxWidth="800" 
+                  Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
                   HorizontalAlignment="Center">
-        
+
         <!-- Use the community toolkit's markdown reader -->
         <!-- Help text is in help.md -->
-        <controls:MarkdownTextBlock x:Name="_markdown" Background="Transparent"/>
+        <controls:MarkdownTextBlock x:Name="_markdown" Background="Transparent" Padding="50"/>
     </ScrollViewer>
     
 </Page>

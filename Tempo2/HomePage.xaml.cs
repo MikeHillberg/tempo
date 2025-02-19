@@ -111,6 +111,16 @@ namespace Tempo
                 return;
 
             shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.WebView2Scope, _root, _webView2ScopeLabel,
+                () => new TeachingTip()
+                {
+                    Title = "View the WebView2 APIs",
+                    Subtitle = "Download the latest WebView2 Nuget package view its APIs",
+                });
+            if (!shouldContinue)
+                return;
+
+            shouldContinue = TeachingTips.TryShow(
                 TeachingTipIds.PowerShell, _root, _psButton,
                 () => new TeachingTip()
                 {

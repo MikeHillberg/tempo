@@ -178,7 +178,8 @@ namespace Tempo
         PowerShell         = 0x040,
         NewWindow          = 0x080,
         Win32Scope         = 0x100,
-        DotNetScope        = 0x200,
-        DotNetWindowsScope = 0x400
+        WebView2Scope      = 0x200,
+        DotNetScope        = 0x400,
+        DotNetWindowsScope = 0x800
     }
 }

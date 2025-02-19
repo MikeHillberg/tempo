@@ -36,6 +36,7 @@ namespace Tempo
 
         private void Search_Click(object sender, RoutedEventArgs e)
         {
+            DebugLog.Append("Search_Click");
             HasSearchExpressionError = false;
             App.Instance.GotoSearch(_searchBox.Text);
         }
