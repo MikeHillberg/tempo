@@ -63,7 +63,9 @@ namespace Tempo
             // mikehill_ua
             //this.Suspending += OnSuspending;
 
-            DesktopManager2.Initialize(false);
+            // Put "Tempo" in the name of the local path for storing all files so that SafeDelete() will be happy
+            var localFolderPath = Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, "Tempo");
+            DesktopManager2.Initialize(false, localFolderPath);
 
             // Load all of the contract names/versions
             ContractInformation.Load();
@@ -743,6 +745,17 @@ namespace Tempo
             for (int i = 1; i < args.Length; i++)
             {
                 var arg = args[i].ToLower();
+                if(arg.Length == 0)
+                {
+                    // Don't think this is possible, but don't crash
+                    continue;
+                }
+
+                // Allow -foo or /foo interchangeably
+                if (arg[0] == '-')
+                {
+                    arg = $"/" + arg.Substring(1);
+                }
 
                 // If asked, wait for a debugger to be attached
                 if (arg == "/waitfordebugger")
@@ -770,6 +783,7 @@ namespace Tempo
                 }
                 else if (waitingForFirstDiff)
                 {
+                    // We have /diff and the baseline file
                     // Next we should see the new file
                     // Skip to the next argument
                     baselineFilename = Path.GetFullPath(arg);
@@ -784,6 +798,15 @@ namespace Tempo
 
                     // On the initial display of the diff, show a message box offering to copy to the clipboard
                     OfferToCopyResultsToClipboard = true;
+
+                    // (bugbug) When launched with /diff, it hangs on the HomePage for a bit while loading.
+                    // It should be going straight to the loading page and showing a dialog.
+                    // Work around this for now by at least disabling the HomePage
+                    var homePage = HomePage.Instance;
+                    if (homePage != null)
+                    {
+                        homePage.IsEnabled = false;
+                    }
                 }
                 waitingForFirstDiff = waitingForSecondDiff = false;
 
@@ -817,7 +840,7 @@ namespace Tempo
             // If /diff was used on the command line, check for syntax errors
             if (waitingForFirstDiff || waitingForSecondDiff)
             {
-                _ = MyMessageBox.Show("Usage: Tempo /diff file1 file2\r\nFiles can be dll, winmd, or nupkg",
+                _ = MyMessageBox.Show("Usage: Tempo /diff file1 file2\r\nFiles can be dll, winmd, nupkg, or directory",
                                       "Invalid paramters",
                                       closeButtonText: "OK");
             }
@@ -825,6 +848,10 @@ namespace Tempo
             // If we got custom filenames, start opening them
             if (commandLineFilenames != null && commandLineFilenames.Count != 0)
             {
+                // commandLineFilenames is a list of file or directory names
+                // Replace the directory names with the names of all the children files
+                commandLineFilenames = ExpandDirectories(commandLineFilenames);
+
                 // Set this so that we don't change the scope to whatever was used the last time
                 _initialScopeSet = true;
 
@@ -842,9 +869,39 @@ namespace Tempo
             // If this was a /diff command line, start opening the baseline filenames
             if (baselineFilename != null)
             {
-                BaselineApiScopeLoader.StartMakeCurrent(new string[] { baselineFilename });
+                // baselineFilename is a single file or directory name
+                // Replace the directory name with the names of all the children files
+                var baselineFilenames = ExpandDirectories(new string[] { baselineFilename });
+                BaselineApiScopeLoader.StartMakeCurrent(baselineFilenames.ToArray());
+
+                // This has to be called after the StartMakeCurrent,
+                // because Start clears it (bugbug)
+                Manager.Settings.CompareToBaseline = true;
             }
 
+        }
+
+        /// <summary>
+        /// For each provided path, if it's a file add it to the return list,
+        /// if it's a directory then add its children files to the return list
+        /// </summary>
+        private List<string> ExpandDirectories(IEnumerable<string> paths)
+        {
+            var newList = new List<string>();
+
+            foreach (var path in paths)
+            {
+                if(!Directory.Exists(path))
+                {
+                    newList.Add(path);
+                    continue;
+                }
+
+                var files = Directory.EnumerateFiles(path);
+                newList.AddRange(files);
+            }
+
+            return newList;
         }
 
         // DoSearch checks this, and when true (when using /diff),
@@ -885,8 +942,9 @@ namespace Tempo
             }
         }
 
-
+        // AppDataContainer setting names
         const string _currentScopeSettingName = "ApiScope";
+        const string _winAppSdkChannelSettingName = "WinAppSdkChannel";
 
         /// <summary>
         /// Persist the scope to settings
@@ -929,6 +987,9 @@ namespace Tempo
             settings.Values[_currentScopeSettingName] = scope;
 
             RaisePropertyChange(nameof(ApiScopeName));
+
+            // Save the WinAppSDK channel name (preview/experimental/stable)
+            settings.Values[_winAppSdkChannelSettingName] = WinAppSDKChannel.ToString();
         }
 
         /// <summary>
@@ -945,6 +1006,17 @@ namespace Tempo
             _initialScopeSet = true;
 
             ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
+
+            // Need to read the WASDK channel name before setting the scope
+            if (settings.Values.TryGetValue(_winAppSdkChannelSettingName, out var channelSetting))
+            {
+                if (Enum.TryParse(typeof(WinAppSDKChannel), channelSetting as string, out var channel))
+                {
+                    _winAppSDKChannel = (WinAppSDKChannel)channel;
+                    RaisePropertyChange(nameof(WinAppSDKChannel));
+                }
+            }
+
             if (settings.Values.TryGetValue(_currentScopeSettingName, out var scope))
             {
                 // Windows platform is the default unless something else is set
@@ -1383,23 +1455,6 @@ namespace Tempo
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         static bool _isCustomApiScope = false;
         internal static CustomScopeLoader CustomApiScopeLoader = null;
 
@@ -1422,35 +1477,6 @@ namespace Tempo
                 App.GoHome();
             }
         }
-
-        /// <summary>
-        /// Start loading the custom API scope (doesn't complete synchronously)
-        /// </summary>
-        /// <param name="filenames"></param>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /// <summary>
-        /// Complete when StartCustomApiScope has finished
-        /// </summary>
-
-
-
 
         /// <summary>
         /// Baseline API scope used for comparissons
@@ -1484,21 +1510,6 @@ namespace Tempo
 
         internal static BaselineScopeLoader BaselineApiScopeLoader = null;
 
-
-        /// <summary>
-        /// Start loading the baseline API scope (doesn't complete synchronously)
-        /// </summary>
-        /// <param name="filenames"></param>
-
-
-
-
-
-
-
-
-
-
         /// <summary>
         /// Complete when StartLoadBaselineScope has finished
         /// </summary>
@@ -1514,15 +1525,11 @@ namespace Tempo
             return await BaselineApiScopeLoader.EnsureLoadedAsync();
         }
 
-
-
         static void GoToWindowsScopeAndGoHome()
         {
             App.Instance.IsWinPlatformScope = true;
             App.GoHome();
         }
-
-
 
         const string _customFilenamesKey = "CustomFilenames";
 
@@ -2171,6 +2178,31 @@ namespace Tempo
                 settings.Values[nameof(UsingCppProjections)] = value;
 
                 RaisePropertyChange();
+            }
+        }
+
+        WinAppSDKChannel _winAppSDKChannel = WinAppSDKChannel.Stable;
+        public WinAppSDKChannel WinAppSDKChannel
+        {
+            get { return _winAppSDKChannel; }
+            set
+            {
+                if (_winAppSDKChannel != value)
+                {
+                    _winAppSDKChannel = value;
+                    RaisePropertyChange();
+
+                    // Reload WinAppSDK
+                    Manager.WindowsAppTypeSet = null;
+                    _winAppScopeLoader = new WinAppScopeLoader();
+                    _winAppScopeLoader.StartMakeCurrent();
+
+                    // Notify the Window to update its title bar
+                    ApiScopeLoader.RaiseApiScopeInfoChanged();
+
+                    // Save this change
+                    SaveCurrentScope();
+                }
             }
         }
 

@@ -369,6 +369,9 @@ namespace Tempo
 
         private async void DoSearch()
         {
+            // HomePage gets disabled when loading with /diff command line
+            HomePage.Instance.IsEnabled = true;
+
             var shouldContinue = await App.EnsureApiScopeLoadedAsync();
             if (!shouldContinue)
             {
@@ -485,7 +488,7 @@ namespace Tempo
                     var result = await (new ContentDialog()
                     {
                         Content = "Copy diff to clipboard? \r\n(This can also be done from the Copy menu)",
-                        XamlRoot = this.XamlRoot,
+                        XamlRoot = App.HomePage.XamlRoot,
                         CloseButtonText = "Cancel",
                         PrimaryButtonText = "Copy",
                     }).ShowAsync();

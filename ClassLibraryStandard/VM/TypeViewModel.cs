@@ -1454,10 +1454,19 @@ namespace Tempo
                     _versionChecked = true;
                     _version = "";
 
-                    if (!string.IsNullOrEmpty(TypeSet.Version))
+                    if(this.AssemblyLocation != null && this.AssemblyLocation.Contains("!"))
+                    {
+                        // The location is of the form path/to/package.nupkg!path/to/assembly.dll
+                        // Pull out the "package.nupkg" part to be the version
+                        var containerPath = this.AssemblyLocation.Split('!')[0];
+                        _version = Path.GetFileName(containerPath);
+                    }
+
+                    else if (!string.IsNullOrEmpty(TypeSet.Version))
                     {
                         _version = TypeSet.Version;
                     }
+
                     else if (ImportedApis.Initialized)
                     {
                         if (IsGenericParameter || IsByRef)

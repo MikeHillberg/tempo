@@ -25,8 +25,6 @@ namespace Tempo
             this.InitializeComponent();
         }
 
-
-
         public TypeViewModel TypeVM
         {
             get { return (TypeViewModel)GetValue(TypeVMProperty); }
@@ -47,6 +45,14 @@ namespace Tempo
 
         string ToFileOrDirectory(string path, bool toFile)
         {
+            // Nupkg paths are of the form:
+            // Path/to/package.nupkg!path/to/assembly.dll
+            // So first split out the nupkg prefix
+            var parts = path.Split("!");
+            if(parts.Length > 1 )
+            {
+                path = parts[1];
+            }
 
             var i = path.LastIndexOf('\\');
             if (i == -1)
@@ -72,6 +78,19 @@ namespace Tempo
         string ToDirectory(string path)
         {
             return ToFileOrDirectory(path, toFile: false);
+        }
+
+        string ToContainer(string path)
+        {
+            // Nupkg paths are of the form:
+            // Path/to/package.nupkg!path/to/assembly.dll
+            var parts = path.Split("!");
+            if (parts.Length > 1)
+            {
+                path = parts[0];
+                return Path.GetFileName(path);
+            }
+            return null;
         }
 
         private void ShowAllModelProperties_Click(object sender, RoutedEventArgs e)

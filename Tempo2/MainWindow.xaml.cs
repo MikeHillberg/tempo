@@ -33,9 +33,48 @@ namespace Tempo
             {
                 if (e.PropertyName == nameof(App.ApiScopeName))
                 {
-                    Title = $"Tempo - {App.Instance.ApiScopeName}";
+                    UpdateWindowTitle();
                 }
             };
+
+            ApiScopeLoader.ApiScopeInfoChanged += (s, e) =>
+            {
+                // Something about the ApiScope changed, e.g. it finished loading
+                UpdateWindowTitle();
+            };
+        }
+
+        /// <summary>
+        /// Update the window title with the current selection info
+        /// </summary>
+        void UpdateWindowTitle()
+        {
+            var title = $"Tempo - {App.Instance.ApiScopeName}";
+
+            if (App.Instance.IsWinAppScope && Manager.WindowsAppTypeSet != null)
+            {
+                var version = Manager.WindowsAppTypeSet.Version.Split(",")[1];
+                title += $" ({version})";
+            }
+            else if (App.Instance.IsCustomApiScope && Manager.CustomMRTypeSet != null)
+            {
+                title = $"Tempo - {Manager.CustomMRTypeSet.Version}";
+            }
+            else if (App.Instance.IsWin32Scope && Manager.Win32TypeSet != null)
+            {
+                title += $" ({Manager.Win32TypeSet.Version})";
+            }
+            else if (App.Instance.IsWebView2Scope && Manager.WebView2TypeSet != null)
+            {
+                title += $" ({Manager.WebView2TypeSet.Version})";
+            }
+            else if (App.Instance.IsDotNetScope && Manager.DotNetTypeSet != null
+                || App.Instance.IsDotNetWindowsScope && Manager.DotNetWindowsTypeSet != null)
+            {
+                title += $" ({App.Instance.DotNetCoreVersion})";
+            }
+
+            Title = title;
         }
 
         // Helpers for SetMicaBackrop

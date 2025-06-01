@@ -562,28 +562,77 @@ namespace Tempo
             App.NavigateSymbolsIllustration();
         }
 
-        private async void OpenBaseline(object sender, RoutedEventArgs e)
+        private async void AddBaseline(object sender, RoutedEventArgs e)
         {
-
-            // Get filenames
+            // Get new filenames
             var filenames = await App.TryPickMetadataFilesAsync();
             if (filenames == null)
             {
                 return;
             }
 
+            if (App.Instance.BaselineFilenames != null)
+            {
+                filenames = App.Instance.BaselineFilenames.Union(filenames).ToArray();
+            }
+
             // Set them as the baseline
-            //App.Instance.OpenBaseline(filenames);
-            //App.StartLoadBaselineScope(filenames.ToArray());
             App.BaselineApiScopeLoader.StartMakeCurrent(filenames.ToArray());
         }
 
 
-        private void CloseBaseline(object sender, RoutedEventArgs e)
+        private void CloseAllBaseline(object sender, RoutedEventArgs e)
         {
+            Settings.CompareToBaseline = false;
+            App.Instance.BaselineFilenames = null;
             App.BaselineApiScopeLoader.Close();
+        }
 
+        //private void RemoveBaselineFile_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        //{
+        //    var split = GetTextElementTag(sender) as SplitFilename;
+        //    var path = $@"{split.PathPart}\{split.FilePart}";
 
+        //    var oldList = App.Instance.BaselineFilenames;
+        //    var newList = new List<string>();
+        //    foreach (var filename in oldList)
+        //    {
+        //        if (filename != path)
+        //        {
+        //            newList.Add(filename);
+        //        }
+        //    }
+
+        //    if (newList.Count == 0)
+        //    {
+        //        CloseAllBaseline(null, null);
+        //    }
+        //    else
+        //    {
+        //        App.BaselineApiScopeLoader.StartMakeCurrent(newList.ToArray());
+        //    }
+        //}
+
+        private void BaselineFilenameRemoved(object sender, string path)
+        {
+            var oldList = App.Instance.BaselineFilenames;
+            var newList = new List<string>();
+            foreach (var filename in oldList)
+            {
+                if (filename != path)
+                {
+                    newList.Add(filename);
+                }
+            }
+
+            if (newList.Count == 0)
+            {
+                CloseAllBaseline(null, null);
+            }
+            else
+            {
+                App.BaselineApiScopeLoader.StartMakeCurrent(newList.ToArray());
+            }
         }
 
         string BaselineHeaderText(bool isExpanded)
@@ -805,11 +854,8 @@ namespace Tempo
         /// <summary>
         /// Event handler to remove a custom file
         /// </summary>
-        private void RemoveCustomFile_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        private void RemoveCustomFile_Click(object sender, string path)
         {
-            var split = GetTextElementTag(sender) as SplitFilename;
-            var path = $@"{split.PathPart}\{split.FilePart}";
-
             var oldList = DesktopManager2.CustomApiScopeFileNames.Value;
             var newList = new List<string>();
             foreach (var filename in oldList)
@@ -854,6 +900,19 @@ namespace Tempo
         private void GoToPSClick(object sender, object args)
         {
             PSLauncher.GoToPS(this.XamlRoot);
+        }
+
+        private void SelectWasdkStable(object sender, RoutedEventArgs e)
+        {
+            App.Instance.WinAppSDKChannel = WinAppSDKChannel.Stable;
+        }
+        private void SelectWasdkPreview(object sender, RoutedEventArgs e)
+        {
+            App.Instance.WinAppSDKChannel = WinAppSDKChannel.Preview;
+        }
+        private void SelectWasdkExperimental(object sender, RoutedEventArgs e)
+        {
+            App.Instance.WinAppSDKChannel = WinAppSDKChannel.Experimental;
         }
     }
 

@@ -13,7 +13,6 @@ namespace Tempo
             this.InitializeComponent();
         }
 
-
         public MemberOrTypeViewModelBase MemberVM
         {
             get { return (MemberOrTypeViewModelBase)GetValue(MemberVMProperty); }
@@ -21,11 +20,5 @@ namespace Tempo
         }
         public static readonly DependencyProperty MemberVMProperty =
             DependencyProperty.Register("MemberVM", typeof(MemberOrTypeViewModelBase), typeof(BuildNumberText), new PropertyMetadata(null));
-
-
-
-
-
-
     }
 }

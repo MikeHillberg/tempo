@@ -13,7 +13,7 @@
 
         protected override void DoOffThreadLoad()
         {
-            DesktopManager2.LoadWinAppSdkAssembliesSync(WinAppSDKChannel.Stable, !App.Instance.UsingCppProjections);
+            DesktopManager2.LoadWinAppSdkAssembliesSync(App.Instance.WinAppSDKChannel, !App.Instance.UsingCppProjections);
         }
 
         protected override bool IsSelected => App.Instance.IsWinAppScope;

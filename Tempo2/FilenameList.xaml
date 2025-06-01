@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Tempo.FilenameList"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo">
+
+    <ItemsControl ItemsSource="{x:Bind SplitFilenames(Filenames), Mode=OneWay}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="local:SplitFilename">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    
+                    <!-- Delete button (hyperlink, because an actual button is too big -->
+                    <TextBlock>
+                        <Hyperlink ToolTipService.ToolTip="Close this file"
+                                   Click="RemoveFile_Click"
+                                   local:FilenameList.TextElementTag="{x:Bind}"
+                                   >[X]</Hyperlink>
+                    </TextBlock>
+
+                    <!-- Filename and path -->
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{x:Bind FilePart}" />
+                        <TextBlock Text="{x:Bind PathPart}" />
+                    </StackPanel>
+                    
+                </Grid>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+</UserControl>

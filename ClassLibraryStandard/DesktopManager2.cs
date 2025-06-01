@@ -1,8 +1,8 @@
 ﻿using CommonLibrary;
 using Microsoft.Win32;
 using MiddleweightReflection;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -13,13 +13,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Tempo;
-using static Tempo.DesktopManager2;
 
 namespace Tempo
 {
@@ -28,12 +24,16 @@ namespace Tempo
         static string _windir = System.Environment.ExpandEnvironmentVariables("%SystemRoot%");
         static string _winMDDir = FindSystemMetadataDirectory();
 
+        // Location where it's OK to write files (package cache)
+        static public string LocalFilesPath = null;
 
         // Bugbug: need to set this internally because UWP app gets confused by the type at build time
         //public static Dispatcher Dispatcher { get; set; }
 
-        public static void Initialize(bool wpfApp)
+        public static void Initialize(bool wpfApp, string localFilesPath)
         {
+            LocalFilesPath = localFilesPath;
+
             if (wpfApp)
             {
                 // Extras for the WPF app (vs the WinUI app)
@@ -137,8 +137,6 @@ namespace Tempo
         public static string WinAppSdkPackageName => "Microsoft.WindowsAppSDK";
         public static string WebView2PackageName => "Microsoft.Web.WebView2";
         public static string Win32PackageName => "Microsoft.Windows.SDK.Win32Metadata";
-
-
 
         // Set the WinUI version in the WinUI types
         public static void SetWinUIVersions(string winUIWinMDFilename, IEnumerable<TypeViewModel> types)
@@ -318,8 +316,54 @@ namespace Tempo
                 });
         }
 
+        /// <summary>
+        /// Get the dependencies of a pckage, as defined in the nuspec
+        /// </summary>
+        public static List<(string id, VersionRange versionRange)> GetDependenciesforNupkg(string packageFilename)
+        {
+            // Return value
+            var dependencyNames = new List<(string, VersionRange)>();
 
-        public static void LoadFromNupkg(string packageFilename, MRTypeSet typeSet, MrLoadContext loadContext)
+            try
+            {
+                // Open the package
+                using (var reader = new PackageArchiveReader(packageFilename))
+                {
+                    // Get the nuspec
+                    var nuspecReader = reader.NuspecReader;
+
+                    // Get the dependency groups from the nuspec
+                    var dependencyGroups = nuspecReader?.GetDependencyGroups();
+                    if (dependencyGroups != null)
+                    {
+                        // Find the highest version dependency group
+                        var maxDependency = dependencyGroups.Where(d => d.Packages.Any()).Max();
+                        if (maxDependency != null)
+                        {
+                            DebugLog.Append($"Checking dependencies for {packageFilename}");
+
+                            // Get each dependency
+                            foreach (var dependency in maxDependency.Packages)
+                            {
+                                dependencyNames.Add((dependency.Id, dependency.VersionRange));
+                                DebugLog.Append($" - {dependency.Id}, {dependency.VersionRange}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                DebugLog.Append(e, $"Couldn't get dependencies for {packageFilename}");
+            }
+
+            return dependencyNames;
+        }
+
+        public static void LoadFromNupkg(
+            string packageFilename,
+            MRTypeSet typeSet,
+            MrLoadContext loadContext)
         {
             DebugLog.Append($"Loading nupkg: '{packageFilename}'");
 
@@ -342,8 +386,9 @@ namespace Tempo
                     // I've seen the ZipFile API sometimes use slashes and sometimes whacks, 
                     // so checking for both
                     var fullName = entry.FullName.ToLower().Replace('\\', '/');
-                    if(!fullName.StartsWith("lib/") // Not in lib folder
-                        && fullName.Contains("/") ) // Not at the root
+                    if (!fullName.StartsWith("lib/")      // Not in lib folder
+                        && !fullName.StartsWith("metadata/") // Not in metadata folder (WinAppSDK 1.8 goes here)
+                        && fullName.Contains("/"))        // Not at the root
                     {
                         continue;
                     }
@@ -415,9 +460,18 @@ namespace Tempo
                         }
 
                         // Add the assembly to the LoadContext
-                        loadContext.LoadAssemblyFromBytes(buffer, entryName);
+                        var assembly = loadContext.LoadAssemblyFromBytes(
+                            buffer, 
+                            $"{packageFilename}!{entryName}");
 
-                        typeSet.AssemblyLocations.Add(new AssemblyLocation(entryName, packageFilename));
+                        if (assembly != null)
+                        {
+                            typeSet.AssemblyLocations.Add(new AssemblyLocation(entryName, packageFilename));
+                        }
+                        else
+                        {
+                            DebugLog.Append($"Not an assembly: {packageFilename}!{entryName}");
+                        }
                     }
                 }
             }
@@ -432,10 +486,12 @@ namespace Tempo
 
         // Download the latest version of a package, returning it's location as a directory name
         // (The package will be a file therein named {packageName}.nupkg)
-        public static async Task<PackageLocationAndVersion> DownloadLatestPackageFromNugetToDirectory(string packageName, string prereleasePrefix = null)
+        public static async Task<PackageLocationAndVersion> DownloadLatestPackageFromNugetToDirectory(
+            string packageName,
+            string prereleaseTag = null,
+            VersionRange versionRange = null)
         {
-            string tempDir = System.Environment.ExpandEnvironmentVariables("%Temp%");
-            var tempNameBase = $"{tempDir}\\Tempo_{packageName}";
+            string nupkgFilename = null;
 
             try
             {
@@ -443,7 +499,6 @@ namespace Tempo
                 CancellationToken cancellationToken = CancellationToken.None;
 
                 // Get all versions of the package
-
                 SourceCacheContext cache = new SourceCacheContext();
                 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
                 FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>();
@@ -454,48 +509,58 @@ namespace Tempo
                     logger,
                     cancellationToken);
 
-                // Get the last version
-                NuGetVersion last;
-                if (string.IsNullOrEmpty(prereleasePrefix))
+                if (versionRange == null)
                 {
-                    var releaseVersions = from v in versions
-                                          where !v.OriginalVersion.Contains($"-")
-                                          select v;
-                    last = releaseVersions.LastOrDefault();
-                }
-                else
-                {
-                    var prereleaseVersions = from v in versions
-                                             where v.OriginalVersion.Contains($"-{prereleasePrefix}")
-                                             select v;
-                    last = prereleaseVersions.LastOrDefault();
-                }
-
-
-                if (last == null)
-                {
-                    DebugLog.Append($"Couldn't find last version of {packageName}");
-                    return new PackageLocationAndVersion();
-                }
-                DebugLog.Append($"{packageName} version is {last.OriginalVersion}");
-
-                var packageDirName = $@"{tempNameBase}.{last.OriginalVersion}";
-                var nupkgFilename = $@"{packageDirName}\{packageName}.nupkg";
-
-                if (Directory.Exists(packageDirName))
-                {
-                    if (File.Exists(nupkgFilename))
+                    // Filter either to not a prerelease, or to the right prerelease (experimental vs preview)
+                    if (string.IsNullOrEmpty(prereleaseTag))
                     {
-                        return new PackageLocationAndVersion() { Location = packageDirName, Version = last.OriginalVersion };
+                        versions = versions.Where(v => !v.IsPrerelease);
+                    }
+                    else
+                    {
+                        versions = versions.Where(v => v.OriginalVersion.Contains($"-{prereleaseTag}"));
                     }
                 }
                 else
                 {
-                    Directory.CreateDirectory(packageDirName);
+                    // Filter to the version range specified
+                    versions = versions.Where(versionRange.Satisfies);
+                }
+
+                // Get the highest version from the filtered list
+                NuGetVersion highestVersion = null;
+                if (versions != null)
+                {
+                    highestVersion = versions.Max();
+                }
+
+                if (highestVersion == null)
+                {
+                    DebugLog.Append($"Couldn't find last version of {packageName}");
+                    return new PackageLocationAndVersion();
+                }
+                DebugLog.Append($"{packageName} version is {highestVersion.OriginalVersion}");
+
+                // Calculate the full path to where the nupkg will be downloaded
+                var packagesPath = $"{LocalFilesPath}\\Tempo_Packages";
+                var packagePath = $@"{packagesPath}\{packageName}\{highestVersion.OriginalVersion}";
+                nupkgFilename = $@"{packagePath}\{packageName}.nupkg";
+
+                // Create the directory if necessary, and early out if the package is already there
+                if (Directory.Exists(packagePath))
+                {
+                    if (File.Exists(nupkgFilename))
+                    {
+                        return new PackageLocationAndVersion() { Location = packagePath, Version = highestVersion.OriginalVersion };
+                    }
+                }
+                else
+                {
+                    Directory.CreateDirectory(packagePath);
                 }
 
                 // Downlaod the nupkg
-                var packageUrl = $"https://www.nuget.org/api/v2/package/{packageName}/{last.OriginalVersion}";
+                var packageUrl = $"https://www.nuget.org/api/v2/package/{packageName}/{highestVersion.OriginalVersion}";
                 var http = (HttpWebRequest)WebRequest.Create(packageUrl);
                 http.UserAgent = "Tempo"; // Server rejects the request if there's no UserAgent string set
                 var response = await http.GetResponseAsync();
@@ -510,12 +575,18 @@ namespace Tempo
 
                 DebugLog.Append($"Downloaded {nupkgFilename}");
 
-                return new PackageLocationAndVersion() { Location = packageDirName, Version = last.OriginalVersion };
+                return new PackageLocationAndVersion() { Location = packagePath, Version = highestVersion.OriginalVersion };
             }
             catch (Exception e)
             {
                 DebugLog.Append($"Couldn't download {packageName}");
                 DebugLog.Append(e);
+
+                if(nupkgFilename != null)
+                {
+                    SafeDelete(nupkgFilename);
+                }
+
                 throw;
             }
         }
@@ -602,9 +673,9 @@ namespace Tempo
                 typeSet.Types
                             = (from a in loadContext.LoadedAssemblies
                                from t in a.GetAllTypes()
+                               where !t.GetNamespace().StartsWith("ABI.") // Ignore cswinrt implementation detail
                                let tvm = MRTypeViewModel.GetFromCache(t, typeSetT)
                                where tvm.Name != "<Module>"
-                               //where Manager.TypeIsPublicVolatile(t) || t.IsInterface
                                orderby tvm.Name
                                select tvm).ToList();
 
@@ -700,9 +771,9 @@ namespace Tempo
                 prereleasePrefix = "experimental";
 
             // Download the package and load into `typeSet`
-            var typeSet = new WindowsAppTypeSet(useWinrtProjections); 
+            var typeSet = new WindowsAppTypeSet(useWinrtProjections);
             LoadNugetHelper(typeSet, packageName, prereleasePrefix);
-            if(typeSet.Types != null)
+            if (typeSet.Types != null)
             {
                 Manager.WindowsAppTypeSet = typeSet;
             }
@@ -742,7 +813,6 @@ namespace Tempo
             {
                 Manager.Win32TypeSet = typeSet;
             }
-
         }
 
 
@@ -765,20 +835,20 @@ namespace Tempo
             Manager.DotNetWindowsTypeSet = typeSet;
         }
 
-
-
-
         /// <summary>
         /// Download the specified package from nuget and load into `typeSet`
         /// </summary>
-        private static void LoadNugetHelper(MRTypeSet typeSet, string packageName, string prereleasePrefix = "")
+        private static void LoadNugetHelper(
+            MRTypeSet typeSet,
+            string packageName,
+            string prereleasePrefix = "")
         {
             DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
             // Download the nupkg from nuget.org (or used the cached copy)
-            var t = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, prereleasePrefix);
-            t.Wait();
-            var packageLocationAndVersion = t.Result;
+            var task = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, prereleasePrefix);
+            task.Wait();
+            var packageLocationAndVersion = task.Result;
 
             if (string.IsNullOrEmpty(packageLocationAndVersion.Location))
             {
@@ -786,18 +856,40 @@ namespace Tempo
                 return;
             }
 
-            // Catch exceptions so we can fail gracefully if there's any kind of expected exception cases that I don't know about
+            typeSet.Version = $"{packageName},{packageLocationAndVersion.Version}";
+
             var packageFilename = $@"{packageLocationAndVersion.Location}\{packageName}.nupkg";
+
+            // Read out the nuspec and find out what dependencies this has
+            var deps = GetDependenciesforNupkg(packageFilename);
+
+            // Loop through the dependencies and download them too
+            // (Just one level deep for now)
+            List<string> packageFileNames = new List<string>() { packageFilename };
+            foreach (var dep in deps)
+            {
+                // Download the dependency package
+                task = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(dep.id, prereleaseTag: null, dep.versionRange);
+                task.Wait();
+                packageLocationAndVersion = task.Result;
+
+                if (string.IsNullOrEmpty(packageLocationAndVersion.Location))
+                {
+                    // The user probably canceled the operation
+                    return;
+                }
+
+                packageFileNames.Add($@"{packageLocationAndVersion.Location}\{dep.id}.nupkg");
+            }
+
+            // Catch exceptions so we can fail gracefully if there's any kind of expected exception cases that I don't know about
             try
             {
-                // Load the winmd files
-                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, new string[] { packageFilename });
+                // Load all the freshly downloaded packages into the TypeSet
+                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, packageFileNames.ToArray());
 
                 if (typeSet.Types != null)
                 {
-                    // Indicate the version for everything in this type set
-                    typeSet.Version = $"{packageName},{packageLocationAndVersion.Version}";
-
                     return;
                 }
                 else
@@ -826,7 +918,10 @@ namespace Tempo
                 throw new Exception($"Bad file delete: {filename}");
             }
 
-            File.Delete(filename);
+            if (File.Exists(filename))
+            {
+                File.Delete(filename);
+            }
         }
 
 
@@ -835,7 +930,7 @@ namespace Tempo
         {
             var sb = new StringBuilder();
 
-            if(type.IsDelegate)
+            if (type.IsDelegate)
             {
                 sb.Append($"{type.CodeModifiers} delegate void {type} (");
 

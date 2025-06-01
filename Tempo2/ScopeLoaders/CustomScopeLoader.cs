@@ -116,6 +116,16 @@ namespace Tempo
                 typeSet,
                 DesktopManager2.CustomApiScopeFileNames.Value);
 
+            // Use the filenames as the TypeSet version (nuget packages tend to have a version number in their name)
+            var names = new List<string>();
+            foreach(var filename in DesktopManager2.CustomApiScopeFileNames.Value)
+            {
+                var name = System.IO.Path.GetFileNameWithoutExtension(filename);
+                names.Add(name);
+            }
+
+            typeSet.Version = string.Join(", ", names);
+
             Manager.CustomMRTypeSet = typeSet;
 
             // Now that we know that the load worked, save the list of custom filenames

@@ -217,7 +217,7 @@ namespace TempoPSProvider
                 };
 
                 // Initialize the type metadata
-                DesktopManager2.Initialize(wpfApp: false);
+                DesktopManager2.Initialize(wpfApp: false, null);
 
                 // Figure out if we're using C# or C++ projection
                 var useWinRTProjections = true;

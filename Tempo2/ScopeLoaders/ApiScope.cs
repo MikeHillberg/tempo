@@ -198,6 +198,9 @@ namespace Tempo
                     }
                 }
 
+                // MainWindow puts info about the loaded api scope in its title bar
+                RaiseApiScopeInfoChanged();
+
                 // This must be called after CurrentTypeSet is set
                 await OnCompleted();
             }
@@ -213,7 +216,15 @@ namespace Tempo
             return;
         }
 
+        /// <summary>
+        /// Info about the API Scope changed (such as WASDK channel)
+        /// </summary>
+        static public event EventHandler ApiScopeInfoChanged;
 
+        static public void RaiseApiScopeInfoChanged()
+        {
+            ApiScopeInfoChanged?.Invoke(null, EventArgs.Empty);
+        }
 
         internal bool IsLoaded => GetTypeSet() != null;
         internal bool IsLoadingOrLoaded => _loadCompletedEvent != null || IsLoaded;

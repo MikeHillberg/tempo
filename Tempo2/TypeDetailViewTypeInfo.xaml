@@ -132,6 +132,7 @@
                     <local:StackListHeaderItem>Version</local:StackListHeaderItem>
                     <local:BuildNumberText MemberVM="{x:Bind TypeVM, Mode=OneWay}"/>
                     <TextBlock Text="{x:Bind TypeVM.Contract, Mode=OneWay}"
+                               TextWrapping="Wrap"
                                local:SearchHighlighter.IsEnabled="True" />
                 </StackPanel>
 
@@ -166,8 +167,21 @@
                 <StackPanel>
                     <local:StackListHeaderItem >More</local:StackListHeaderItem>
                     <StackPanel>
-                        <TextBlock Text="{x:Bind ToFile(TypeVM.AssemblyLocation), Mode=OneWay}"  IsTextSelectionEnabled="True"/>
-                        <TextBlock Text="{x:Bind ToDirectory(TypeVM.AssemblyLocation), Mode=OneWay}"  IsTextSelectionEnabled="True"/>
+                        <!-- DLL/winmd name -->
+                        <TextBlock Text="{x:Bind ToFile(TypeVM.AssemblyLocation), Mode=OneWay}"
+                                   TextWrapping="Wrap"
+                                   IsTextSelectionEnabled="True"/>
+
+                        <!-- Folder path (could be path within nupkg zip file) -->
+                        <TextBlock Text="{x:Bind ToDirectory(TypeVM.AssemblyLocation), Mode=OneWay}"  
+                                   TextWrapping="Wrap"
+                                   IsTextSelectionEnabled="True"/>
+
+                        <!-- Nupkg name (if applicable) -->
+                        <TextBlock Text="{x:Bind ToContainer(TypeVM.AssemblyLocation), Mode=OneWay}"  
+                                   IsTextSelectionEnabled="True"
+                                   TextWrapping="Wrap"
+                                   local:CollapseIfEmpty.IsEnabled="True" />
 
                         <TextBlock Margin="0,10,0,0"><Run Text="{x:Bind TypeVM.TotalMembers, Mode=OneWay}" IsTextScaleFactorEnabled="True" /> total members</TextBlock>
 

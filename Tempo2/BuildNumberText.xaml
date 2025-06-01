@@ -18,6 +18,7 @@
 
         <TextBlock Visibility="{x:Bind local:Utils.NotHack(MemberVM.DeclaringType.IsWindows), Mode=OneWay}"
                    Text="{x:Bind MemberVM.VersionFriendlyName, Mode=OneWay}"
+                   TextWrapping="Wrap"
                    local:SearchHighlighter.IsEnabled="True" />
     </Grid>
 

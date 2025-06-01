@@ -40,6 +40,12 @@ namespace Tempo
             }
         }
 
+        public static void Append(Exception e, string message)
+        {
+            Append(message);
+            Append(e);
+        }
+
         static string Thread
         {
             get

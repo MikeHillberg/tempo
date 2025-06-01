@@ -12,6 +12,7 @@
 
     <ScrollViewer Padding="10">
         <TextBlock Text="{x:Bind Text}"
+                   TextWrapping="Wrap"
                    IsTextSelectionEnabled="True"/>
     </ScrollViewer>
 </UserControl>

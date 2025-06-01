@@ -141,6 +141,7 @@
     <None Remove="DebugLog.xaml" />
     <None Remove="DocPageViewer.xaml" />
     <None Remove="DropDownAppBarButtonContent.xaml" />
+    <None Remove="FilenameList.xaml" />
     <None Remove="Filters3.xaml" />
     <None Remove="FiltersFlyout.xaml" />
     <None Remove="FiltersFlyout3.xaml" />
@@ -170,6 +171,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="FilenameList.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="ComplexToolTip.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

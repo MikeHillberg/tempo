@@ -116,13 +116,14 @@ tempo Component.winmd
 tempo Component.nupkg
 ```
 
-You can also compare two files,
+You can also compare two files or directories of files,
 setting one file as the "Baseline" and
 the other as the "Custom API Scope"
 
 ```
 tempo /diff Component_V1.nupkg Component_V2.nupkg
 tempo /diff Component_V1.dll Component_V2.dll
+tempo /diff dir1 dir2
 ```
 
 You can also protocol launch:

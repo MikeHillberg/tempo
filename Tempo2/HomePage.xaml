@@ -102,7 +102,7 @@
                                             Title="{x:Bind PowerShellTipText.Item1}"
                                             Subtitle="{x:Bind PowerShellTipText.Item2}"/>
                             </ToolTipService.ToolTip>
-                            
+
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <!-- CommandPrompt -->
                                 <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe756;"/>
@@ -114,7 +114,7 @@
                             <Button.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="F1"/>
                             </Button.KeyboardAccelerators>
-                            
+
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <SymbolIcon Symbol="Help"/>
                                 <TextBlock>Help</TextBlock>
@@ -160,19 +160,38 @@
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton Grid.Row="0" Grid.Column="1" 
+                    <!-- RadiButton for WASDK is next to a dropdown button for choosing a channel -->
+                    <Grid Grid.Row="0" Grid.Column="1"
+                          Grid.ColumnDefinitions="*,Auto"
+                          Grid.RowDefinitions="Auto,Auto">
+                        <RadioButton Grid.ColumnSpan="2"
                                  IsChecked="{x:Bind ((local:App)local:App.Current).IsWinAppScope, Mode=TwoWay}" 
                                  VerticalAlignment="Top"
+                                     HorizontalAlignment="Left"
                                  GroupName="Test"
                                  DoubleTapped="ApiScope_RadioButton_DoubleTapped"
                                  AccessKey="K">
-                        <StackPanel>
-                            <TextBlock>Windows App SD<Underline>K</Underline></TextBlock>
-                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                            <StackPanel>
+                                <TextBlock>Windows App SD<Underline>K</Underline></TextBlock>
+                                <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                         Search the Windows App SDK, downloading it from nuget.org
-                            </TextBlock>
-                        </StackPanel>
-                    </RadioButton>
+                                </TextBlock>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <DropDownButton x:Name="_winAppSdkVersionButton"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Top"
+                                        Content="{x:Bind local:App.Instance.WinAppSDKChannel, Mode=OneWay}">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout >
+                                    <MenuFlyoutItem Click="SelectWasdkStable">Stable</MenuFlyoutItem>
+                                    <MenuFlyoutItem Click="SelectWasdkPreview">Preview</MenuFlyoutItem>
+                                    <MenuFlyoutItem Click="SelectWasdkExperimental">Experimental</MenuFlyoutItem>
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </Grid>
 
                     <RadioButton Grid.Row="1" Grid.Column="0" 
                                  IsChecked="{x:Bind ((local:App)local:App.Current).IsWin32Scope, Mode=TwoWay}" 
@@ -275,32 +294,11 @@
                                 </local:UniformStackPanel>
 
                                 <!-- Show loaded custom filenames -->
-                                <StackPanel Margin="0,5,0,0"
-                                                    local:CollapseIfEmpty.IsEnabledFor="{x:Bind _customFilenamesText}">
+                                <StackPanel Margin="0,5,0,0">
                                     <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                    <ItemsControl x:Name="_customFilenamesText"
-                                                  Margin="10,0,0,0"
-                                                  ItemsSource="{x:Bind SplitFilenames(local:DesktopManager2.CustomApiScopeFileNames.Value), Mode=OneWay}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="local:SplitFilename">
-                                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                                    <!-- Delete button (hyperlink, because an actual button is too big -->
-                                                    <TextBlock>
-                                                        <Hyperlink ToolTipService.ToolTip="Close this file"
-                                                                   Click="RemoveCustomFile_Click"
-                                                                   local:HomePage.TextElementTag="{x:Bind}"
-                                                                   >[X]</Hyperlink>
-                                                    </TextBlock>
+                                    <local:FilenameList Filenames="{x:Bind local:DesktopManager2.CustomApiScopeFileNames.Value, Mode=OneWay}"
+                                                        FilenameRemoved="RemoveCustomFile_Click" />
 
-                                                    <!-- Filename and path -->
-                                                    <StackPanel Grid.Column="1">
-                                                        <TextBlock Text="{x:Bind FilePart}" />
-                                                        <TextBlock Text="{x:Bind PathPart}" />
-                                                    </StackPanel>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
                                 </StackPanel>
                             </StackPanel>
                         </RadioButton>
@@ -349,19 +347,16 @@
 
                                 <!-- Open/Close buttons -->
                                 <local:UniformStackPanel Orientation="Horizontal" Margin="0,5" Spacing="5">
-                                    <Button Click="OpenBaseline">Open</Button>
-                                    <Button Click="CloseBaseline"
-                                    IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
+                                    <Button Click="AddBaseline">Open</Button>
+                                    <Button Click="CloseAllBaseline"
+                                        IsEnabled="{x:Bind local:App.Instance.IsBaselineScopeLoaded, Mode=OneWay}">Close</Button>
                                 </local:UniformStackPanel>
 
-                                <!-- Show loaded filenames -->
-                                <StackPanel Margin="0,5,0,0" local:CollapseIfEmpty.IsEnabledFor="{x:Bind _baselineFilenamesText}" >
-                                    <TextBlock Text="Current:" TextWrapping="Wrap"/>
-                                    <TextBlock x:Name="_baselineFilenamesText"
-                                       Text="{x:Bind FilenamesToText(local:App.Instance.BaselineFilenames), Mode=OneWay}"
-                                       TextWrapping="Wrap"
-                                       Margin="5,0,0,0"/>
-                                </StackPanel>
+                                <!-- Show filenames -->
+                                <local:FilenameList Margin="0,5,0,0"
+                                                    Filenames="{x:Bind local:App.Instance.BaselineFilenames, Mode=OneWay}"
+                                                    FilenameRemoved="BaselineFilenameRemoved"/>
+
                             </StackPanel>
                         </Grid>
                     </Expander>
