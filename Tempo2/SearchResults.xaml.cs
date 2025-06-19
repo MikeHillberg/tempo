@@ -11,8 +11,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI;
 using System.Text.RegularExpressions;
-using Microsoft.UI.Input;
-using Microsoft.UI.Xaml.Shapes;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -1026,108 +1024,6 @@ namespace Tempo
         public static readonly DependencyProperty ResultsColumnWidthProperty =
             DependencyProperty.Register("ResultsColumnWidth", typeof(GridLength), typeof(SearchResults),
                 new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
-
-        InputSystemCursor _ewCursor = null;
-        InputSystemCursor _nsCursor = null;
-
-        private void Splitter_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // When the pointer is over the splitter, change the cursor
-
-            var splitter = sender as Rectangle;
-            if (splitter == _resultsSplitter)
-            {
-                if (_ewCursor == null)
-                {
-                    _ewCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast);
-                }
-                ProtectedCursor = _ewCursor;
-            }
-            else
-            {
-                Debug.Assert(splitter == _docPageSplitter);
-
-                if (_nsCursor == null)
-                {
-                    _nsCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeNorthSouth);
-                }
-                ProtectedCursor = _nsCursor;
-            }
-        }
-
-        private void Splitter_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // Pointer's not over the splitter anymore, which implies we're not moving it,
-            // so restore the pointer.
-
-            ProtectedCursor = null;
-        }
-
-        double _splitterPointerOffset = 0;
-        FrameworkElement _activeSplitter = null;
-
-        private void Splitter_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // Start moving the splitter
-
-            // Capture the pointer so that we still get messages when the mouse isn't actually over it anymore
-            if (!(sender as FrameworkElement).CapturePointer(e.Pointer))
-            {
-                return;
-            }
-
-            // Keep track of where the pointer is right now relative to the edge of the splitter,
-            // for use later in Move
-
-            var currentPosition = e.GetCurrentPoint(this).Position;
-            _activeSplitter = sender as FrameworkElement;
-            if (_activeSplitter == _resultsSplitter)
-            {
-                _splitterPointerOffset = currentPosition.X - _resultsColumn.ActualWidth;
-            }
-            else
-            {
-                Debug.Assert(_activeSplitter == _docPageSplitter);
-                _splitterPointerOffset = currentPosition.Y - (this.ActualHeight - _docPageRow.ActualHeight);
-            }
-        }
-
-        private void Splitter_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (_activeSplitter == null)
-            {
-                return;
-            }
-
-            // We're in the middle of dragging the splitter.
-            // Update the column or row according to the new pointer position.
-            // Since the pointer likely didn't start exactly on the edge of the column/row that's
-            // being resized, take into account the offset of the pointer from that edge at the start.
-
-            var currentPoint = e.GetCurrentPoint(this).Position;
-
-            if (_activeSplitter == _resultsSplitter)
-            {
-                this.ResultsColumnWidth = new GridLength(currentPoint.X - _splitterPointerOffset);
-            }
-            else
-            {
-                this.DefaultDocHeight = this.ActualHeight - currentPoint.Y + _splitterPointerOffset;
-            }
-        }
-
-        private void Splitter_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (_activeSplitter == null)
-            {
-                return;
-            }
-
-            // Done splitting
-
-            ReleasePointerCapture(e.Pointer);
-            _activeSplitter = null;
-        }
 
         private void ShowDebugLog_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
