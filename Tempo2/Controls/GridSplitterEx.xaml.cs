@@ -4,6 +4,7 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 
 namespace Tempo.Controls
 {
@@ -79,6 +80,18 @@ namespace Tempo.Controls
         public static readonly DependencyProperty TargetSizeObjectProperty =
             DependencyProperty.Register("TargetSizeObject", typeof(DependencyObject), typeof(GridSplitterEx), new PropertyMetadata(null));
 
+        /// <summary>
+        /// For horizontal splitters, specifies whether to calculate size from the top or bottom edge
+        /// </summary>
+        public GridSplitterSizeMode SizeMode
+        {
+            get { return (GridSplitterSizeMode)GetValue(SizeModeProperty); }
+            set { SetValue(SizeModeProperty, value); }
+        }
+        public static readonly DependencyProperty SizeModeProperty =
+            DependencyProperty.Register("SizeMode", typeof(GridSplitterSizeMode), typeof(GridSplitterEx),
+                new PropertyMetadata(GridSplitterSizeMode.FromEdge));
+
         private void Splitter_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             // Change cursor based on orientation
@@ -123,15 +136,24 @@ namespace Tempo.Controls
             
             if (Orientation == GridSplitterOrientation.Horizontal)
             {
-                // For horizontal splitter, calculate offset relative to the target row's bottom edge
-                if (TargetGrid != null && TargetIndex < TargetGrid.RowDefinitions.Count)
+                if (SizeMode == GridSplitterSizeMode.FromOppositeEdge)
                 {
-                    var targetRowHeight = TargetGrid.RowDefinitions[TargetIndex].ActualHeight;
-                    var gridHeight = TargetGrid.ActualHeight;
-                    _pointerOffset = currentPosition.Y - (gridHeight - targetRowHeight);
+                    // For bottom-aligned splitters (like doc pane), calculate from the container's bottom
+                    var container = FindParentOfType<FrameworkElement>(this);
+                    if (container != null)
+                    {
+                        var containerHeight = container.ActualHeight;
+                        var currentTargetSize = GetCurrentTargetSize();
+                        _pointerOffset = currentPosition.Y - (containerHeight - currentTargetSize);
+                    }
+                    else
+                    {
+                        _pointerOffset = 0;
+                    }
                 }
                 else
                 {
+                    // Standard calculation for top-aligned splitters
                     _pointerOffset = 0;
                 }
             }
@@ -161,11 +183,24 @@ namespace Tempo.Controls
 
             if (Orientation == GridSplitterOrientation.Horizontal)
             {
-                // Resize row height
-                var newHeight = TargetGrid.ActualHeight - currentPosition.Y + _pointerOffset;
-                newHeight = Math.Max(0, newHeight); // Ensure non-negative
-
-                UpdateTargetSize(new GridLength(newHeight));
+                if (SizeMode == GridSplitterSizeMode.FromOppositeEdge)
+                {
+                    // Calculate size from the opposite edge (for bottom-aligned splitters)
+                    var container = FindParentOfType<FrameworkElement>(this);
+                    if (container != null)
+                    {
+                        var newHeight = container.ActualHeight - currentPosition.Y + _pointerOffset;
+                        newHeight = Math.Max(0, newHeight);
+                        UpdateTargetSize(new GridLength(newHeight));
+                    }
+                }
+                else
+                {
+                    // Standard calculation from the top edge
+                    var newHeight = currentPosition.Y - _pointerOffset;
+                    newHeight = Math.Max(0, newHeight);
+                    UpdateTargetSize(new GridLength(newHeight));
+                }
             }
             else
             {
@@ -214,6 +249,54 @@ namespace Tempo.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the current target size for offset calculations
+        /// </summary>
+        private double GetCurrentTargetSize()
+        {
+            // Try to get current size from dependency property first
+            if (TargetSizeProperty != null && TargetSizeObject != null)
+            {
+                var value = TargetSizeObject.GetValue(TargetSizeProperty);
+                if (value is GridLength gridLength && gridLength.IsAbsolute)
+                {
+                    return gridLength.Value;
+                }
+            }
+
+            // Fallback to Grid actual values
+            if (TargetGrid != null)
+            {
+                if (Orientation == GridSplitterOrientation.Horizontal && TargetIndex < TargetGrid.RowDefinitions.Count)
+                {
+                    return TargetGrid.RowDefinitions[TargetIndex].ActualHeight;
+                }
+                else if (Orientation == GridSplitterOrientation.Vertical && TargetIndex < TargetGrid.ColumnDefinitions.Count)
+                {
+                    return TargetGrid.ColumnDefinitions[TargetIndex].ActualWidth;
+                }
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Finds the first parent of the specified type
+        /// </summary>
+        private T FindParentOfType<T>(DependencyObject child) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            while (parent != null)
+            {
+                if (parent is T typedParent)
+                {
+                    return typedParent;
+                }
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
+        }
     }
 
     /// <summary>
@@ -230,5 +313,21 @@ namespace Tempo.Controls
         /// Horizontal splitter that resizes rows
         /// </summary>
         Horizontal
+    }
+
+    /// <summary>
+    /// Specifies how the GridSplitterEx calculates the new size
+    /// </summary>
+    public enum GridSplitterSizeMode
+    {
+        /// <summary>
+        /// Calculate size from the nearest edge (default)
+        /// </summary>
+        FromEdge,
+
+        /// <summary>
+        /// Calculate size from the opposite edge (useful for bottom-aligned splitters)
+        /// </summary>
+        FromOppositeEdge
     }
 }

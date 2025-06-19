@@ -148,6 +148,7 @@
                     <!-- Splitter between the metadata info and the doc page, _if_ the pane is open -->
                     <localControls:GridSplitterEx x:Name="_docPageSplitter" Grid.Row="1"
                                                   Orientation="Horizontal"
+                                                  SizeMode="FromOppositeEdge"
                                                   VerticalAlignment="Top"
                                                   Height="16"
                                                   Margin="0,-8,0,0"
