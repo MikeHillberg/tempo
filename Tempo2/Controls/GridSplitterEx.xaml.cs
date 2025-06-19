@@ -11,6 +11,23 @@ namespace Tempo.Controls
     /// <summary>
     /// A reusable grid splitter control that can resize Grid rows or columns.
     /// Supports both horizontal and vertical orientations with configurable target properties.
+    /// 
+    /// Usage Examples:
+    /// 1. Vertical splitter for column resizing:
+    ///    &lt;GridSplitterEx Orientation="Vertical" 
+    ///                     TargetSizeProperty="{x:Static local:MyPage.ColumnWidthProperty}"
+    ///                     TargetSizeObject="{x:Bind}" /&gt;
+    /// 
+    /// 2. Horizontal splitter for row resizing:
+    ///    &lt;GridSplitterEx Orientation="Horizontal" 
+    ///                     SizeMode="FromOppositeEdge"
+    ///                     TargetSizeProperty="{x:Static local:MyPage.RowHeightProperty}"
+    ///                     TargetSizeObject="{x:Bind}" /&gt;
+    /// 
+    /// 3. Direct Grid manipulation:
+    ///    &lt;GridSplitterEx Orientation="Vertical" 
+    ///                     TargetGrid="{x:Bind myGrid}"
+    ///                     TargetIndex="0" /&gt;
     /// </summary>
     public sealed partial class GridSplitterEx : UserControl
     {
@@ -25,7 +42,8 @@ namespace Tempo.Controls
         }
 
         /// <summary>
-        /// Specifies whether this splitter resizes rows or columns
+        /// Specifies whether this splitter resizes rows or columns.
+        /// Vertical orientation resizes columns, Horizontal orientation resizes rows.
         /// </summary>
         public GridSplitterOrientation Orientation
         {
@@ -37,7 +55,8 @@ namespace Tempo.Controls
                 new PropertyMetadata(GridSplitterOrientation.Vertical));
 
         /// <summary>
-        /// The target Grid element to manipulate when resizing
+        /// The target Grid element to manipulate when resizing.
+        /// Used for direct Grid manipulation when TargetSizeProperty is not specified.
         /// </summary>
         public Grid TargetGrid
         {
@@ -48,7 +67,8 @@ namespace Tempo.Controls
             DependencyProperty.Register("TargetGrid", typeof(Grid), typeof(GridSplitterEx), new PropertyMetadata(null));
 
         /// <summary>
-        /// The index of the row or column to resize (0-based)
+        /// The index of the row or column to resize (0-based).
+        /// Used with TargetGrid for direct Grid manipulation.
         /// </summary>
         public int TargetIndex
         {
@@ -59,7 +79,8 @@ namespace Tempo.Controls
             DependencyProperty.Register("TargetIndex", typeof(int), typeof(GridSplitterEx), new PropertyMetadata(0));
 
         /// <summary>
-        /// The dependency property to update when resizing (for databinding scenarios)
+        /// The dependency property to update when resizing (for databinding scenarios).
+        /// Preferred approach for MVVM patterns. Should be a property of type GridLength.
         /// </summary>
         public DependencyProperty TargetSizeProperty
         {
@@ -70,7 +91,8 @@ namespace Tempo.Controls
             DependencyProperty.Register("TargetSizeProperty", typeof(DependencyProperty), typeof(GridSplitterEx), new PropertyMetadata(null));
 
         /// <summary>
-        /// The target object that owns the TargetSizeProperty (usually the parent control)
+        /// The target object that owns the TargetSizeProperty (usually the parent control).
+        /// Used together with TargetSizeProperty for databinding scenarios.
         /// </summary>
         public DependencyObject TargetSizeObject
         {
@@ -81,7 +103,9 @@ namespace Tempo.Controls
             DependencyProperty.Register("TargetSizeObject", typeof(DependencyObject), typeof(GridSplitterEx), new PropertyMetadata(null));
 
         /// <summary>
-        /// For horizontal splitters, specifies whether to calculate size from the top or bottom edge
+        /// For horizontal splitters, specifies whether to calculate size from the top or bottom edge.
+        /// FromEdge (default): Calculate from the nearest edge
+        /// FromOppositeEdge: Calculate from the opposite edge (useful for bottom-aligned splitters)
         /// </summary>
         public GridSplitterSizeMode SizeMode
         {
