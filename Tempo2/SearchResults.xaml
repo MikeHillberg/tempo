@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Tempo"
+    xmlns:localControls="using:Tempo.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
@@ -145,17 +146,13 @@
 
 
                     <!-- Splitter between the metadata info and the doc page, _if_ the pane is open -->
-
-                    <Rectangle x:Name="_docPageSplitter"  Grid.Row="1"
-                               Fill="Transparent"
-                               VerticalAlignment="Top"
-                               Height="16"
-                               Margin="0,-8,0,0"
-                               PointerEntered="Splitter_PointerEntered"
-                               PointerExited="Splitter_PointerExited"
-                               PointerPressed="Splitter_PointerPressed"
-                               PointerReleased="Splitter_PointerReleased"
-                               PointerMoved="Splitter_PointerMoved"
+                    <localControls:GridSplitterEx x:Name="_docPageSplitter" Grid.Row="1"
+                                                  Orientation="Horizontal"
+                                                  VerticalAlignment="Top"
+                                                  Height="16"
+                                                  Margin="0,-8,0,0"
+                                                  TargetSizeProperty="{x:Static local:SearchResults.DefaultDocHeightProperty}"
+                                                  TargetSizeObject="{x:Bind}"
                         />
 
                     <!-- Button that turns on/off the doc page viewer
@@ -178,16 +175,13 @@
             <!-- Splitter between the search results list and the selected item detail -->
             <!-- Optimally we'd set a -8 left margin on this so that it perfectly straddles the line,
                  but doing so causes it to cover up the scroll bar of the ListView to the left -->
-            <Rectangle x:Name="_resultsSplitter" Grid.Column="1"
-                       Fill="Transparent"
-                       HorizontalAlignment="Left"
-                       Width="16"
-                       Margin="0,0,0,0"
-                       PointerEntered="Splitter_PointerEntered"
-                       PointerExited="Splitter_PointerExited"
-                       PointerPressed="Splitter_PointerPressed"
-                       PointerMoved="Splitter_PointerMoved"
-                       PointerReleased="Splitter_PointerReleased"
+            <localControls:GridSplitterEx x:Name="_resultsSplitter" Grid.Column="1"
+                                          Orientation="Vertical"
+                                          HorizontalAlignment="Left"
+                                          Width="16"
+                                          Margin="0,0,0,0"
+                                          TargetSizeProperty="{x:Static local:SearchResults.ResultsColumnWidthProperty}"
+                                          TargetSizeObject="{x:Bind}"
                        />
 
             <!-- Progress UI that turns on when/while search is slow -->
