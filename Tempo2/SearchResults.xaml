@@ -38,9 +38,8 @@
 
             <!-- A left pane with a list, a right pane with detail -->
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="_resultsColumn"  
-                                  Width="{x:Bind ResultsColumnWidth, Mode=OneWay}"/>
-                <ColumnDefinition Width="{x:Bind SecondColumnWidth, Mode=OneWay}" />
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
 
             <!-- SearchBox and ListView (first of two columns) -->
@@ -125,18 +124,22 @@
                 <Grid Visibility="{x:Bind SomethingFound, Mode=OneWay}" 
                       Padding="0,16,0,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        
+                        <RowDefinition Height="2*"/>
+
                         <!-- The height of the doc pane is zero if closed, otherwise calculated to be
                              a portion of the total height. But there's a grid splitter on this, so it can change -->
-                        <RowDefinition x:Name="_docPageRow"
-                                       Height="{x:Bind DocHeight(_toggleDocsButton.IsChecked, DefaultDocHeight), Mode=OneWay}" />
+                        <!-- Note that this is modified by the splitter, so the two-way binding is to keep track of the current value -->
+                        <RowDefinition Height="{x:Bind CalcDocPaneHeight(DocPaneHeight, _toggleDocsButton.IsChecked), 
+                                                        Mode=TwoWay,
+                                                        BindBack=UpdateDocPaneHeight}" />
                     </Grid.RowDefinitions>
 
+                    <!-- Row 0 -->
                     <local:TypeOrMemberDetailView  x:Name="_detailsView" 
                                                    CornerRadius="0,0,5,5"
                                                    IsTopLevel="{x:Bind IsWide, Mode=OneWay}" />
 
+                    <!-- Row 1 (could be collapsed) -->
                     <local:DocPageViewer Grid.Row="1"
                                          CornerRadius="5,5,0,0"
                                          Margin="0,10,0,0"
@@ -145,18 +148,14 @@
 
 
                     <!-- Splitter between the metadata info and the doc page, _if_ the pane is open -->
-
-                    <Rectangle x:Name="_docPageSplitter"  Grid.Row="1"
-                               Fill="Transparent"
-                               VerticalAlignment="Top"
-                               Height="16"
-                               Margin="0,-8,0,0"
-                               PointerEntered="Splitter_PointerEntered"
-                               PointerExited="Splitter_PointerExited"
-                               PointerPressed="Splitter_PointerPressed"
-                               PointerReleased="Splitter_PointerReleased"
-                               PointerMoved="Splitter_PointerMoved"
-                        />
+                    <!-- This is transparent but z-ordered on top of both in order to capture the pointer -->
+                    <local:GridSplitterEx x:Name="_docPageSplitter" 
+                                          Grid.Row="1"
+                                            VerticalAlignment="Top"
+                                            Height="16"
+                                            Margin="0,-8,0,0"
+                                            IsEnabled="{x:Bind local:Utils.TrueOnly(_toggleDocsButton.IsChecked), Mode=OneWay}"
+                                             />
 
                     <!-- Button that turns on/off the doc page viewer
                          This overlays content, which is a questionable design, but I couldn't
@@ -176,19 +175,15 @@
             </Grid>
 
             <!-- Splitter between the search results list and the selected item detail -->
+            <!-- This is transparent but z-ordered on top of both in order to capture the pointer -->
             <!-- Optimally we'd set a -8 left margin on this so that it perfectly straddles the line,
                  but doing so causes it to cover up the scroll bar of the ListView to the left -->
-            <Rectangle x:Name="_resultsSplitter" Grid.Column="1"
-                       Fill="Transparent"
-                       HorizontalAlignment="Left"
-                       Width="16"
-                       Margin="0,0,0,0"
-                       PointerEntered="Splitter_PointerEntered"
-                       PointerExited="Splitter_PointerExited"
-                       PointerPressed="Splitter_PointerPressed"
-                       PointerMoved="Splitter_PointerMoved"
-                       PointerReleased="Splitter_PointerReleased"
-                       />
+            <local:GridSplitterEx x:Name="_resultsSplitter" 
+                                  Grid.Column="1"
+                                  HorizontalAlignment="Left"
+                                  Width="16"
+                                  Margin="0,0,0,0"
+                                  />
 
             <!-- Progress UI that turns on when/while search is slow -->
             <StackPanel Grid.ColumnSpan="2"

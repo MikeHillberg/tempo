@@ -11,8 +11,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI;
 using System.Text.RegularExpressions;
-using Microsoft.UI.Input;
-using Microsoft.UI.Xaml.Shapes;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -85,7 +83,7 @@ namespace Tempo
             // (This is ignored when it's collapsed.)
             this.SizeChanged += (_, __) =>
             {
-                DefaultDocHeight = this.ActualHeight / 3;
+                //DefaultDocHeight = new GridLength(this.ActualHeight / 3);
             };
         }
 
@@ -104,29 +102,6 @@ namespace Tempo
             Settings.Changed += OnSettingsResetting;
 
             _searchBox.Focus();
-        }
-
-        /// <summary>
-        /// Height that the doc page should be. Defaults to a portion of the window height,
-        /// but can be adjusted by a splitter.
-        /// </summary>
-        public double DefaultDocHeight
-        {
-            get { return (double)GetValue(DefaultDocHeightProperty); }
-            set { SetValue(DefaultDocHeightProperty, value); }
-        }
-        public static readonly DependencyProperty DefaultDocHeightProperty =
-            DependencyProperty.Register("DefaultDocHeight", typeof(double), typeof(SearchResults),
-                new PropertyMetadata(0d));
-
-        /// <summary>
-        /// Calculate the doc height based to be the default or zero.
-        /// The DefaultDocHeight is passed in as a parameter, rather than using the property,
-        /// so that it can be used in a OneWay x:Bind, which will track changes to it.
-        /// </summary>
-        internal GridLength DocHeight(bool? isVisible, double defaultDocHeight)
-        {
-            return isVisible == true ? new GridLength(defaultDocHeight) : new GridLength(0);
         }
 
         private void OnSettingsResetting(object sender, EventArgs e)
@@ -1014,127 +989,45 @@ namespace Tempo
                 : "Show doc page";
         }
 
-
-        /// <summary>
-        /// Grid column width of the results column. Defaults to 1*, but can be adjusted by a splitter
-        /// </summary>
-        public GridLength ResultsColumnWidth
-        {
-            get { return (GridLength)GetValue(ResultsColumnWidthProperty); }
-            set { SetValue(ResultsColumnWidthProperty, value); }
-        }
-        public static readonly DependencyProperty ResultsColumnWidthProperty =
-            DependencyProperty.Register("ResultsColumnWidth", typeof(GridLength), typeof(SearchResults),
-                new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
-
-        InputSystemCursor _ewCursor = null;
-        InputSystemCursor _nsCursor = null;
-
-        private void Splitter_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // When the pointer is over the splitter, change the cursor
-
-            var splitter = sender as Rectangle;
-            if (splitter == _resultsSplitter)
-            {
-                if (_ewCursor == null)
-                {
-                    _ewCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast);
-                }
-                ProtectedCursor = _ewCursor;
-            }
-            else
-            {
-                Debug.Assert(splitter == _docPageSplitter);
-
-                if (_nsCursor == null)
-                {
-                    _nsCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeNorthSouth);
-                }
-                ProtectedCursor = _nsCursor;
-            }
-        }
-
-        private void Splitter_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // Pointer's not over the splitter anymore, which implies we're not moving it,
-            // so restore the pointer.
-
-            ProtectedCursor = null;
-        }
-
-        double _splitterPointerOffset = 0;
-        FrameworkElement _activeSplitter = null;
-
-        private void Splitter_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            // Start moving the splitter
-
-            // Capture the pointer so that we still get messages when the mouse isn't actually over it anymore
-            if (!(sender as FrameworkElement).CapturePointer(e.Pointer))
-            {
-                return;
-            }
-
-            // Keep track of where the pointer is right now relative to the edge of the splitter,
-            // for use later in Move
-
-            var currentPosition = e.GetCurrentPoint(this).Position;
-            _activeSplitter = sender as FrameworkElement;
-            if (_activeSplitter == _resultsSplitter)
-            {
-                _splitterPointerOffset = currentPosition.X - _resultsColumn.ActualWidth;
-            }
-            else
-            {
-                Debug.Assert(_activeSplitter == _docPageSplitter);
-                _splitterPointerOffset = currentPosition.Y - (this.ActualHeight - _docPageRow.ActualHeight);
-            }
-        }
-
-        private void Splitter_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (_activeSplitter == null)
-            {
-                return;
-            }
-
-            // We're in the middle of dragging the splitter.
-            // Update the column or row according to the new pointer position.
-            // Since the pointer likely didn't start exactly on the edge of the column/row that's
-            // being resized, take into account the offset of the pointer from that edge at the start.
-
-            var currentPoint = e.GetCurrentPoint(this).Position;
-
-            if (_activeSplitter == _resultsSplitter)
-            {
-                this.ResultsColumnWidth = new GridLength(currentPoint.X - _splitterPointerOffset);
-            }
-            else
-            {
-                this.DefaultDocHeight = this.ActualHeight - currentPoint.Y + _splitterPointerOffset;
-            }
-        }
-
-        private void Splitter_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (_activeSplitter == null)
-            {
-                return;
-            }
-
-            // Done splitting
-
-            ReleasePointerCapture(e.Pointer);
-            _activeSplitter = null;
-        }
-
         private void ShowDebugLog_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             DebugLogViewer.Show();
         }
-    }
 
+        /// <summary>
+        /// The height of the pane showing the docs page for an API.
+        /// Defaults to 1*, but if the splitter is used to resize the pane this stores a pixel value
+        /// </summary>
+        public GridLength DocPaneHeight
+        {
+            get { return (GridLength)GetValue(DocPaneHeightProperty); }
+            set { SetValue(DocPaneHeightProperty, value); }
+        } 
+        public static readonly DependencyProperty DocPaneHeightProperty =
+            DependencyProperty.Register("DocPaneHeight", typeof(GridLength), typeof(SearchResults), 
+                new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
+
+        /// <summary>
+        /// Used in an x:Bind to get the DocPaneHeight if doc pane is open, zero if closed
+        /// </summary>
+        GridLength CalcDocPaneHeight(GridLength docHeight2, bool? isChecked)
+        {
+            return isChecked == true ? docHeight2 : new GridLength(0);
+        }
+
+        /// <summary>
+        /// Used in an x:Bind to write back the updated DocPaneHeight when the doc pane is open, ignored if closed
+        /// </summary>
+        /// <param name="docHeight"></param>
+        void UpdateDocPaneHeight(GridLength docHeight)
+        {
+            // If the doc pane is closed, don't store the zero height
+            if(_toggleDocsButton.IsChecked == true)
+            {
+                DocPaneHeight = docHeight;
+            }
+        }
+    }
 
     public enum ActivePane { Left, Right }
 

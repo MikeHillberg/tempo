@@ -1313,7 +1313,6 @@ namespace Tempo
         internal bool IsDotNetCoreEnabled => DotNetCorePath != null;
 
         internal static string DotNetWindowsPath;
-        internal static string DotNetWindowsVersion;
         internal bool IsDotNetWindowsEnabled => DotNetWindowsPath != null;
 
 
