@@ -9,19 +9,30 @@
     mc:Ignorable="d">
 
 
-    <Grid Background="{x:Bind RootBackground}">
+    <Grid >
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            
+            <!-- The height of the doc pane is zero if closed, otherwise calculated to be
+                 a portion of the total height. But there's a grid splitter on this, so it can change -->
+            <!-- Note that this is modified by the splitter, so the two-way binding is to keep track of the current value -->
+            <RowDefinition Height="{x:Bind MemberDetailViewCalcDocPaneHeight(
+                                                 CanShowDocPane,
+                                                 local:App.Instance.DocPaneHeight, 
+                                                 local:App.Instance.ShowingDocPage), 
+                                             Mode=TwoWay,
+                                             BindBack=local:App.Instance.UpdateDocPaneHeight}" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer >
-            <StackPanel  >
-                <local:CommonCommandBar 
+        <local:CommonCommandBar 
                     Margin="{StaticResource BottomVerticalMargin}"
                     Visibility="{x:Bind IsRoot, Mode=OneWay}"
                     IsBackEnabled="True"
                     HorizontalAlignment="Left" />
+
+        <ScrollViewer Grid.Row="1" Background="{x:Bind RootBackground}">
+            <StackPanel>
 
                 <StackPanel Padding="12,0,0,0" >
                     <local:HeadingBar 
@@ -34,7 +45,6 @@
                        Margin="{StaticResource VerticalMargin}"
                        Foreground="Red"
                        >(Experimental)</TextBlock>
-
 
                     <TextBlock 
                         Margin="{StaticResource VerticalMargin}"
@@ -102,7 +112,26 @@
 
                 </StackPanel>
             </StackPanel>
-
         </ScrollViewer>
+
+
+        <local:DocPageViewer Grid.Row="2"
+                             Background="{x:Bind RootBackground}"
+                             CornerRadius="5,5,0,0"
+                             Visibility="{x:Bind local:Utils.VisibleIfBoth(
+                                                               CanShowDocPane,
+                                                               local:App.Instance.ShowingDocPage), Mode=OneWay}"
+                             Margin="0,10,0,0"
+                             VerticalAlignment="Stretch" 
+                             HorizontalAlignment="Stretch" />
+
+        <!-- Aligns with the top of the DocPageViewer and z-ordered above it -->
+        <local:GridSplitterEx x:Name="_docPageSplitter" 
+                              Grid.Row="2"
+                              VerticalAlignment="Top"
+                              Height="16"
+                              Margin="0,-2,0,0"
+                              IsEnabled="{x:Bind local:App.Instance.ShowingDocPage, Mode=OneWay}" />
+
     </Grid>
 </local:MySerializableControl>

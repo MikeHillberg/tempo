@@ -105,16 +105,17 @@ namespace Tempo
             }
         }
 
-
-        /// <summary>
-        /// Indicates that it's not top level content (so use a subtitle font)
-        /// </summary>
-        public bool IsSubcontent
+        internal GridLength MemberDetailViewCalcDocPaneHeight(
+            bool canShowDocPane, 
+            GridLength docHeight,
+            bool? isChecked)
         {
-            get
+            if (!canShowDocPane)
             {
-                return !IsFullSearchContent && !IsRoot;
+                return new GridLength(0);
             }
+
+            return App.Instance.CalcDocPaneHeight(docHeight, isChecked);
         }
     }
 }

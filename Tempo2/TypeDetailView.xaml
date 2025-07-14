@@ -52,7 +52,7 @@
                                 ScaleY="{x:Bind local:App.Instance.ContentScaling, Mode=OneWay}"/>
             </controls:LayoutTransformControl.Transform>
 
-            <Grid Grid.Row="1" x:Name="_wideMode" 
+            <Grid Grid.Row="1" x:Name="_wideMode" RowDefinitions="*,Auto"
                   Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"   />
@@ -68,13 +68,56 @@
                         IsSummaryDisabled="{x:Bind IsWide, Mode=OneWay}" />
                 </Border>
 
-                <Border x:Name="_wideModeCol1" Grid.Column="1" 
+                <Border  Grid.Column="1" 
                     CornerRadius="0,5,5,0"
                     Padding="10"
                     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-                    <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
-                    <local:TypeDetailViewTypeInfo x:Name="_typeInfo"  TypeVM="{x:Bind TypeVM, Mode=OneWay}"  />
+
+                    <Grid>
+                        
+                        <!-- Two rows, one for the content and one for an optional doc page view -->
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="2*"/>
+
+                            <!-- The height of the doc pane is zero if closed, otherwise calculated to be
+                             a portion of the total height. But there's a grid splitter on this, so it can change -->
+                            <!-- Note that this is modified by the splitter, so the two-way binding is to keep track of the current value -->
+                            <RowDefinition Height="{x:Bind TypeDetailViewCalcDocPaneHeight(
+                                                                CanShowDocPane,
+                                                                local:App.Instance.DocPaneHeight, 
+                                                                local:App.Instance.ShowingDocPage), 
+                                                        Mode=TwoWay,
+                                                        BindBack=local:App.Instance.UpdateDocPaneHeight}" />
+                        </Grid.RowDefinitions>
+
+                        <!-- This starts out here, but in skinny mode will get moved to _skinnyModeCol1 -->
+                        <Border x:Name="_wideModeCol1">
+                            <local:TypeDetailViewTypeInfo x:Name="_typeInfo"  
+                                                          TypeVM="{x:Bind TypeVM, Mode=OneWay}" />
+                        </Border>
+                        
+                        <local:DocPageViewer Grid.Row="1"
+                                             CornerRadius="5,5,0,0"
+                                             Visibility="{x:Bind local:Utils.VisibleIfBoth(
+                                                               CanShowDocPane,
+                                                               local:App.Instance.ShowingDocPage), Mode=OneWay}"
+                                             Margin="0,10,0,0"
+                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                             />
+
+                        <!-- Same cell as DocPageViewer but at the top and z-ordered above -->
+                        <local:GridSplitterEx Grid.Row="1"
+                                              VerticalAlignment="Top"
+                                              Height="16"
+                                              Margin="0,-2,0,0"
+                                              IsEnabled="{x:Bind local:App.Instance.ShowingDocPage, Mode=OneWay}"
+                                             />
+                    </Grid>
+
                 </Border>
+
+                <local:StatusBar Grid.Row="1" Grid.ColumnSpan="2"
+                                 Visibility="{x:Bind CanShowDocPane, Mode=OneWay}"/>
             </Grid>
         </controls:LayoutTransformControl>
 

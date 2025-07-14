@@ -12,7 +12,7 @@
           Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
           Padding="10"
           >
-        <local:TypeDetailView  x:Name="_typeDetail" IsFullSearchContent="True" />
-        <local:MemberDetailView x:Name="_memberDetail" IsFullSearchContent="True"/>
+        <local:TypeDetailView  x:Name="_typeDetail"    IsFullSearchContent="True" CanShowDocPane="{x:Bind CanShowDocPane, Mode=OneWay}" />
+        <local:MemberDetailView x:Name="_memberDetail" IsFullSearchContent="True" CanShowDocPane="{x:Bind CanShowDocPane, Mode=OneWay}"/>
     </Grid>
 </Page>

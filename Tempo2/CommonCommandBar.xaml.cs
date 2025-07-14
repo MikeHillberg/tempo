@@ -57,6 +57,17 @@ namespace Tempo
             ShowHome = IsBackEnabled;
         }
 
+
+
+        //public bool IsDocsPaneEnabled
+        //{
+        //    get { return (bool)GetValue(IsDocsPaneEnabledProperty); }
+        //    set { SetValue(IsDocsPaneEnabledProperty, value); }
+        //}
+        //public static readonly DependencyProperty IsDocsPaneEnabledProperty =
+        //    DependencyProperty.Register("IsDocsPaneEnabled", typeof(bool), typeof(CommonCommandBar), new PropertyMetadata(false));
+
+
         public bool ShowHome
         {
             get { return (bool)GetValue(ShowHomeProperty); }

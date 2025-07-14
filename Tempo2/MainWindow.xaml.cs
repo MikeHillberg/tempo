@@ -8,6 +8,7 @@ using Microsoft.UI.Windowing;
 using System.IO.Packaging;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -44,6 +45,8 @@ namespace Tempo
             };
         }
 
+        string _localVersion = null;
+
         /// <summary>
         /// Update the window title with the current selection info
         /// </summary>
@@ -51,7 +54,12 @@ namespace Tempo
         {
             var title = $"Tempo - {App.Instance.ApiScopeName}";
 
-            if (App.Instance.IsWinAppScope && Manager.WindowsAppTypeSet != null)
+            if (App.Instance.IsWinPlatformScope)
+            {
+                _localVersion = _localVersion ?? GetLocalVersion();
+                title += $" ({_localVersion})";
+            }
+            else if (App.Instance.IsWinAppScope && Manager.WindowsAppTypeSet != null)
             {
                 var version = Manager.WindowsAppTypeSet.Version.Split(",")[1];
                 title += $" ({version})";
@@ -75,6 +83,24 @@ namespace Tempo
             }
 
             Title = title;
+        }
+
+        string GetLocalVersion()
+        {
+            using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            {
+                if (key == null)
+                {
+                    return "";
+                }
+                var displayVersion = key.GetValue("DisplayVersion") as string;
+                displayVersion = displayVersion ?? "";
+
+                var currentBuildNumber = key.GetValue("CurrentBuildNumber") as string;
+                currentBuildNumber = currentBuildNumber ?? "";
+
+                return $"{displayVersion}, {currentBuildNumber}";
+            }
         }
 
         // Helpers for SetMicaBackrop

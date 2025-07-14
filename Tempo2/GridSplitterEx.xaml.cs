@@ -8,8 +8,8 @@ using System.Diagnostics;
 namespace Tempo
 {
     /// <summary>
-    /// Grid splitter control. Must be in the second row/column of a 2-row/column Grid,
-    /// over that column's content, as a child of the Grid. It sizes that ColumnDef
+    /// Grid splitter control. Must be in the last row/column of a Grid,
+    /// z-ordered over that column's content, as a child of the Grid. It sizes that Row/ColumnDef
     /// </summary>
     // (First pass of this was done by GitHub Copilot) 
     public sealed partial class GridSplitterEx : UserControl
@@ -160,9 +160,8 @@ namespace Tempo
             }
 
             // Look at the attached property on this splitter to see what row/column it's in
-            // Currently required to be the second
+            // Must be the last
             int index = IsHorizontal ? Grid.GetRow(this) : Grid.GetColumn(this);
-            Debug.Assert(index == 1);
 
             if (IsHorizontal)
             {
@@ -182,7 +181,6 @@ namespace Tempo
         private void SetDefinitionAbsoluteLength(Grid grid, double newLength)
         {
             int index = IsHorizontal ? Grid.GetRow(this) : Grid.GetColumn(this);
-            Debug.Assert(index == 1); // Currently required to be the second
 
             if (IsHorizontal)
             {

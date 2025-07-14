@@ -37,9 +37,6 @@ namespace Tempo
 
             ReconfigureLayoutsWhenAnythingChanges();
 
-            // Initialize the docs button
-            _toggleDocsButton_Click(null, null);
-
             // There's a button and global accelerator to show the filters
             App.FilterRequested += (s, e) =>
             {
@@ -982,11 +979,9 @@ namespace Tempo
             DebugLogViewer.Show();
         }
 
-        private void _toggleDocsButton_Click(object sender, RoutedEventArgs e)
+        private void CloseDocPaneClick(object sender, RoutedEventArgs e)
         {
-            DocPageButtonLabel = _toggleDocsButton.IsChecked == true
-                ? "Hide doc page"
-                : "Show doc page";
+            App.Instance.ShowingDocPage = false;
         }
 
         private void ShowDebugLog_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
@@ -994,39 +989,39 @@ namespace Tempo
             DebugLogViewer.Show();
         }
 
-        /// <summary>
-        /// The height of the pane showing the docs page for an API.
-        /// Defaults to 1*, but if the splitter is used to resize the pane this stores a pixel value
-        /// </summary>
-        public GridLength DocPaneHeight
-        {
-            get { return (GridLength)GetValue(DocPaneHeightProperty); }
-            set { SetValue(DocPaneHeightProperty, value); }
-        } 
-        public static readonly DependencyProperty DocPaneHeightProperty =
-            DependencyProperty.Register("DocPaneHeight", typeof(GridLength), typeof(SearchResults), 
-                new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
+        ///// <summary>
+        ///// The height of the pane showing the docs page for an API.
+        ///// Defaults to 1*, but if the splitter is used to resize the pane this stores a pixel value
+        ///// </summary>
+        //public GridLength DocPaneHeight
+        //{
+        //    get { return (GridLength)GetValue(DocPaneHeightProperty); }
+        //    set { SetValue(DocPaneHeightProperty, value); }
+        //} 
+        //public static readonly DependencyProperty DocPaneHeightProperty =
+        //    DependencyProperty.Register("DocPaneHeight", typeof(GridLength), typeof(SearchResults), 
+        //        new PropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
-        /// <summary>
-        /// Used in an x:Bind to get the DocPaneHeight if doc pane is open, zero if closed
-        /// </summary>
-        GridLength CalcDocPaneHeight(GridLength docHeight2, bool? isChecked)
-        {
-            return isChecked == true ? docHeight2 : new GridLength(0);
-        }
+        ///// <summary>
+        ///// Used in an x:Bind to get the DocPaneHeight if doc pane is open, zero if closed
+        ///// </summary>
+        //GridLength CalcDocPaneHeight(GridLength docHeight2, bool? isChecked)
+        //{
+        //    return isChecked == true ? docHeight2 : new GridLength(0);
+        //}
 
-        /// <summary>
-        /// Used in an x:Bind to write back the updated DocPaneHeight when the doc pane is open, ignored if closed
-        /// </summary>
-        /// <param name="docHeight"></param>
-        void UpdateDocPaneHeight(GridLength docHeight)
-        {
-            // If the doc pane is closed, don't store the zero height
-            if(_toggleDocsButton.IsChecked == true)
-            {
-                DocPaneHeight = docHeight;
-            }
-        }
+        ///// <summary>
+        ///// Used in an x:Bind to write back the updated DocPaneHeight when the doc pane is open, ignored if closed
+        ///// </summary>
+        ///// <param name="docHeight"></param>
+        //void UpdateDocPaneHeight(GridLength docHeight)
+        //{
+        //    // If the doc pane is closed, don't store the zero height
+        //    if(_toggleDocsButton.IsChecked == true)
+        //    {
+        //        DocPaneHeight = docHeight;
+        //    }
+        //}
     }
 
     public enum ActivePane { Left, Right }

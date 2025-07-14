@@ -153,6 +153,7 @@
     <None Remove="RootFrame.xaml" />
     <None Remove="SmokeLayer.xaml" />
     <None Remove="Smokey.xaml" />
+    <None Remove="StatusBar.xaml" />
     <None Remove="TimedTextBox.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +172,9 @@
     <None Update="Assemblies\System.Runtime.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="StatusBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="FilenameList.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

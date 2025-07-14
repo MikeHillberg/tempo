@@ -24,15 +24,21 @@ namespace Tempo
         {
             this.InitializeComponent();
 
-            SizeChanged += OnSizeChanged;
+            // Don't create the WebView unless/until necessary (wait for non-zero size)
+            SizeChanged += OnSizeChanged1;
+        }
+        private void OnSizeChanged1(object sender, SizeChangedEventArgs e)
+        {
+            // If we initialize the WebView too soon during load it's no op'd,
+            // so wait a beat
+            DispatcherQueue.TryEnqueue(() => OnSizeChanged2(null, e));
         }
 
-        private async void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private async void OnSizeChanged2(object sender, SizeChangedEventArgs e)
         {
             if(e.NewSize != Size.Empty)
             {
-                SizeChanged -= OnSizeChanged;
-
+                SizeChanged -= OnSizeChanged1;
 
                 // We're about to load up the WebView, which might take longer than a normal
                 // page navigation. Show show a progress ring this time.

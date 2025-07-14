@@ -1,0 +1,56 @@
+<UserControl
+    x:Class="Tempo.StatusBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo">
+
+    <StackPanel  Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}" >
+        <!-- Horizontal line at the top -->
+        <Rectangle Height="1" Fill="LightGray" />
+        
+        <Grid ColumnDefinitions="*,Auto,Auto">
+
+            <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
+                     in the content. -->
+            <!-- The hard-coded accelerator tooltip on the hyperlink is because Hyperlink doesn't 
+                     have built-in support for keyboard accelerators -->
+            <TextBlock Visibility="{x:Bind ShowingSearchResults, Mode=OneWay}"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Center"
+                       Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
+                       ><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTotal, Mode=OneWay}" FontWeight="Bold"
+                       /><Run Text=" matches: " xml:space="preserve" FontWeight="Bold" 
+                       /><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTypes, Mode=OneWay}" 
+                       /> <Underline>t</Underline>ypes, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingProperties, Mode=OneWay}" 
+                       /> <Underline>p</Underline>roperties, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingMethods, Mode=OneWay}" 
+                       /> met<Underline>h</Underline>ods, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingEvents, Mode=OneWay}" 
+                       /> eve<Underline>n</Underline>ts, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingFields, Mode=OneWay}" 
+                       /> fields, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingConstructors, Mode=OneWay}" 
+                       /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" 
+                       /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
+                       />ms, <Hyperlink Click="ShowDebugLog_Click" ToolTipService.ToolTip="Show debug log (Ctrl+Shift+G)"
+                       >debug log</Hyperlink></TextBlock>
+
+            <CheckBox Grid.Column="1" 
+                      VerticalAlignment="Center"
+                      IsChecked="{x:Bind local:App.Instance.ShowingDocPage, Mode=TwoWay}"
+                      Content="Docs pane">
+            </CheckBox>
+
+            <!-- Slider to scale up/down content -->
+            <Slider Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Margin="15,0,10,0"
+                        Minimum="100" Maximum="200" Width="100" 
+                        Value="{x:Bind local:App.Instance.ContentScalingPercent, Mode=TwoWay}"
+                        ToolTipService.ToolTip="Scale (Control+Plus, Control+Minus, Control+0)"
+                        />
+
+
+            <!-- Blur out the status bar while a search is in progress -->
+            <local:SmokeLayer Grid.ColumnSpan="2"
+                      Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
+        </Grid>
+    </StackPanel>
+
+</UserControl>

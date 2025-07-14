@@ -2303,6 +2303,79 @@ namespace Tempo
             window.Activate();
         }
 
+        /// <summary>
+        /// True means show a pane with the Microsoft doc page
+        /// </summary>
+        public bool ShowingDocPage
+        {
+            get 
+            { 
+                if(_showingDocPage == null)
+                {
+                    // Default to false, but read the setting
+                    _showingDocPage = false;
+
+                    var setting = ApplicationData.Current.LocalSettings.Values[nameof(ShowingDocPage)] as string;
+                    if (setting != null)
+                    {
+                        if (bool.TryParse(setting, out var showing))
+                        {
+                            _showingDocPage = showing;
+                        }
+                    }
+                }
+
+                return _showingDocPage == true; 
+            }
+
+            set
+            {
+                if (_showingDocPage != value)
+                {
+                    _showingDocPage = value;
+                    RaisePropertyChange();
+                    ApplicationData.Current.LocalSettings.Values[nameof(ShowingDocPage)] = _showingDocPage.ToString();
+                }
+            }
+        }
+        bool? _showingDocPage = null;
+
+        /// <summary>
+        /// Height of the pane that shows the docs page, kept the same on all views
+        /// </summary>
+        public GridLength DocPaneHeight
+        {
+            get { return _docPaneHeight; }
+            set
+            {
+                _docPaneHeight = value;
+                RaisePropertyChange();
+            }
+        }
+        GridLength _docPaneHeight = new GridLength(1, GridUnitType.Star);
+
+        /// <summary>?
+        /// Used in an x:Bind to get the DocPaneHeight if doc pane is open, zero if closed
+        /// </summary>
+        internal GridLength CalcDocPaneHeight(GridLength docHeight2, bool? isOpen)
+        {
+            return isOpen == true ? docHeight2 : new GridLength(0);
+        }
+
+        /// <summary>
+        /// Used in an x:Bind to write back the updated DocPaneHeight when the doc pane is open, ignored if closed
+        /// </summary>
+        /// <param name="docHeight"></param>
+        internal void UpdateDocPaneHeight(GridLength docHeight)
+        {
+            // If the doc pane is closed, don't store the zero height
+            if (ShowingDocPage)
+            {
+                DocPaneHeight = docHeight;
+            }
+        }
+
+
         public bool IsLightTheme
         {
             get { return _isLightTheme; }

@@ -117,6 +117,31 @@ namespace Tempo
             DependencyProperty.Register("IsFullSearchContent", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(false));
 
 
+
+        /// <summary>
+        /// Allows on the documentation pane to be shown
+        /// </summary>
+        public bool CanShowDocPane
+        {
+            get { return (bool)GetValue(CanShowDocPaneProperty); }
+            set { SetValue(CanShowDocPaneProperty, value); }
+        }
+        public static readonly DependencyProperty CanShowDocPaneProperty =
+            DependencyProperty.Register("CanShowDocPane", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(true));
+
+
+
+        /// <summary>
+        /// Indicates that it's not top level content (so use a subtitle font)
+        /// </summary>
+        public bool IsSubcontent
+        {
+            get
+            {
+                return !IsFullSearchContent && !IsRoot;
+            }
+        }
+
         /// <summary>
         /// Indicates that this is the second pane of the SearchResults content area
         /// </summary>
@@ -126,18 +151,21 @@ namespace Tempo
             set { SetValue(IsSecondSearchPaneProperty, value); }
         }
         public static readonly DependencyProperty IsSecondSearchPaneProperty =
-            DependencyProperty.Register("IsSecondSearchPane", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(false));
+            DependencyProperty.Register("IsSecondSearchPane", typeof(bool), typeof(MySerializableControl), 
+                new PropertyMetadata(false, (d,dp) => (d as MySerializableControl).IsSecondSearchPaneChanged()));
+        void IsSecondSearchPaneChanged()
+        {
+            //IsNotSecondSearchPane = !IsSecondSearchPane;
+        }
 
-
-        //internal void SetWaitCursor()
+        //public bool IsNotSecondSearchPane
         //{
-        //    ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Wait);
+        //    get { return (bool)GetValue(IsNotSecondSearchPaneProperty); }
+        //    private set { SetValue(IsNotSecondSearchPaneProperty, value); }
         //}
+        //public static readonly DependencyProperty IsNotSecondSearchPaneProperty =
+        //    DependencyProperty.Register("IsNotSecondSearchPane", typeof(bool), typeof(MySerializableControl), new PropertyMetadata(true));
 
-        //internal void ClearCursor()
-        //{
-        //    ProtectedCursor = null;
-        //}
 
     }
 

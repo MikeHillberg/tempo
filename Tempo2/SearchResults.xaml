@@ -129,14 +129,17 @@
                         <!-- The height of the doc pane is zero if closed, otherwise calculated to be
                              a portion of the total height. But there's a grid splitter on this, so it can change -->
                         <!-- Note that this is modified by the splitter, so the two-way binding is to keep track of the current value -->
-                        <RowDefinition Height="{x:Bind CalcDocPaneHeight(DocPaneHeight, _toggleDocsButton.IsChecked), 
+                        <RowDefinition Height="{x:Bind local:App.Instance.CalcDocPaneHeight(
+                                                                local:App.Instance.DocPaneHeight, 
+                                                                local:App.Instance.ShowingDocPage), 
                                                         Mode=TwoWay,
-                                                        BindBack=UpdateDocPaneHeight}" />
+                                                        BindBack=local:App.Instance.UpdateDocPaneHeight}" />
                     </Grid.RowDefinitions>
 
                     <!-- Row 0 -->
                     <local:TypeOrMemberDetailView  x:Name="_detailsView" 
                                                    CornerRadius="0,0,5,5"
+                                                   CanShowDocPane="False"
                                                    IsTopLevel="{x:Bind IsWide, Mode=OneWay}" />
 
                     <!-- Row 1 (could be collapsed) -->
@@ -144,29 +147,26 @@
                                          CornerRadius="5,5,0,0"
                                          Margin="0,10,0,0"
                                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                         Visibility="{x:Bind _toggleDocsButton.IsChecked, Mode=OneWay}" />
+                                         Visibility="{x:Bind local:App.Instance.ShowingDocPage, Mode=OneWay}" />
 
 
                     <!-- Splitter between the metadata info and the doc page, _if_ the pane is open -->
                     <!-- This is transparent but z-ordered on top of both in order to capture the pointer -->
-                    <local:GridSplitterEx x:Name="_docPageSplitter" 
-                                          Grid.Row="1"
-                                            VerticalAlignment="Top"
-                                            Height="16"
-                                            Margin="0,-8,0,0"
-                                            IsEnabled="{x:Bind local:Utils.TrueOnly(_toggleDocsButton.IsChecked), Mode=OneWay}"
+                    <local:GridSplitterEx Grid.Row="1"
+                                          VerticalAlignment="Top"
+                                          Height="16"
+                                          Margin="0,-8,0,0"
+                                          IsEnabled="{x:Bind local:App.Instance.ShowingDocPage, Mode=OneWay}"
                                              />
 
-                    <!-- Button that turns on/off the doc page viewer
-                         This overlays content, which is a questionable design, but I couldn't
-                         find a good place to put it that was discoverable but didn't waste a lot of space.
-                         Expander wasn't a good fit for the scenario -->
-                    <ToggleButton x:Name="_toggleDocsButton"  Grid.RowSpan="2"
-                                  IsChecked="False"
-                                  Click="_toggleDocsButton_Click"
-                                  VerticalAlignment="Bottom"
-                                  HorizontalAlignment="Right"
-                                  Content="{x:Bind DocPageButtonLabel, Mode=OneWay}" />
+                    <!-- Button to close doc pane (only shows when it's open) -->
+                    <Button Grid.Row="1"
+                            Click="CloseDocPaneClick"
+                            VerticalAlignment="Top"
+                            Margin="0,0,10,0"
+                            HorizontalAlignment="Right" >
+                        <SymbolIcon Symbol="Cancel" />
+                    </Button>
                 </Grid>
 
                 <local:SmokeLayer Grid.Row="2" 
@@ -220,47 +220,11 @@
             </ContentControl.ContentTransitions>
         </ContentControl>
 
-        <!-- Status bar -->
-        <StackPanel  Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
-                     VerticalAlignment="Center">
-            <Rectangle Height="1" Fill="LightGray" />
-            <Grid ColumnDefinitions="*,Auto">
 
-                <!-- The funny formatting here is to keep the newlines inside the tags, rather than showing up
-                     in the content. -->
-                <!-- The hard-coded accelerator tooltip on the hyperlink is because Hyperlink doesn't 
-                     have built-in support for keyboard accelerators -->
-                <TextBlock Name="_statusTextBlock" 
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           Margin="4" Style="{StaticResource CaptionTextBlockStyle}"
-                       ><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTotal, Mode=OneWay}" FontWeight="Bold"
-                       /><Run Text=" matches: " xml:space="preserve" FontWeight="Bold" 
-                       /><Run Text="{x:Bind local:Manager.MatchingStats.MatchingTypes, Mode=OneWay}" 
-                       /> <Underline>t</Underline>ypes, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingProperties, Mode=OneWay}" 
-                       /> <Underline>p</Underline>roperties, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingMethods, Mode=OneWay}" 
-                       /> met<Underline>h</Underline>ods, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingEvents, Mode=OneWay}" 
-                       /> eve<Underline>n</Underline>ts, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingFields, Mode=OneWay}" 
-                       /> fields, <Run Text="{x:Bind local:Manager.MatchingStats.MatchingConstructors, Mode=OneWay}" 
-                       /> constructors (<Run Text="{x:Bind local:Manager.MatchingStats.MatchingDocPages, Mode=OneWay}" 
-                       /> doc pages), <Run Text="{x:Bind SearchDelay, Mode=OneWay}"
-                       />ms, <Hyperlink Click="ShowDebugLog_Click" ToolTipService.ToolTip="Show debug log (Ctrl+Shift+G)"
-                       >debug log</Hyperlink></TextBlock>
-
-                <!-- Slider to scale up/down content -->
-                <Slider Grid.Column="2"
-                        Margin="0,0,12,0"
-                        Minimum="100" Maximum="200" Width="100" 
-                        Value="{x:Bind local:App.Instance.ContentScalingPercent, Mode=TwoWay}"
-                        ToolTipService.ToolTip="Scale (Control+Plus, Control+Minus, Control+0)"
-                        />
-
-
-                <!-- Blur out the status bar while a search is in progress -->
-                <local:SmokeLayer Grid.ColumnSpan="2"
-                      Visibility="{x:Bind SlowSearchInProgress, Mode=OneWay}" />
-            </Grid>
-        </StackPanel>
+        <local:StatusBar Grid.Row="2" VerticalAlignment="Center"
+                         SlowSearchInProgress="{x:Bind SlowSearchInProgress, Mode=OneWay}"
+                         SearchDelay="{x:Bind SearchDelay, Mode=OneWay}"
+                         ShowingSearchResults="True" />
 
     </Grid>
 </local:MySerializableControl>
