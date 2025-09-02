@@ -59,8 +59,7 @@ namespace Tempo
             {
                 // Ignore the COM exception we get when trying to open two ContentDialogs at the same time
 
-                DebugLog.Append("Failed MessageBox");
-                DebugLog.Append(ex.Message);
+                DebugLog.Append(ex, "Failed MessageBox");
                 return ContentDialogResult.None;
             }
         }

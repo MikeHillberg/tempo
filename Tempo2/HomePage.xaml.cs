@@ -39,7 +39,7 @@ namespace Tempo
 
             //MainWindow.Instance.SizeChanged += Window_SizeChanged;
 
-            CheckForDotNet();
+            DotNetScopeLoader.CheckForDotNet();
         }
 
         static public HomePage Instance = null;
@@ -388,52 +388,11 @@ namespace Tempo
 
 
 
-        /// <summary>
-        /// Check if DotNet is available (SDK is installed)
-        /// </summary>
-        static void CheckForDotNet()
-        {
-            DebugLog.Append("Checking for dotnet");
-            var dotNetPath = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "dotnet");
-            if (!Directory.Exists(dotNetPath))
-            {
-                DebugLog.Append($"DotNet not found at {dotNetPath}");
-                return;
-            }
-
-            var dotNetCorePath = Path.Combine(dotNetPath, @"shared\Microsoft.NETCore.App");
-            if (!Directory.Exists(dotNetCorePath))
-            {
-                DebugLog.Append($"Couldn't find '{dotNetCorePath}'");
-                return;
-            }
-
-            var version = FindHighestVersionDirectory(dotNetCorePath);
-            if (version == null)
-            {
-                DebugLog.Append($"Couldn't find version in {dotNetCorePath}");
-                return;
-            }
-            App.DotNetCorePath = Path.Combine(dotNetCorePath, version);
-            App.Instance.DotNetCoreVersion = version;
-            DebugLog.Append($"Found {App.DotNetCorePath}");
 
 
-            var dotNetWindowsPath = Path.Combine(dotNetPath, @"shared\Microsoft.WindowsDesktop.App");
-            if (!Directory.Exists(dotNetWindowsPath))
-            {
-                DebugLog.Append($"Couldn't find '{dotNetWindowsPath}'");
-                return;
-            }
 
-            version = FindHighestVersionDirectory(dotNetWindowsPath);
-            if (version == null)
-            {
-                DebugLog.Append($"Couldn't find version in {dotNetWindowsPath}");
-            }
-            App.DotNetWindowsPath = Path.Combine(dotNetWindowsPath, version);
-            DebugLog.Append($"Found {App.DotNetWindowsPath}");
-        }
+
+
 
         /// <summary>
         /// Search subdirectories that are 3-part versions for the highest

@@ -79,7 +79,7 @@ namespace Tempo
             else if (App.Instance.IsDotNetScope && Manager.DotNetTypeSet != null
                 || App.Instance.IsDotNetWindowsScope && Manager.DotNetWindowsTypeSet != null)
             {
-                title += $" ({App.Instance.DotNetCoreVersion})";
+                title += $" ({DotNetTypeSet.DotNetCoreVersion})";
             }
 
             Title = title;
@@ -87,20 +87,8 @@ namespace Tempo
 
         string GetLocalVersion()
         {
-            using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
-            {
-                if (key == null)
-                {
-                    return "";
-                }
-                var displayVersion = key.GetValue("DisplayVersion") as string;
-                displayVersion = displayVersion ?? "";
-
-                var currentBuildNumber = key.GetValue("CurrentBuildNumber") as string;
-                currentBuildNumber = currentBuildNumber ?? "";
-
-                return $"{displayVersion}, {currentBuildNumber}";
-            }
+            DesktopManager2.GetLocalWindowsVersion(out var displayVersion, out var currentBuildNumber, out var ubr);
+            return $"{displayVersion}, {currentBuildNumber}.{ubr}";
         }
 
         // Helpers for SetMicaBackrop

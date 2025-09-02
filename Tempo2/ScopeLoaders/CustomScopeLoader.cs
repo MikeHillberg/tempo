@@ -31,7 +31,7 @@ namespace Tempo
 
         protected override string LoadingMessage => "Loading ...";
 
-        protected override string Name => "Custom";
+        public override string Name => "Custom";
 
         public bool HasFile
         {
@@ -109,7 +109,7 @@ namespace Tempo
         }
 
 
-        protected override void DoOffThreadLoad()
+        protected override TypeSet DoOffThreadLoad()
         {
             var typeSet = new MRTypeSet(MRTypeSet.CustomMRName, !App.Instance.UsingCppProjections);
             DesktopManager2.LoadTypeSetMiddleweightReflection(
@@ -126,17 +126,17 @@ namespace Tempo
 
             typeSet.Version = string.Join(", ", names);
 
-            Manager.CustomMRTypeSet = typeSet;
-
             // Now that we know that the load worked, save the list of custom filenames
             // If there's a bug and it doesn't load, don't want to save them,
             // or it would be difficult to get the device out of the error state
             App.SaveCustomFilenamesToSettings();
+
+            return typeSet;
         }
 
         bool _navigateToSearchResults = false;
 
-        protected override Task OnCompleted()
+        protected override void OnCompleted()
         {
             if (_navigateToSearchResults)
             {
@@ -148,10 +148,17 @@ namespace Tempo
                 App.EnableRoot();
             }
 
-            return Task.CompletedTask;
+            return;
         }
 
-        protected override bool IsSelected => App.Instance.IsCustomApiScope;
+        public override bool IsSelected
+        {
+            get => App.Instance.IsCustomApiScope;
+            set
+            {
+                App.Instance.IsCustomApiScope = value;
+            }
+        }
 
         protected override void OnCanceled()
         {
@@ -168,6 +175,10 @@ namespace Tempo
         }
 
         protected override TypeSet GetTypeSet() => Manager.CustomMRTypeSet;
+        protected override void SetTypeSet(TypeSet typeSet)
+        {
+            Manager.CustomMRTypeSet = typeSet;
+        }
         protected override void ClearTypeSet()
         {
             Manager.CustomMRTypeSet = null;

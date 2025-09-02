@@ -234,7 +234,7 @@
                                  DoubleTapped="ApiScope_RadioButton_DoubleTapped"
                                  AccessKey="D">
                         <StackPanel>
-                            <TextBlock x:Name="_dotNetScopeLabel"><Underline>D</Underline>otNet Runtime <Run Text="{x:Bind local:Utils.Parenthesize(local:App.Instance.DotNetCoreVersion)}"/></TextBlock>
+                            <TextBlock x:Name="_dotNetScopeLabel"><Underline>D</Underline>otNet Runtime <Run Text="{x:Bind local:Utils.Parenthesize(local:DotNetTypeSet.DotNetCoreVersion)}"/></TextBlock>
                             <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
                                 The base runtime, used by all frameworks.
                                 So for example this has String and List&lt;T&gt;, but not WPF or WinForms.

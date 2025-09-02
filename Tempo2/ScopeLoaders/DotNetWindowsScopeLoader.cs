@@ -8,24 +8,54 @@ namespace Tempo
         {
         }
 
-        protected override string Name => "DotNetWindows";
+        public override string Name => "DotNetWindows";
+        public override string MenuName => ".Net Windows";
 
         protected override string LoadingMessage => "Loading DotNet Windows types ...";
 
 
-        protected override void DoOffThreadLoad()
+        //protected override TypeSet DoOffThreadLoad()
+        //{
+        //    var files = Directory.GetFiles(App.DotNetWindowsPath);
+        //    if(files == null || files.Length == 0)
+        //    {
+        //        DebugLog.Append($"No assemblies found in {App.DotNetWindowsPath}");
+        //        return null;
+        //    }
+
+        //    var typeSet = DesktopManager2.LoadDotNetWindowsAssembliesSync(files);
+        //    return typeSet;
+        //}
+
+        DotNetWindowsTypeSetLoader _typeSetLoader = null;
+
+        protected override TypeSetLoader GetTypeSetLoader()
         {
-            var files = Directory.GetFiles(App.DotNetWindowsPath);
-            if(files == null || files.Length == 0)
+            if (_typeSetLoader == null && !string.IsNullOrEmpty(DotNetScopeLoader.DotNetWindowsPath))
             {
-                DebugLog.Append($"No assemblies found in {App.DotNetWindowsPath}");
-                return;
+                var files = Directory.GetFiles(DotNetScopeLoader.DotNetWindowsPath);
+                if (files == null || files.Length == 0)
+                {
+                    DebugLog.Append($"No assemblies found in {DotNetScopeLoader.DotNetWindowsPath}");
+                    return null;
+                }
+
+                _typeSetLoader = new DotNetWindowsTypeSetLoader(files);
             }
 
-            DesktopManager2.LoadDotNetWindowsAssembliesSync(!App.Instance.UsingCppProjections, files);
+            return _typeSetLoader;
         }
 
-        protected override bool IsSelected => App.Instance.IsDotNetWindowsScope;
+
+
+        public override bool IsSelected
+        {
+            get => App.Instance.IsDotNetWindowsScope;
+            set
+            {
+                App.Instance.IsDotNetWindowsScope = value;
+            }
+        }
 
         protected override void OnCanceled()
         {
@@ -39,6 +69,10 @@ namespace Tempo
         }
 
         protected override TypeSet GetTypeSet() => Manager.DotNetWindowsTypeSet;
+        protected override void SetTypeSet(TypeSet typeSet)
+        {
+            Manager.DotNetWindowsTypeSet = typeSet;
+        }
         protected override void ClearTypeSet()
         {
             Manager.DotNetWindowsTypeSet = null;

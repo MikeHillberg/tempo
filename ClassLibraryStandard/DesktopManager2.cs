@@ -16,30 +16,31 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static MiddleweightReflection.MrLoadContext;
 
 namespace Tempo
 {
     public static class DesktopManager2
     {
         static string _windir = System.Environment.ExpandEnvironmentVariables("%SystemRoot%");
-        static string _winMDDir = FindSystemMetadataDirectory();
+        static public string WinMDDir = FindSystemMetadataDirectory();
 
         // Location where it's OK to write files (package cache)
-        static public string LocalFilesPath = null;
+        static public string PackagesCachePath = null;
 
         // Bugbug: need to set this internally because UWP app gets confused by the type at build time
         //public static Dispatcher Dispatcher { get; set; }
 
-        public static void Initialize(bool wpfApp, string localFilesPath)
+        public static void Initialize(bool wpfApp, string packagesCachePath)
         {
-            LocalFilesPath = localFilesPath;
+            PackagesCachePath = packagesCachePath;
 
             if (wpfApp)
             {
                 // Extras for the WPF app (vs the WinUI app)
 
                 Manager.SLTypeSet = new SilverlightTypeSet("SL");
-                Manager.WinmdTypeSet = new WinmdTypeSet();
+                Manager.WinmdTypeSet = new WinPlatTypeSet();
                 Manager.CustomTypeSet = new CustomTypeSet();
                 Manager.DotNetTypeSet = new DotNetTypeSet();
             }
@@ -59,23 +60,62 @@ namespace Tempo
 
         }
 
+        /// <summary>
+        /// Get the version of the local machine in the form of the display version (e.g. 24H2) and build number.
+        /// </summary>
+        public static void GetLocalWindowsVersion(
+            out string displayVersion,
+            out string currentBuildNumber,
+            out string updateBuildRevision)
+        {
+            displayVersion = "";
+            currentBuildNumber = "";
+            updateBuildRevision = "";
 
-        // Load System32 types with MR reflection, using either a C++ projection or a C# projection
-        static public void LoadWindowsTypesWithMR(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winUIWinMDFilename = null)
+            using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            {
+                if (key == null)
+                {
+                    return;
+                }
+
+                displayVersion = key.GetValue("DisplayVersion") as string;
+                displayVersion = displayVersion ?? "";
+
+                currentBuildNumber = key.GetValue("CurrentBuildNumber") as string;
+                currentBuildNumber = currentBuildNumber ?? "";
+
+                var ubrInt = key.GetValue("UBR");
+                if (ubrInt != null && ubrInt is int)
+                {
+                    updateBuildRevision = ubrInt.ToString();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Load System32 types with MR reflection, using either a C++ projection or a C# projection
+        /// </summary>
+        static public TypeSet LoadWindowsTypes(
+            bool useWinRTProjections,
+            Func<string, string> assemblyLocator = null,
+            string winUIWinMDFilename = null,
+            string cacheFolder = null)
         {
             // Early out if already loaded
             if (Manager.WindowsTypeSet?.Types != null
                 && useWinRTProjections == Manager.WindowsTypeSet.UsesWinRTProjections)
             {
-                return;
+                return Manager.WindowsTypeSet;
             }
 
             var typeSet = new MRTypeSet(
-                useWinRTProjections ? MRTypeSet.WindowsCSName : MRTypeSet.WindowsCppName,
+                WinPlatTypeSet.StaticName,
                 useWinRTProjections);
 
             var projectionString = useWinRTProjections ? "c#" : "c++";
-            DebugLog.Append($"Loading from {_winMDDir} for {projectionString}");
+            DebugLog.Append($"Loading from {WinMDDir} for {projectionString}");
 
             // Create a LoadContext and set the callbacks that it needs
             var loadContext = new MrLoadContext(useWinRTProjections);
@@ -83,7 +123,7 @@ namespace Tempo
             loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
             // Load from System32
-            foreach (var winmdFile in Directory.EnumerateFiles(_winMDDir, @"*.winmd"))
+            foreach (var winmdFile in Directory.EnumerateFiles(WinMDDir, @"*.winmd"))
             {
                 var index = winmdFile.LastIndexOf('\\');
                 if (index == -1)
@@ -126,19 +166,14 @@ namespace Tempo
             //DesktopTypeSet.LoadContracts(typeSet);
             typeSet.LoadContracts();
 
-            // Do this last, after it's valid
-            Manager.WindowsTypeSet = typeSet;
-
-            // This doesn't need to complete for the load to have completed. So we do this at the end, and
-            // let this method return void rather than Task
+            return typeSet;
         }
 
 
-        public static string WinAppSdkPackageName => "Microsoft.WindowsAppSDK";
-        public static string WebView2PackageName => "Microsoft.Web.WebView2";
-        public static string Win32PackageName => "Microsoft.Windows.SDK.Win32Metadata";
 
-        // Set the WinUI version in the WinUI types
+        /// <summary>
+        /// Set the WinUI version on the WinUI types
+        /// </summary>
         public static void SetWinUIVersions(string winUIWinMDFilename, IEnumerable<TypeViewModel> types)
         {
             if (!string.IsNullOrEmpty(winUIWinMDFilename))
@@ -179,23 +214,8 @@ namespace Tempo
 
 
         // Sync helper for the async version
-        static public void LoadWindowsTypesWithMRSync(bool useWinRTProjections, Func<string, string> assemblyLocator = null, string winuiWinMDFilename = null)
-        {
-            if (Manager.WindowsTypeSet?.Types != null
-                && Manager.WindowsTypeSet.UsesWinRTProjections == useWinRTProjections)
-            {
-                return;
-            }
 
-            var sem = new Semaphore(0, 1);
-            _ = Task.Run(() =>
-            {
-                LoadWindowsTypesWithMR(useWinRTProjections, assemblyLocator, winuiWinMDFilename);
-                sem.Release();
-            });
 
-            sem.WaitOne();
-        }
 
         public static string FindSystemMetadataDirectory()
         {
@@ -252,7 +272,7 @@ namespace Tempo
 
         static string ResolveMRAssembly(string assemblyName, Func<string, string> assemblyLocator = null)
         {
-            var location = $@"{_winMDDir}\{assemblyName}.winmd";
+            var location = $@"{WinMDDir}\{assemblyName}.winmd";
 
             if (File.Exists(location))
             {
@@ -363,9 +383,11 @@ namespace Tempo
         public static void LoadFromNupkg(
             string packageFilename,
             MRTypeSet typeSet,
-            MrLoadContext loadContext)
+            MrLoadContext loadContext,
+            out bool hasWinmd)
         {
             DebugLog.Append($"Loading nupkg: '{packageFilename}'");
+            hasWinmd = false;
 
             // Open the nupkg zip file
             ZipArchive packageZip;
@@ -395,6 +417,7 @@ namespace Tempo
 
                     //  We only care about winmds and dlls
                     var isWinmd = fullName.EndsWith(".winmd");
+                    hasWinmd |= isWinmd;
                     var isDll = fullName.EndsWith(".dll");
                     if (!isWinmd && !isDll)
                     {
@@ -461,7 +484,7 @@ namespace Tempo
 
                         // Add the assembly to the LoadContext
                         var assembly = loadContext.LoadAssemblyFromBytes(
-                            buffer, 
+                            buffer,
                             $"{packageFilename}!{entryName}");
 
                         if (assembly != null)
@@ -478,9 +501,10 @@ namespace Tempo
         }
 
 
-        public struct PackageLocationAndVersion
+        public class PackageLocationAndVersion
         {
-            public string Location;
+            // For Nuget, this is the location of the first package, not the dependency packages
+            public string PrimaryPath;
             public string Version;
         }
 
@@ -488,6 +512,7 @@ namespace Tempo
         // (The package will be a file therein named {packageName}.nupkg)
         public static async Task<PackageLocationAndVersion> DownloadLatestPackageFromNugetToDirectory(
             string packageName,
+            Task task, // can be null
             string prereleaseTag = null,
             VersionRange versionRange = null)
         {
@@ -527,6 +552,13 @@ namespace Tempo
                     versions = versions.Where(versionRange.Satisfies);
                 }
 
+                // bugbug: test
+                if (task != null && task.IsCanceled)
+                {
+                    DebugLog.Append($"Download canceled for {packageName}");
+                    return new PackageLocationAndVersion();
+                }
+
                 // Get the highest version from the filtered list
                 NuGetVersion highestVersion = null;
                 if (versions != null)
@@ -542,8 +574,8 @@ namespace Tempo
                 DebugLog.Append($"{packageName} version is {highestVersion.OriginalVersion}");
 
                 // Calculate the full path to where the nupkg will be downloaded
-                var packagesPath = $"{LocalFilesPath}\\Tempo_Packages";
-                var packagePath = $@"{packagesPath}\{packageName}\{highestVersion.OriginalVersion}";
+                // Something like {PackageCachePath}\WindowsAppSdk\1.7.0.0
+                var packagePath = $@"{PackagesCachePath}\{packageName}\{highestVersion.OriginalVersion}";
                 nupkgFilename = $@"{packagePath}\{packageName}.nupkg";
 
                 // Create the directory if necessary, and early out if the package is already there
@@ -551,7 +583,11 @@ namespace Tempo
                 {
                     if (File.Exists(nupkgFilename))
                     {
-                        return new PackageLocationAndVersion() { Location = packagePath, Version = highestVersion.OriginalVersion };
+                        return new PackageLocationAndVersion()
+                        {
+                            PrimaryPath = nupkgFilename,
+                            Version = highestVersion.OriginalVersion
+                        };
                     }
                 }
                 else
@@ -575,14 +611,13 @@ namespace Tempo
 
                 DebugLog.Append($"Downloaded {nupkgFilename}");
 
-                return new PackageLocationAndVersion() { Location = packagePath, Version = highestVersion.OriginalVersion };
+                return new PackageLocationAndVersion() { PrimaryPath = nupkgFilename, Version = highestVersion.OriginalVersion };
             }
             catch (Exception e)
             {
-                DebugLog.Append($"Couldn't download {packageName}");
-                DebugLog.Append(e);
+                DebugLog.Append(e, $"Couldn't download {packageName}");
 
-                if(nupkgFilename != null)
+                if (nupkgFilename != null)
                 {
                     SafeDelete(nupkgFilename);
                 }
@@ -614,25 +649,47 @@ namespace Tempo
         // Load a set of filenames into a TypeSet, using MR code
         public static void LoadTypeSetMiddleweightReflection(
             MRTypeSet typeSet,
-            string[] typeSetFileNames)
+            string[] typeSetFileNames,
+            AssemblyPathFromNameCallback assemblyPathFromName = null,
+            Task task = null)
         {
             try
             {
                 var loadContext = new MrLoadContext(typeSet.UsesWinRTProjections);
                 var resolver = new MRAssemblyResolver();
-                loadContext.AssemblyPathFromName = resolver.ResolveCustomAssembly;
+
+                if (assemblyPathFromName != null)
+                {
+                    // If the caller provided a callback to resolve assemblies, use that
+                    loadContext.AssemblyPathFromName = assemblyPathFromName;
+                }
+                else
+                {
+                    // Otherwise use a general-purpose resolver
+                    loadContext.AssemblyPathFromName = resolver.ResolveCustomAssembly;
+                }
+
                 loadContext.FakeTypeRequired += LoadContext_FakeTypeRequired;
 
                 // Sleep for testing the dialog
                 //Thread.Sleep(5000);
 
+                bool isWinmd = false;
+
                 foreach (var filename in typeSetFileNames)
                 {
+                    if (task != null && task.IsCanceled)
+                    {
+                        DebugLog.Append($"Load canceled for {typeSet.Name}");
+                        return;
+                    }
+
                     if (File.Exists(filename))
                     {
                         if (filename.EndsWith(".nupkg"))
                         {
-                            DesktopManager2.LoadFromNupkg(filename, typeSet, loadContext);
+                            DesktopManager2.LoadFromNupkg(filename, typeSet, loadContext, out var hasWinmd);
+                            isWinmd |= hasWinmd;
                         }
                         else
                         {
@@ -649,6 +706,11 @@ namespace Tempo
                             {
                                 DebugLog.Append($"Loading {filename}");
                                 typeSet.AssemblyLocations.Add(new AssemblyLocation(filename));
+                            }
+
+                            if (filename.ToLower().EndsWith(".winmd"))
+                            {
+                                isWinmd = true;
                             }
                         }
                     }
@@ -667,6 +729,12 @@ namespace Tempo
                     return;
                 }
 
+                if (task != null && task.IsCanceled)
+                {
+                    DebugLog.Append($"Load canceled for {typeSet.Name} (2)");
+                    return;
+                }
+
                 // We got something. Finish loading it up.
 
                 var typeSetT = typeSet;
@@ -681,17 +749,9 @@ namespace Tempo
 
                 typeSet.Namespaces = Types2Namespaces.Convert(typeSet.Types);
 
-                // Bugbug: need better detection for winmd
+                typeSet.SetIsWinmd(isWinmd);
 
-                typeSet.SetIsWinmd(false);
-                foreach (var filename in typeSetFileNames)
-                {
-                    if (typeSetFileNames[0].ToLower().EndsWith(".winmd"))
-                    {
-                        typeSet.SetIsWinmd(true);
-                        break;
-                    }
-                }
+                // Bugbug: need better detection for winmd
 
                 // Find the list of contracts used by this TypeSet
                 typeSet.LoadContracts();
@@ -757,140 +817,53 @@ namespace Tempo
         }
 
         /// <summary>
-        /// Load the Windows App SDK assemblies, downloading from nuget
+        /// Download the specified package from nuget, load it, and return it as a TypeSet
         /// </summary>
-        static public void LoadWinAppSdkAssembliesSync(WinAppSDKChannel channel, bool useWinrtProjections, byte[] mscorlib = null)
-        {
-            var packageName = DesktopManager2.WinAppSdkPackageName;
-
-            // Figure out if we should get the stable or prerelease package name
-            string prereleasePrefix = string.Empty;
-            if (channel == WinAppSDKChannel.Preview)
-                prereleasePrefix = "preview";
-            else if (channel == WinAppSDKChannel.Experimental)
-                prereleasePrefix = "experimental";
-
-            // Download the package and load into `typeSet`
-            var typeSet = new WindowsAppTypeSet(useWinrtProjections);
-            LoadNugetHelper(typeSet, packageName, prereleasePrefix);
-            if (typeSet.Types != null)
-            {
-                Manager.WindowsAppTypeSet = typeSet;
-            }
-
-        }
-
-        /// <summary>
-        /// Load the WebView2 assemblies, downloading from nuget
-        /// </summary>
-        static public void LoadWebView2AssembliesSync(WinAppSDKChannel channel, bool useWinrtProjections, byte[] mscorlib = null)
-        {
-            var packageName = DesktopManager2.WebView2PackageName;
-
-            // Download the package and load into `typeSet`
-            var typeSet = new WebView2TypeSet(useWinrtProjections);
-            LoadNugetHelper(typeSet, packageName);
-            if (typeSet.Types != null)
-            {
-                Manager.WebView2TypeSet = typeSet;
-            }
-
-        }
-
-        /// <summary>
-        /// Load the Win32 Metadata, downloading from nuget
-        /// </summary>
-        static public void LoadWin32AssembliesSync(bool useWinrtProjections, byte[] mscorlib = null)
-        {
-            var packageName = DesktopManager2.Win32PackageName;
-            var typeSet = new Win32TypeSet(useWinrtProjections);
-
-
-            // All of the win32 metadata packages are "-preview"
-            // Bugbug: should handle the possibility that this changes
-            LoadNugetHelper(typeSet, packageName, "preview");
-            if (typeSet.Types != null)
-            {
-                Manager.Win32TypeSet = typeSet;
-            }
-        }
-
-
-        // Microsoft.NETCore.App
-        static public void LoadDotNetAssembliesSync(bool useWinrtProjections, string[] paths)
-        {
-            var typeSet = new DotNetTypeSet2(useWinrtProjections);
-
-            DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, paths);
-            Manager.DotNetTypeSet = typeSet;
-        }
-
-
-        // Microsoft.WindowsDesktop.App
-        static public void LoadDotNetWindowsAssembliesSync(bool useWinrtProjections, string[] paths)
-        {
-            var typeSet = new DotNetTypeSet2(useWinrtProjections);
-
-            DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, paths);
-            Manager.DotNetWindowsTypeSet = typeSet;
-        }
-
-        /// <summary>
-        /// Download the specified package from nuget and load into `typeSet`
-        /// </summary>
-        private static void LoadNugetHelper(
-            MRTypeSet typeSet,
+        internal static TypeSet LoadNugetHelper(
+            string typeSetName,
+            string cacheFolderName,
+            bool useWinRTProjections,
             string packageName,
-            string prereleasePrefix = "")
+            Task task,
+            string prereleasePrefix = "",
+            bool loadDependencies = false)
         {
             DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
-            // Download the nupkg from nuget.org (or used the cached copy)
-            var task = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, prereleasePrefix);
-            task.Wait();
-            var packageLocationAndVersion = task.Result;
-
-            if (string.IsNullOrEmpty(packageLocationAndVersion.Location))
+            // Download the nupkg from nuget.org (or return the cached copy)
+            var packageLocationAndVersion = DownloadNugetPackageAndDependencies(
+                packageName,
+                prereleasePrefix,
+                loadDependencies,
+                task,
+                out var dependencyFilenames);
+            if (packageLocationAndVersion == null)
             {
-                // The user probably canceled the operation
-                return;
+                return null;
             }
+
+            // Wherever the nupkg is, use that directory for caching other things
+            var cachePath = Path.GetDirectoryName(packageLocationAndVersion.PrimaryPath);
+
+            // Initialize the type set (this won't load anything yet)
+            var typeSet = new MRTypeSet(
+                typeSetName,
+                useWinRTProjections,
+                cachePath);
 
             typeSet.Version = $"{packageName},{packageLocationAndVersion.Version}";
 
-            var packageFilename = $@"{packageLocationAndVersion.Location}\{packageName}.nupkg";
-
-            // Read out the nuspec and find out what dependencies this has
-            var deps = GetDependenciesforNupkg(packageFilename);
-
-            // Loop through the dependencies and download them too
-            // (Just one level deep for now)
-            List<string> packageFileNames = new List<string>() { packageFilename };
-            foreach (var dep in deps)
-            {
-                // Download the dependency package
-                task = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(dep.id, prereleaseTag: null, dep.versionRange);
-                task.Wait();
-                packageLocationAndVersion = task.Result;
-
-                if (string.IsNullOrEmpty(packageLocationAndVersion.Location))
-                {
-                    // The user probably canceled the operation
-                    return;
-                }
-
-                packageFileNames.Add($@"{packageLocationAndVersion.Location}\{dep.id}.nupkg");
-            }
-
+            // Load the pimary nupkg as well as dependencies (if requested)
             // Catch exceptions so we can fail gracefully if there's any kind of expected exception cases that I don't know about
+            var allPackageFilenames = new[] { packageLocationAndVersion.PrimaryPath }.Concat(dependencyFilenames).ToArray();
             try
             {
                 // Load all the freshly downloaded packages into the TypeSet
-                DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, packageFileNames.ToArray());
+                LoadTypeSetMiddleweightReflection(typeSet, allPackageFilenames);
 
                 if (typeSet.Types != null)
                 {
-                    return;
+                    return typeSet;
                 }
                 else
                 {
@@ -900,11 +873,81 @@ namespace Tempo
             }
             catch (Exception)
             {
-                // Maybe a corrupted download
-                SafeDelete(packageFilename);
+                // Maybe a corrupted download, so remove cached copies
+
+                foreach (var filename in allPackageFilenames)
+                {
+                    try
+                    {
+                        SafeDelete(filename);
+                    }
+                    catch (Exception e)
+                    {
+                        DebugLog.Append(e, $"Couldn't delete {filename}");
+                    }
+                }
+
                 throw;
             }
         }
+
+        /// <summary>
+        /// Download a nuget package from nuget.org, optionally as well as one level of dependencies
+        /// </summary>
+        public static PackageLocationAndVersion DownloadNugetPackageAndDependencies(
+            string packageName,
+            string prereleaseTag,
+            bool loadDependencies,
+            Task task, // can be null
+            out string[] dependencyFilenames)
+        {
+            dependencyFilenames = null;
+
+            // Download the nupkg from nuget.org (or use the cached copy)
+            var downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, task, prereleaseTag);
+            downloadTask.Wait();
+            var packageLocationAndVersion = downloadTask.Result;
+            if (packageLocationAndVersion == null || string.IsNullOrEmpty(packageLocationAndVersion.PrimaryPath))
+            {
+                // The user probably canceled the operation
+                return null;
+            }
+
+            var packageFilename = packageLocationAndVersion.PrimaryPath;
+
+            if (loadDependencies)
+            {
+                var packageFileNames = new List<string>() { };
+
+                // Read out the nuspec and find out what dependencies this has
+                var deps = GetDependenciesforNupkg(packageFilename);
+
+                // Loop through the dependencies and download them too
+                // (Just one level deep for now)
+                foreach (var dep in deps)
+                {
+                    // Download the dependency package (synchronously)
+                    downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(dep.id, task, prereleaseTag: null, dep.versionRange);
+                    downloadTask.Wait();
+                    packageLocationAndVersion = downloadTask.Result;
+                    Debug.Assert(packageLocationAndVersion != null);
+
+                    if (string.IsNullOrEmpty(packageLocationAndVersion.PrimaryPath))
+                    {
+                        // The user probably canceled the operation
+                        return null;
+                    }
+
+                    packageFileNames.Add(packageLocationAndVersion.PrimaryPath);
+                }
+
+                // [out]
+                dependencyFilenames = packageFileNames.ToArray();
+            }
+
+            return packageLocationAndVersion;
+        }
+
 
         /// <summary>
         /// This is just a wrapper for File.Delete with an extra defense-in-depth check to make sure

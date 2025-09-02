@@ -26,7 +26,6 @@ namespace Tempo
                     catch (Exception ex)
                     {
                         UnhandledExceptionManager.ProcessException(ex);
-                        //MainWindow.InstanceOld.CatchException(ex);
                         return default(T);
                     }
                 });

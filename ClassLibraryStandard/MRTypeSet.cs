@@ -13,12 +13,15 @@ namespace Tempo
 
     public class MRTypeSet : DesktopTypeSet
     {
-        static public string WindowsCppName = "Windows (C++)";
-        static public string WindowsCSName = "Windows (C#)";
 
         static public string CustomMRName = "Custom (MR)";
 
-        public MRTypeSet(string name, bool usesWinRTProjections) : base(name, usesWinRTProjections) { }
+        public MRTypeSet(string name, bool usesWinRTProjections) 
+            : base(name, usesWinRTProjections) { }
+        public MRTypeSet(string name, bool usesWinRTProjections, string cacheDirectoryPath) 
+            : base(name, usesWinRTProjections, cacheDirectoryPath)
+        { 
+        }
 
         protected override string GetXmlFileName(Assembly a)
         {

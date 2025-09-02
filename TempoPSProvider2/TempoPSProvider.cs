@@ -232,7 +232,7 @@ namespace TempoPSProvider
                 if (string.IsNullOrEmpty(filenameList))
                 {
                     // No list, just load the System32 WinMDs
-                    DesktopManager2.LoadWindowsTypesWithMR(useWinRTProjections);
+                    DesktopManager2.LoadWindowsTypes(useWinRTProjections);
 
                     // Bugbug: cleaner out value, side effects
                     Manager.CurrentTypeSet = Manager.WindowsTypeSet;

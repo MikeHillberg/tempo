@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Tempo
@@ -15,10 +9,10 @@ namespace Tempo
 
     public class DesktopTypeSet : TypeSet
     {
-        public DesktopTypeSet(string name) : base(name, usesWinRTProjections: false)
+        public DesktopTypeSet(string name, bool usesWinRTProjections = false, string cacheDirectoryPath = null) 
+            : base(name, usesWinRTProjections, cacheDirectoryPath)
         { }
-        public DesktopTypeSet(string name, bool usesWinRTProjections) : base(name, usesWinRTProjections)
-        { }
+
         protected virtual string GetXmlFileName(Assembly a)
         {
             int index = a.Location.LastIndexOf('.');
@@ -154,10 +148,12 @@ namespace Tempo
         }
     }
 
-    public class WindowsAppTypeSet : MRTypeSet
+    public class WinAppTypeSet : MRTypeSet
     {
-        public static string StaticName = "WindowsAppSDK";
-        public WindowsAppTypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
+        public static string StaticName = "WinAppSDK";
+        public static string PackageName = "Microsoft.WindowsAppSDK";
+
+        public WinAppTypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
         protected override string GetXmlFileName(Assembly a)
         {
@@ -167,7 +163,8 @@ namespace Tempo
 
     public class WebView2TypeSet : MRTypeSet
     {
-        public static string StaticName = "WebView2";
+        internal static readonly string PackageName = "Microsoft.Web.WebView2";
+        internal static readonly string StaticName = "WebView2";
         public WebView2TypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
         protected override string GetXmlFileName(Assembly a)
@@ -179,6 +176,8 @@ namespace Tempo
     public class Win32TypeSet : MRTypeSet
     {
         public static string StaticName = "Win32";
+        public static string PackageName = "Microsoft.Windows.SDK.Win32Metadata";
+
         public Win32TypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
         protected override string GetXmlFileName(Assembly a)
@@ -192,66 +191,42 @@ namespace Tempo
     {
         public static string StaticName = "DotNet";
         public DotNetTypeSet() : base(StaticName) { }
+
+        static public string DotNetCoreVersion;
+
     }
 
     // .Net type set for Tempo2
     public class DotNetTypeSet2 : MRTypeSet
     {
-        public static string StaticName = "DotNet";
+        public static string StaticName = "DotNetApp";
         public DotNetTypeSet2(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
     }
 
+    public class DotNetWindowsTypeSet : MRTypeSet
+    {
+        public static string StaticName = "DotNetWindows";
+        public DotNetWindowsTypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
+    }
 
-    public class CustomTypeSet : WinmdTypeSet
+
+
+    public class CustomTypeSet : WinPlatTypeSet
     {
         new static public string StaticName = "SD";
         public CustomTypeSet() : base(StaticName) { }
     }
 
-    public class WinmdTypeSet : DesktopTypeSet
+    public class WinPlatTypeSet : DesktopTypeSet
     {
-        static public string StaticName = "Windows"; // "SD"
+        static public string StaticName = "Windows";
 
-        public WinmdTypeSet() : base(StaticName) { }
-        protected WinmdTypeSet(string name) : base(name) { }
+        public WinPlatTypeSet() : base(StaticName) { }
+        protected WinPlatTypeSet(string name) : base(name) { }
 
         public override void LoadHelpCore(bool wpf = false, bool winmd = false)
         {
             return;
-
-            //var baseDirectoryName = Environment.ExpandEnvironmentVariables("%ProgramFiles%") + @"\Windows Kits\10\References\";
-
-            //if (!Directory.Exists(baseDirectoryName))
-            //    return;
-
-            //var baseDirectory = new DirectoryInfo(baseDirectoryName);
-
-            //var buildDirectory = GeneratedIdl.FindBuildNumberedDirectory(baseDirectory);
-            //if (buildDirectory != null)
-            //{
-            //    baseDirectory = baseDirectory.GetDirectories(buildDirectory).FirstOrDefault();
-            //    var contractDirectories = baseDirectory.EnumerateDirectories("Windows*");
-            //    foreach (var contractDirectory in contractDirectories)
-            //    {
-            //        // bugbug: not sure what the pattern is here
-            //        var versionDirectory = contractDirectory.EnumerateDirectories().FirstOrDefault();
-            //        if (versionDirectory == null)
-            //            continue;
-
-            //        var languageDirectory = versionDirectory.EnumerateDirectories("en").FirstOrDefault();
-            //        if (languageDirectory == null)
-            //            continue;
-
-            //        var xmlFile = languageDirectory.EnumerateFiles("*.xml").FirstOrDefault();
-            //        if (xmlFile == null)
-            //            continue;
-
-            //        XElement xml = null;
-            //        BackgroundHelper.DoWorkAsyncOld(
-            //            () => xml = XElement.Load(new StreamReader(xmlFile.FullName)),
-            //            () => _xmls.Add(xml));
-            //    }
-            //}
         }
 
         public override IEnumerable<XElement> GetXmls(TypeViewModel type)

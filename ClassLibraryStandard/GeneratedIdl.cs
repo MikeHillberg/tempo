@@ -69,8 +69,7 @@ namespace Tempo
                 }
                 catch (Exception e)
                 {
-                    DebugLog.Append("Failed initializing IDL");
-                    DebugLog.Append(e.Message);
+                    DebugLog.Append(e, "Failed initializing IDL");
 
                     StatusMessage = "IDL display disabled:\n" + e.Message;
                 }
@@ -308,7 +307,7 @@ namespace Tempo
             //var metadataDirectoryName = windir + @"\System32\WinMetadata";            // C:\Windows\System32\WinMetadata
             //var winmdFileNames = Directory.EnumerateFiles(metadataDirectoryName, @"*.winmd");
 
-            DebugLog.Start("Generating IDLs");
+            DebugLog.Append("Generating IDLs");
 
             var process = new Process();
             process.StartInfo.CreateNoWindow = true;
@@ -787,8 +786,7 @@ namespace Tempo
             }
             catch (Exception e)
             {
-                DebugLog.Start("Couldn't read IDL for " + type.FullName);
-                DebugLog.Append(e.Message);
+                DebugLog.Append(e, "Couldn't read IDL for " + type.FullName);
 
                 return "Couldn't open IDL file";
             }

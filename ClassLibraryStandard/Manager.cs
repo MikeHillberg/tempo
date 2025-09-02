@@ -97,6 +97,7 @@ namespace Tempo
 
         // Callback to get onto the UI thread (WinAppSDK is different than WPF)
         public static Action<Action> PostToUIThread { get; set; }
+        public static Thread MainThread { get; set; }
 
         static private bool TypeHasInterfaces(TypeViewModel t)
         {
@@ -353,8 +354,13 @@ namespace Tempo
 
         static public IList<MemberOrTypeViewModelBase> GetMembers(SearchExpression filter, int iteration)
         {
+            DebugLog.Append($"GetMembers (iteration: {iteration}) for '{filter?.RawValue}'");
+
             var m = GetMembersHelper(filter, iteration);
-            return m.ToList();
+            var list = m.ToList();
+
+            DebugLog.Append($"GetMembers (iteration: {iteration}) returned {list.Count} items");
+            return list;
         }
 
         static Dictionary<TypeViewModel, IEnumerable<MemberOrTypeViewModelBase>> _memberCache
@@ -766,7 +772,6 @@ namespace Tempo
 
         static public IEnumerable<MemberOrTypeViewModelBase> GetMembersHelper(SearchExpression searchExpression, int iteration)
         {
-            DebugLog.Append($"GetMembersHelper (iteration: {iteration})");
             LastType = null;
             LastMember = null;
 
@@ -791,7 +796,8 @@ namespace Tempo
                 yield break;
             }
 
-            // Optimized case: no filters or anything else is set, don't need to check anything except the search string
+            // Optimized case: no filters or anything else is set, don't need to check anything,
+            // just return everything
 
             if (Settings.IsDefault
                 && searchExpression.HasNoSearchString
@@ -809,6 +815,7 @@ namespace Tempo
                     }
                     else
                     {
+                        DebugLog.Append($"Aborting GetMembers for iteration {iteration}");
                         yield break;
                     }
 
@@ -871,6 +878,7 @@ namespace Tempo
                 else
                 {
                     // Another search was started before this one completed, so abort
+                    DebugLog.Append($"Aborting search for iteration {iteration}");
                     yield break;
                 }
 
@@ -1264,7 +1272,7 @@ namespace Tempo
             }
             catch (Exception e)
             {
-                DebugLog.Append(e.Message);
+                DebugLog.Append(e, "Failed to evaluate AQS expression");
                 SearchExpression.RaiseSearchExpressionError($"{e.GetType()}: {e.Message}");
             }
 

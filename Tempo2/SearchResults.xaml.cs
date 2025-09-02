@@ -1,16 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Windows.UI;
-using Windows.UI.Popups;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.UI;
+using Windows.UI.Popups;
+using static System.Net.Mime.MediaTypeNames;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -344,6 +345,9 @@ namespace Tempo
             // HomePage gets disabled when loading with /diff command line
             HomePage.Instance.IsEnabled = true;
 
+            // Reset the list of api scopes that match the search term
+            MatchingApiScopes = null;
+
             var shouldContinue = await App.EnsureApiScopeLoadedAsync();
             if (!shouldContinue)
             {
@@ -439,11 +443,14 @@ namespace Tempo
                 //dialog.Hide();
             }
 
-
             // Ignore the results unless this was the last concurrent search started
             if (iteration == Manager.RecalculateIteration)
             {
                 SlowSearchInProgress = false;
+
+                // See if there are other api scopes that match this
+                // bugbug: run off thread
+                CheckForOtherMatchingApiScopes(searchExpression);
 
                 SearchDelay = (DateTime.Now - _startTime).Milliseconds;
                 Results = newResults;
@@ -474,8 +481,65 @@ namespace Tempo
                 App.OfferToCopyResultsToClipboard = false;
                 DebugLog.Append($"Found {Results.Count} results in {SearchDelay}ms");
             }
-
         }
+
+        /// <summary>
+        /// Check for api scopes other than the current scope that match the search
+        /// </summary>
+        private void CheckForOtherMatchingApiScopes(SearchExpression searchExpression)
+        {
+            var regex = searchExpression?.TypeRegex;
+            if(regex == null)
+            {
+                return;
+            }
+
+            List<ApiScopeLoader> matchingScopes = null;
+            foreach (var scopeLoader in ApiScopeLoader.ScopeLoaders)
+            {
+                if(scopeLoader.IsSelected)
+                {
+                    // Current scope
+                    continue;
+                }
+
+                var allNames = scopeLoader.AllNames;
+                if(allNames == null)
+                {
+                    // We're not fully loaded yet
+                    continue;
+                }
+
+                foreach (var name in allNames)
+                {
+                    var match = regex.Match(name.Value);
+                    if (match != Match.Empty)
+                    {
+                        if(matchingScopes == null)
+                        {
+                            matchingScopes = new List<ApiScopeLoader>();
+                        }
+                        matchingScopes.Add(scopeLoader);
+                        break;
+                    }
+                }
+
+            }
+
+            MatchingApiScopes = matchingScopes;
+        }
+
+
+        /// <summary>
+        /// List of scopes that match the current search term (other than the currently selected scope)
+        /// </summary>
+        internal IEnumerable<ApiScopeLoader> MatchingApiScopes
+        {
+            get { return (IEnumerable<ApiScopeLoader>)GetValue(MatchingApiScopesProperty); }
+            set { SetValue(MatchingApiScopesProperty, value); }
+        }
+        public static readonly DependencyProperty MatchingApiScopesProperty =
+            DependencyProperty.Register("MatchingApiScopes", typeof(IEnumerable<ApiScopeLoader>), typeof(SearchResults), new PropertyMetadata(0));
 
 
         /// <summary>
@@ -987,6 +1051,14 @@ namespace Tempo
         private void ShowDebugLog_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             DebugLogViewer.Show();
+        }
+
+        private void SeeAlsoScopeClick(object sender, RoutedEventArgs e)
+        {
+            var hyperlink = sender as HyperlinkButton;
+            var scope = hyperlink.Tag as ApiScopeLoader;
+            scope.IsSelected = true;
+            App.Instance.GotoSearch();
         }
 
         ///// <summary>

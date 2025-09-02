@@ -33,6 +33,7 @@
 
             <CheckBox Grid.Column="1" 
                       VerticalAlignment="Center"
+                      Margin="20,0,0,0"
                       IsChecked="{x:Bind local:App.Instance.ShowingDocPage, Mode=TwoWay}"
                       Content="Docs pane">
             </CheckBox>

@@ -8,7 +8,7 @@ namespace Tempo
         {
         }
 
-        protected override string Name => "Baseline";
+        public override string Name => "Baseline";
 
         protected override string LoadingMessage => "Loading baseline  ...";
 
@@ -28,14 +28,14 @@ namespace Tempo
         }
 
 
-        protected override void DoOffThreadLoad()
+        protected override TypeSet DoOffThreadLoad()
         {
             var typeSet = new MRTypeSet("Baseline", !App.Instance.UsingCppProjections);
             DesktopManager2.LoadTypeSetMiddleweightReflection(typeSet, App.Instance.BaselineFilenames);
-            Manager.BaselineTypeSet = typeSet;
+            return typeSet;
         }
 
-        async protected override Task OnCompleted()
+        protected override void OnCompleted()
         {
             if (GetTypeSet()?.TypeCount == 0)
             {
@@ -44,7 +44,7 @@ namespace Tempo
                 // Clear out Manager.BaselineTypeSet
                 CloseBaselineScope();
 
-                await MyMessageBox.Show("No APIs found in baseline", null, "OK");
+                _ = MyMessageBox.Show("No APIs found in baseline", null, "OK");
                 return;
             }
 
@@ -60,7 +60,11 @@ namespace Tempo
         }
 
         // Baseline is never selected
-        protected override bool IsSelected => false;
+        public override bool IsSelected
+        {
+            get => false;
+            set => throw new System.NotSupportedException("Cannot select Baseline scope");
+        }
 
         public static void CloseBaselineScope()
         {
@@ -74,6 +78,11 @@ namespace Tempo
         protected override TypeSet GetTypeSet()
         { 
             return Manager.BaselineTypeSet; 
+        }
+
+        protected override void SetTypeSet(TypeSet typeSet)
+        {
+            Manager.BaselineTypeSet = typeSet;
         }
 
         protected override void ClearTypeSet()

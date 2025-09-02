@@ -67,6 +67,7 @@
                 </Grid.Tag>
 
 
+                <!-- Search box -->
                 <StackPanel Grid.Row="1"
                             Margin="10,15,10,20">
 
@@ -101,6 +102,30 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+
+                <!-- See Also box -->
+                <!-- Sits on top of the ListView in the upper right corner, just below the Search box -->
+                <StackPanel Grid.Row="2" 
+                            local:CollapseIfEmpty.IsEnabledFor="{x:Bind _seeAlsoScopeList}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Padding="8,0,8,8"
+                            Margin="0,-18,12,0"
+                            CornerRadius="5"
+                            Background="White">
+                    
+                    <TextBlock Margin="0,0,0,2">See also:</TextBlock>
+                    <ItemsControl x:Name="_seeAlsoScopeList" ItemsSource="{x:Bind MatchingApiScopes, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:ApiScopeLoader">
+                                <HyperlinkButton Content="{x:Bind MenuName}"
+                                                 Tag="{Binding}"
+                                                 Click="SeeAlsoScopeClick"
+                                                 />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
 
                 <!-- Show "Nothing found" if we're done with the search and came up empty -->
                 <TextBlock Grid.Row="2"

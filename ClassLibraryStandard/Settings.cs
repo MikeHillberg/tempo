@@ -240,6 +240,11 @@ namespace Tempo
                 // Reduce spurious change notifications
                 if (_languageCS != value)
                 {
+                    if(value)
+                    {
+                        DebugLog.Append("C# language selected");
+                    }
+
                     _languageCS = _languageCSStatic = value;
                     RaiseViewChange();
                     NotifyChange();
@@ -255,6 +260,11 @@ namespace Tempo
             get { return _languageCPP; }
             set
             {
+                if (value)
+                {
+                    DebugLog.Append("C++ language selected");
+                }
+
                 // Reduce spurious change notifications
                 if (_languageCPP != value)
                 {

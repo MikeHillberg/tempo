@@ -1,22 +1,41 @@
-﻿namespace Tempo
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+
+namespace Tempo
 {
+    /// <summary>
+    /// Loader for the WinAppSDK API Scope
+    /// </summary>
     internal class WinAppScopeLoader : ApiScopeLoader
     {
-        internal WinAppScopeLoader() 
-        {
-        }
+        WinAppTypeSetLoader _typeSetLoader;
 
-        override protected string Name => "WinAppSDK";
+        override public string Name => WinAppTypeSet.StaticName;
 
         protected override string LoadingMessage => "Checking nuget.org for latest WinAppSDK package ...";
 
-
-        protected override void DoOffThreadLoad()
+        protected override TypeSetLoader GetTypeSetLoader()
         {
-            DesktopManager2.LoadWinAppSdkAssembliesSync(App.Instance.WinAppSDKChannel, !App.Instance.UsingCppProjections);
+            if (_typeSetLoader == null)
+            {
+                _typeSetLoader = new WinAppTypeSetLoader(
+                    App.Instance.WinAppSDKChannel,
+                    !App.Instance.UsingCppProjections);
+            }
+
+            return _typeSetLoader;
         }
 
-        protected override bool IsSelected => App.Instance.IsWinAppScope;
+
+        public override bool IsSelected
+        {
+            get => App.Instance.IsWinAppScope;
+            set
+            {
+                App.Instance.IsWinAppScope = value;
+            }
+        }
 
         protected override void OnCanceled()
         {
@@ -30,11 +49,14 @@
         }
 
         protected override TypeSet GetTypeSet() => Manager.WindowsAppTypeSet;
+        protected override void SetTypeSet(TypeSet typeSet)
+        {
+            Manager.WindowsAppTypeSet = typeSet;
+        }
         protected override void ClearTypeSet()
         {
+            _typeSetLoader?.ResetProjections(useWinrtProjections: !App.Instance.UsingCppProjections);
             Manager.WindowsAppTypeSet = null;
         }
-
-
     }
 }

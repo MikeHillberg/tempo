@@ -1531,7 +1531,7 @@ namespace Tempo
                                     && (BaseType == null || BaseType.FullName != "System.Array"))
                                 {
                                     Debug.WriteLine(this.FullName);
-                                    DebugLog.Start("Can't find contract: " + this.FullName);
+                                    DebugLog.Append("Can't find contract: " + this.FullName);
                                     _version = "";
                                 }
                                 else
@@ -1572,6 +1572,11 @@ namespace Tempo
         bool _descendentsChecked = false;
         public IList<TypeViewModel> CalcDescendents()
         {
+            if (Manager.CurrentTypeSet == null)
+            {
+                return null;
+            }
+
             var d = (from a in Manager.CurrentTypeSet.Types
                      where a.IsPublic || Manager.Settings.InternalInterfaces
                      where a.BaseType == this || a.Interfaces.Contains(this)

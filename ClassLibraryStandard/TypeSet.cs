@@ -11,17 +11,23 @@ using System.Xml.Linq;
 using System.Runtime.CompilerServices;
 using System.Data;
 using System.Diagnostics;
-using MiddleweightReflection;
+using System.Linq.Expressions;
 
 namespace Tempo
 {
     public class TypeSet : INotifyPropertyChanged
     {
-        public TypeSet(string name, bool usesWinRTProjections)
+        public TypeSet(string name, bool usesWinRTProjections, string cacheDirectoryPath)
         {
             Name = name;
             _usesWinRTProjections = usesWinRTProjections;
+
+            Debug.Assert(cacheDirectoryPath != "");
+            Debug.Assert(cacheDirectoryPath == null || Directory.Exists(cacheDirectoryPath));
+            _cacheDirectoryPath = cacheDirectoryPath;
         }
+
+        string _cacheDirectoryPath = null;
 
         bool _usesWinRTProjections = false;
         public bool UsesWinRTProjections
@@ -31,6 +37,16 @@ namespace Tempo
         }
 
         public string Version;
+
+        private string GetAllNamesCacheFilename()
+        {
+            if (_cacheDirectoryPath == null)
+            {
+                return null;
+            }
+
+            return Path.Combine(_cacheDirectoryPath, AllNamesFilename);
+        }
 
         public bool IsCurrent => this == Manager.CurrentTypeSet;
 
@@ -83,13 +99,13 @@ namespace Tempo
 
         async void OnTypesUpdated()
         {
-            if(Types == null)
+            if (Types == null)
             {
                 return;
             }
 
             // Update the AllNames property based on these types
-            await CalculateAllNamesAsync();
+            await LoadAllNamesAsync();
 
             // Set IsInTypes for all of the types
             foreach (var type in Types)
@@ -131,91 +147,220 @@ namespace Tempo
         /// <summary>
         /// Get anything that could be a search name, to be used in auto-suggest
         /// </summary>
-        async Task CalculateAllNamesAsync()
+        async Task LoadAllNamesAsync()
         {
-            if(_types == null)
+            if (_types == null)
             {
                 return;
             }
 
-            var names1 = new Dictionary<string, string>(_types.Count);
-            KeyValuePair<string, string>[] names2 = null;
+            KeyValuePair<string, string>[] allNames = null;
 
-            var thread = new Thread(() =>
-            {
-                foreach (var type in _types)
-                {
-                    // Only public types
-                    if (!type.IsPublic)
-                    {
-                        continue;
-                    }
-
-                    // Add the type name
-                    if (type.IsGenericType)
-                    {
-                        // For example, use IVector rather than IVector`1
-                        AddName(names1, type.GenericTypeName);
-                    }
-                    else
-                    {
-                        AddName(names1, type.Name);
-                    }
-
-                    // Add all the member names
-                    foreach (var member in type.Members)
-                    {
-                        // Only public-ish members
-                        if (!member.IsPublic && !member.IsProtected)
-                        {
-                            continue;
-                        }
-
-                        var constructorVM = member as ConstructorViewModel;
-                        var methodVM = member as MethodViewModel;
-
-                        IList<ParameterViewModel> parameters = null;
-
-                        // Add the member name for everthing but constructors
-                        // (because we already added the type name)
-                        if (constructorVM == null)
-                        {
-                            AddName(names1, member.Name);
-                        }
-                        else
-                        {
-                            parameters = constructorVM.Parameters;
-                        }
-
-                        if (methodVM != null)
-                        {
-                            parameters = methodVM.Parameters;
-                        }
-
-                        // If this is a constructor or a method, add the parameter names
-                        if (parameters != null)
-                        {
-                            foreach (var parameter in parameters)
-                            {
-                                AddName(names1, parameter.Name);
-                            }
-                        }
-                    }
-                }
-
-                names2 = names1.ToArray();
-
-            });
-
+            // Load all names on a worker thread
+            var thread = new Thread(() => allNames = LoadAllNamesThread());
             thread.Priority = ThreadPriority.BelowNormal;
             thread.Start();
 
+            // Wait for LoadAllNames to complete
             await Task.Run(() =>
             {
                 thread.Join();
             });
 
-            AllNames = names2;
+            AllNames = allNames;
+        }
+
+        /// <summary>
+        /// Do the work to load all names (sync) and save to cache
+        /// </summary>
+        KeyValuePair<string, string>[] LoadAllNamesThread()
+        {
+            // Check cached copy first
+            var cacheFilename = GetAllNamesCacheFilename();
+            var namesFromCache = TryReadNamesFromCache(cacheFilename);
+            if (namesFromCache != null)
+            {
+                DebugLog.Append($"Using allnames from cache for {this.Name}");
+                return namesFromCache.ToArray();
+            }
+
+            // No cache, so create a new list and write it to the cache
+            var allNames = CalculateAllNames();
+            var allNamesArray = allNames.ToArray();
+            WriteAllNamesToCache(allNamesArray, cacheFilename);
+
+            return allNamesArray;
+        }
+
+        /// <summary>
+        /// Find all the names in the type set, for use in auto-suggest and see-also
+        /// </summary>
+        private Dictionary<string, string> CalculateAllNames()
+        {
+            var allNames = new Dictionary<string, string>(_types.Count);
+            foreach (var type in _types)
+            {
+                // Only public types
+                if (!type.IsPublic)
+                {
+                    continue;
+                }
+
+                // Add the type name
+                if (type.IsGenericType)
+                {
+                    // For example, use IVector rather than IVector`1
+                    AddName(allNames, type.GenericTypeName);
+                }
+                else
+                {
+                    AddName(allNames, type.Name);
+                }
+
+                // Add all the member names
+                foreach (var member in type.Members)
+                {
+                    // Only public-ish members
+                    if (!member.IsPublic && !member.IsProtected)
+                    {
+                        continue;
+                    }
+
+                    var constructorVM = member as ConstructorViewModel;
+                    var methodVM = member as MethodViewModel;
+
+                    IList<ParameterViewModel> parameters = null;
+
+                    // Add the member name for everthing but constructors
+                    // (because we already added the type name)
+                    if (constructorVM == null)
+                    {
+                        AddName(allNames, member.Name);
+                    }
+                    else
+                    {
+                        parameters = constructorVM.Parameters;
+                    }
+
+                    if (methodVM != null)
+                    {
+                        parameters = methodVM.Parameters;
+                    }
+
+                    // If this is a constructor or a method, add the parameter names
+                    if (parameters != null)
+                    {
+                        foreach (var parameter in parameters)
+                        {
+                            AddName(allNames, parameter.Name);
+                        }
+                    }
+                }
+            }
+
+            return allNames;
+        }
+
+        const string AllNamesFilename = "AllNames.txt";
+
+        /// <summary>
+        /// Read AllNames from a cache, given a directory name
+        /// </summary>
+        public static KeyValuePair<string, string>[] TryReadNamesFromCache2(string directoryPath)
+        {
+            Debug.Assert(Directory.Exists(directoryPath));
+
+            var path = Path.Combine(directoryPath, AllNamesFilename);
+            return TryReadNamesFromCache(path);
+        }
+
+        /// <summary>
+        /// Read AllNames from a cache, given the filename
+        /// </summary>
+        private static KeyValuePair<string, string>[] TryReadNamesFromCache(string filename)
+        {
+            // Robustness defense in depth
+            try
+            {
+                if (!string.IsNullOrEmpty(filename) && File.Exists(filename))
+                {
+                    var allNames = new Dictionary<string, string>();
+                    var lines = File.ReadAllLines(filename);
+                    foreach (var line in lines)
+                    {
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+                        var name = line.Trim();
+                        AddName(allNames, name);
+                    }
+
+                    if (allNames.Count > 0)
+                    {
+                        return allNames.ToArray();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                DebugLog.Append(e, $"Couldn't read from cache for {filename}");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Write the AllNames list to a cache file
+        /// </summary>
+        private void WriteAllNamesToCache(KeyValuePair<string, string>[] allNames, string filename)
+        {
+            var tempFilename = $"{filename}.tmp";
+
+            // Defense in depth
+            try
+            {
+                if (!string.IsNullOrEmpty(filename))
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var name in allNames)
+                    {
+                        sb.AppendLine(name.Value);
+                    }
+
+                    if (File.Exists(tempFilename))
+                    {
+                        File.Delete(tempFilename);
+                    }
+
+                    lock (Name)
+                    {
+                        // Create the parent directory of tempFilename if it doesn't exist
+                        var parentDir = Path.GetDirectoryName(tempFilename);
+                        if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
+                        {
+                            Directory.CreateDirectory(parentDir);
+                        }
+
+                        File.AppendAllText(tempFilename, sb.ToString());
+
+                        if (File.Exists(filename))
+                        {
+                            File.Delete(filename);
+                        }
+
+                        File.Move(tempFilename, filename);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                DebugLog.Append(e, $"Couldn't write to cache for {filename}");
+
+                // Clean up any garbage (doesn't throw on file-not-found)
+                File.Delete(filename);
+                File.Delete(tempFilename);
+            }
         }
 
         static void AddName(Dictionary<string, string> names, string name)

@@ -435,7 +435,7 @@ namespace Tempo
                     }
                     catch (Exception ex)
                     {
-                        DebugLog.Append("Error getting AcidInfo for " + type.FullName + ": " + ex.Message);
+                        DebugLog.Append(ex, "Error getting AcidInfo for " + type.FullName + ": " + ex.Message);
                         key = null;
                     }
                 }

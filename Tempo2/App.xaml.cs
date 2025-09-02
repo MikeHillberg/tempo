@@ -63,9 +63,7 @@ namespace Tempo
             // mikehill_ua
             //this.Suspending += OnSuspending;
 
-            // Put "Tempo" in the name of the local path for storing all files so that SafeDelete() will be happy
-            var localFolderPath = Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, "Tempo");
-            DesktopManager2.Initialize(false, localFolderPath);
+            DesktopManager2.Initialize(wpfApp: false, App.PackageCachePath);
 
             // Load all of the contract names/versions
             ContractInformation.Load();
@@ -89,17 +87,6 @@ namespace Tempo
                 }
             };
         }
-
-
-        //private void App_TestEvent2(object sender, EventArgs e)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //private void App_TestEvent1(object sender, EventArgs e)
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         /// <summary>
         /// INPC helper
@@ -320,6 +307,7 @@ namespace Tempo
             Debug.Assert(Manager.Settings.AreAllMembersDefault());
 
             // Give the Net Standard library a way to post to the UI thread using a DispatcherQueue
+            Manager.MainThread = Thread.CurrentThread;
             Manager.PostToUIThread = (action) => Window.DispatcherQueue.TryEnqueue(() => action());
 
 
@@ -1307,19 +1295,8 @@ namespace Tempo
         static DotNetWindowsScopeLoader _dotNetWindowsScopeLoader = null;
         static bool _isDotNetWindowsScope = false;
 
-        // bugbug: move these to api scope loaders
-        internal static string DotNetCorePath;
-        internal string DotNetCoreVersion;
-        internal bool IsDotNetCoreEnabled => DotNetCorePath != null;
-
-        internal static string DotNetWindowsPath;
-        internal bool IsDotNetWindowsEnabled => DotNetWindowsPath != null;
-
-
-
-        /// <summary>
-        /// Ensure the Win32 Metadata is loaded or loading
-        /// </summary>
+        internal bool IsDotNetCoreEnabled => !string.IsNullOrEmpty(DotNetScopeLoader.DotNetCorePath);
+        internal bool IsDotNetWindowsEnabled => !string.IsNullOrEmpty(DotNetScopeLoader.DotNetWindowsPath);
 
 
 
@@ -1564,7 +1541,7 @@ namespace Tempo
             }
             catch (Exception ex)
             {
-                DebugLog.Append($"Failed to save custom filenames setting: {ex.Message}");
+                DebugLog.Append(ex, $"Failed to save custom filenames setting");
             }
         }
 
@@ -1967,7 +1944,7 @@ namespace Tempo
             }
             catch (Exception ex)
             {
-                DebugLog.Append($"Failed to launch {address}: {ex.Message}");
+                DebugLog.Append(ex, $"Failed to launch {address}");
             }
         }
 
@@ -2173,7 +2150,7 @@ namespace Tempo
 
                 DebugLog.Append($"{(_usingCppProjections == true ? "C++" : "C#")} projections");
 
-                ApplicationDataContainer settings = ApplicationData.Current.RoamingSettings;
+                ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
                 settings.Values[nameof(UsingCppProjections)] = value;
 
                 RaisePropertyChange();
@@ -2518,6 +2495,8 @@ namespace Tempo
                     return ElementTheme.Default;
             }
         }
+
+        public static string PackageCachePath = @$"{ApplicationData.Current.LocalCacheFolder.Path}\Tempo\Tempo_Packages";
 
         /// <summary>
         /// Cycle theme through default/light/dark with repeated calls
