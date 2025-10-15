@@ -44,6 +44,19 @@
 				</uap:Extension>
 			</Extensions>
 		</Application>
+		<!-- Secondary diff console application packaged together -->
+		<Application Id="Diff" Executable="TempoDiff.exe" EntryPoint="Windows.FullTrustApplication">
+			<uap:VisualElements DisplayName="tempo-diff" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="Tempo diff helper" BackgroundColor="transparent">
+				<uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.png" />
+			</uap:VisualElements>
+			<Extensions>
+				<uap3:Extension Category="windows.appExecutionAlias" Executable="TempoDiff.exe" EntryPoint="Windows.FullTrustApplication">
+					<uap3:AppExecutionAlias>
+						<desktop:ExecutionAlias Alias="tempo-diff.exe" />
+					</uap3:AppExecutionAlias>
+				</uap3:Extension>
+			</Extensions>
+		</Application>
 	</Applications>
 	<Capabilities>
 		<Capability Name="internetClient"/>
