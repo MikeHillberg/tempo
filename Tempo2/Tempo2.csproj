@@ -24,15 +24,26 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <AppxPackageDir>C:\Users\MikeHill\source\repos\tempo\AppPackages\</AppxPackageDir>
     <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
-	  
-	  <!-- bugbug: remove this when picking up cswinrt with the bug fix -->
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- bugbug: remove this when picking up cswinrt with the bug fix -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
     <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
-  </PropertyGroup>	
-	
+  </PropertyGroup>
+
+  <!-- Build and restore the diff console project so its outputs can be packaged -->
+  <Target Name="BuildDiffProject" BeforeTargets="PrepareForBuild">
+    <MSBuild Projects="..\TempoDiff\TempoDiff.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration)" />
+  </Target>
+  <!-- Copy diff outputs into this project's output directory -->
+  <Target Name="CopyDiffOutputs" AfterTargets="Build">
+    <ItemGroup>
+      <DiffFiles Include="..\TempoDiff\bin\$(Configuration)\net6.0\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DiffFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
@@ -117,10 +128,8 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240829007" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.2.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.8" />
-	  
-	<!-- This is deprecated, but the replacement doesn't have MarkdownTextBlock -->
+    <!-- This is deprecated, but the replacement doesn't have MarkdownTextBlock -->
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-	  
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
