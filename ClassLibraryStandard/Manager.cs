@@ -1195,11 +1195,25 @@ namespace Tempo
         /// </summary>
         static void PostSearchResultUpdates()
         {
-            PostToUIThread(() =>
+            Action action = () =>
             {
                 MatchingStats.RaiseAllPropertiesChanged();
                 MatchGeneration.RaisePropertyChanged();
-            });
+            };
+
+            // Post to the UI thread if there is one, otherwise just run it sync
+            if (PostToUIThread != null)
+            {
+                PostToUIThread(() =>
+                {
+                    action();
+                });
+            }
+            else
+            {
+                action();
+            }
+
         }
 
         static bool TypeMatchesSearchHelper(TypeViewModel typeVM, Regex regex, bool isTwoPart, ref bool abort)

@@ -207,7 +207,7 @@ namespace Tempo
             bool flat,
             bool groupByNamespace = false,
             bool compressTypes = false)
-        {
+        { 
             const string separator = ",";
 
             var memberTableText = new StringBuilder();
@@ -244,6 +244,7 @@ namespace Tempo
             bool skipToNextType = false;
             string lastNamespace = null;
             bool showedMembers = false;
+            var typeMemberNames = new List<string>();
             for (int i = 0; i < items.Count; i++)
             {
                 var item = items[i];
@@ -271,6 +272,9 @@ namespace Tempo
                 {
                     var typeItem = item as TypeViewModel;
                     skipToNextType = false;
+
+                    // Keep a list of member names in each type in order to avoid duplicates
+                    typeMemberNames.Clear();
 
                     // Add a blank line of whitespace before this type if the previous type listed members,
                     // of if we just wrote out a namespace name
@@ -320,6 +324,16 @@ namespace Tempo
                         continue;
                     }
 
+                    // Avoid duplicate member names within a type
+                    var vm = item as MemberOrTypeViewModelBase;
+                    if (typeMemberNames.Contains(vm.PrettyName))
+                    {
+                        continue;
+                    }
+                    typeMemberNames.Add(vm.PrettyName);
+
+                    showedMembers = true;
+
                     // Indentation (if not CSV)
                     if (!asCsv)
                     {
@@ -327,9 +341,6 @@ namespace Tempo
                         // If grouping by namespace, indent types some, members more
                         memberTableText.Append(groupByNamespace ? "        " : "    ");
                     }
-
-                    showedMembers = true;
-                    var vm = item as MemberOrTypeViewModelBase;
 
                     if (asCsv)
                     {

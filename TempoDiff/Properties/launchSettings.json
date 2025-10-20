@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TempoDiff": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\mikehill\\OneDrive\\WinMDs\\Diff\\OverloadV1.dll C:\\Users\\mikehill\\OneDrive\\WinMDs\\Diff\\OverloadV2.dll"
+    }
+  }
+}

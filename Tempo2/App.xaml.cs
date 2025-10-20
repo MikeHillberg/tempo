@@ -838,7 +838,7 @@ namespace Tempo
             {
                 // commandLineFilenames is a list of file or directory names
                 // Replace the directory names with the names of all the children files
-                commandLineFilenames = ExpandDirectories(commandLineFilenames);
+                commandLineFilenames = Helpers.ExpandDirectories(commandLineFilenames);
 
                 // Set this so that we don't change the scope to whatever was used the last time
                 _initialScopeSet = true;
@@ -859,7 +859,7 @@ namespace Tempo
             {
                 // baselineFilename is a single file or directory name
                 // Replace the directory name with the names of all the children files
-                var baselineFilenames = ExpandDirectories(new string[] { baselineFilename });
+                var baselineFilenames = Helpers.ExpandDirectories(new string[] { baselineFilename });
                 BaselineApiScopeLoader.StartMakeCurrent(baselineFilenames.ToArray());
 
                 // This has to be called after the StartMakeCurrent,
@@ -869,28 +869,28 @@ namespace Tempo
 
         }
 
-        /// <summary>
-        /// For each provided path, if it's a file add it to the return list,
-        /// if it's a directory then add its children files to the return list
-        /// </summary>
-        private List<string> ExpandDirectories(IEnumerable<string> paths)
-        {
-            var newList = new List<string>();
+        ///// <summary>
+        ///// For each provided path, if it's a file add it to the return list,
+        ///// if it's a directory then add its children files to the return list
+        ///// </summary>
+        //private List<string> ExpandDirectories(IEnumerable<string> paths)
+        //{
+        //    var newList = new List<string>();
 
-            foreach (var path in paths)
-            {
-                if(!Directory.Exists(path))
-                {
-                    newList.Add(path);
-                    continue;
-                }
+        //    foreach (var path in paths)
+        //    {
+        //        if(!Directory.Exists(path))
+        //        {
+        //            newList.Add(path);
+        //            continue;
+        //        }
 
-                var files = Directory.EnumerateFiles(path);
-                newList.AddRange(files);
-            }
+        //        var files = Directory.EnumerateFiles(path);
+        //        newList.AddRange(files);
+        //    }
 
-            return newList;
-        }
+        //    return newList;
+        //}
 
         // DoSearch checks this, and when true (when using /diff),
         // prompts the user to copy results to the clipboard
