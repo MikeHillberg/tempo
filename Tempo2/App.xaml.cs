@@ -2170,6 +2170,7 @@ namespace Tempo
 
                     // Reload WinAppSDK
                     Manager.WindowsAppTypeSet = null;
+                    _winAppScopeLoader?.Close();
                     _winAppScopeLoader = new WinAppScopeLoader();
                     _winAppScopeLoader.StartMakeCurrent();
 

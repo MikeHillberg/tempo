@@ -266,7 +266,7 @@ namespace Tempo
                     allCachePathsForPackage = Directory.GetDirectories(cacheParentPath);
                 }
 
-                if (allCachePathsForPackage.Length == 0)
+                if (allCachePathsForPackage == null || allCachePathsForPackage.Length == 0)
                 {
                     DebugLog.Append($"No cache yet for {_typeSetName}");
                     return null;

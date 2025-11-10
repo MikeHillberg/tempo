@@ -191,6 +191,9 @@ namespace Tempo
             _loadingThreadEvent = null;
             _isCanceled = true;
 
+            // No throw risk; returns false if not found
+            ScopeLoaders.Remove(this);
+
             // bugbug: if you set this to null, the x:Bind for some reason ignores it
             // (note that it's a function xBind), due to this generated code.
             // Workaround is to set to an empty array
