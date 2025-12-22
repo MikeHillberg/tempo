@@ -18,7 +18,7 @@ namespace TempoDiff
         {
             if (args.Length < 2)
             {
-                Console.Error.WriteLine("Usage: TempoDiff.exe <baselinePath> <newPath> [--csv] [--flat]");
+                Console.Error.WriteLine("Usage: TempoDiff.exe <baselinePath> <newPath> [--csv] [--flat] [--showexp]");
                 return 1;
             }
 
@@ -26,6 +26,7 @@ namespace TempoDiff
             var newArg = args[1];
             var asCsv = args.Contains("--csv", StringComparer.OrdinalIgnoreCase);
             var flat = args.Contains("--flat", StringComparer.OrdinalIgnoreCase);
+            var showExperimental = args.Contains("--showexp", StringComparer.OrdinalIgnoreCase);
 
             try
             {
@@ -84,6 +85,14 @@ namespace TempoDiff
                 var iteration = ++Manager.RecalculateIteration;
                 var results = Manager.GetMembers(search, iteration);
                 var resultsList = results.ToList();
+                var experimentalCount = 0;
+                foreach (var result in resultsList)
+                {
+                    if (result is MemberOrTypeViewModelBase member && member.IsExperimental)
+                    {
+                        experimentalCount++;
+                    }
+                }
 
                 // Convert to string using existing export helpers
                 var output = CopyExport.ConvertItemsToABigString(
@@ -91,12 +100,17 @@ namespace TempoDiff
                     asCsv: asCsv,
                     flat: flat,
                     groupByNamespace: true,
-                    compressTypes: true);
+                    compressTypes: true,
+                    markExperimental: showExperimental);
 
                 // Print and copy
                 Console.OutputEncoding = Encoding.UTF8;
                 Console.WriteLine(output);
-                Console.Error.WriteLine($"Found {resultsList.Count} result items. Baseline types: {baselineTypeSet.TypeCount}, New types: {customTypeSet.TypeCount}.");
+                var summaryBuilder = new StringBuilder();
+                summaryBuilder.Append($"Found {resultsList.Count} result items. Baseline types: {baselineTypeSet.TypeCount}, New types: {customTypeSet.TypeCount}.");
+                var nonExperimentalCount = resultsList.Count - experimentalCount;
+                summaryBuilder.Append($" Experimental: {experimentalCount}, Non-experimental: {nonExperimentalCount}.");
+                Console.Error.WriteLine(summaryBuilder.ToString());
 
                 return 0;
             }
