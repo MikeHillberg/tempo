@@ -99,13 +99,26 @@ namespace Tempo
                 return;
             }
 
-            // Figure out the latest version and download it, optionally with dependencies
-            var packageLocationAndVersion = DesktopManager2.DownloadNugetPackageAndDependencies(
-                _packageName,
-                PrereleaseTag,
-                _loadDependentPackages,
-                task,
-                out var dependencyFilenames);
+            Tempo.DesktopManager2.PackageLocationAndVersion packageLocationAndVersion = null;
+            string[] dependencyFilenames = null;
+
+            try
+            {
+                // Figure out the latest version and download it, optionally with dependencies
+                packageLocationAndVersion = DesktopManager2.DownloadNugetPackageAndDependencies(
+                    _packageName,
+                    PrereleaseTag,
+                    _loadDependentPackages,
+                    task,
+                    out dependencyFilenames);
+            }
+            catch(Exception ex)
+            {
+                DebugLog.Append($"Couldn't download {_packageName}");
+                DebugLog.Append(ex);
+
+                // bugbug: show an error UI somehow
+            }
 
             if (packageLocationAndVersion != null)
             {

@@ -909,9 +909,22 @@ namespace Tempo
         {
             dependencyFilenames = null;
 
-            // Download the nupkg from nuget.org (or use the cached copy)
-            var downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, task, prereleaseTag);
-            downloadTask.Wait();
+            Task<PackageLocationAndVersion> downloadTask = null;
+            try
+            {
+                // Download the nupkg from nuget.org (or use the cached copy)
+                downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, task, prereleaseTag);
+                downloadTask.Wait();
+            }
+            catch(Exception ex)
+            {
+                DebugLog.Append($"Failed to download {packageName}");
+                DebugLog.Append(ex);
+
+                // bugbug: show an error dialog somehow
+                return null;
+            }
+
             var packageLocationAndVersion = downloadTask.Result;
             if (packageLocationAndVersion == null || string.IsNullOrEmpty(packageLocationAndVersion.PrimaryPath))
             {

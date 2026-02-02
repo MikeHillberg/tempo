@@ -7,14 +7,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    x:DefaultBindMode="OneWay">
 
     <Grid>
-        <TextBlock Visibility="{x:Bind MemberVM.DeclaringType.IsWindows, Mode=OneWay}">
+        <Grid local:CollapseIfEmpty.IsEnabledFor="{x:Bind _uwpBuildRun}">
+            <TextBlock Visibility="{x:Bind MemberVM.DeclaringType.IsWindows, Mode=OneWay}">
             <Hyperlink NavigateUri="https://docs.microsoft.com/en-us/windows/release-health/windows11-release-information">
-                Build <Run Text="{x:Bind MemberVM.UwpBuild, Mode=OneWay}"></Run>
+                Build <Run x:Name="_uwpBuildRun" Text="{x:Bind MemberVM.UwpBuild, Mode=OneWay}"></Run>
             </Hyperlink>
-        </TextBlock>
+            </TextBlock>
+        </Grid>
 
         <TextBlock Visibility="{x:Bind local:Utils.NotHack(MemberVM.DeclaringType.IsWindows), Mode=OneWay}"
                    Text="{x:Bind MemberVM.VersionFriendlyName, Mode=OneWay}"

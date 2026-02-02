@@ -159,12 +159,15 @@ namespace Tempo
 
             try
             {
-                attrs = t.CustomAttributes;// CustomAttributesData;
+                attrs = t.CustomAttributes;
             }
             catch (Exception e)
             {
                 if (!e.Message.Contains("GCPressure"))
+                {
+                    Debug.Assert(false); // Shouldn't happen anymore because using SMR/MR
                     throw;
+                }
             }
 
 
@@ -189,9 +192,9 @@ namespace Tempo
                     // [overload] shows up as ABI Name
                     continue;
 
-                if (attr.FullName == "Windows.Foundation.Metadata.ContractVersionAttribute")
-                    // Contract shows up as a version
-                    continue;
+                //if (attr.FullName == "Windows.Foundation.Metadata.ContractVersionAttribute")
+                //    // Contract shows up as a version
+                //    continue;
 
 
 

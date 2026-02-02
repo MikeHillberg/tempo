@@ -73,7 +73,7 @@ namespace Tempo
             return build;
         }
 
-        public static string PreviewBuildString = "(Prerelease)";
+        public static string PreviewBuildString = "";//"(Prerelease)";
 
         public static List<string> TH1Contracts = new List<string>();
         public static List<string> TH2Contracts = new List<string>();

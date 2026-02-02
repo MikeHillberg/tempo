@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
+    x:DefaultBindMode="OneWay"
     NavigationCacheMode="Required"
     >
 
@@ -106,7 +107,11 @@
                 <!-- See Also box -->
                 <!-- Sits on top of the ListView in the upper right corner, just below the Search box -->
                 <StackPanel Grid.Row="2" 
-                            local:CollapseIfEmpty.IsEnabledFor="{x:Bind _seeAlsoScopeList}"
+                            Visibility="{x:Bind IsSeeAlsoVisible(
+                                                    MatchingApiScopes,
+                                                    local:ApiScopeLoader.AreApiScopesPreloading.Value,
+                                                    SlowSearchInProgress),
+                                                Mode=OneWay}"
                             HorizontalAlignment="Right" VerticalAlignment="Top"
                             Padding="8,0,8,8"
                             Margin="0,-18,12,0"
@@ -124,6 +129,12 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    
+                    <!-- Show "loading" after the list while api scopes are still being preloaded -->
+                    <TextBlock Visibility="{x:Bind local:ApiScopeLoader.AreApiScopesPreloading.Value}"
+                               Margin="11,0,0,0">
+                        Loading ...
+                    </TextBlock>
                 </StackPanel>
 
 

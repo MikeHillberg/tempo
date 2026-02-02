@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 
 namespace Tempo
 {
@@ -31,8 +32,8 @@ namespace Tempo
             obj.SetValue(SourceProperty, value);
         }
         public static readonly DependencyProperty SourceProperty =
-            DependencyProperty.RegisterAttached("Source", typeof(object), typeof(CollapseIfEmpty), 
-                new PropertyMetadata(null, (s,e) => SourceChanged(s as FrameworkElement)));
+            DependencyProperty.RegisterAttached("Source", typeof(object), typeof(CollapseIfEmpty),
+                new PropertyMetadata(null, (s, e) => SourceChanged(s as FrameworkElement)));
 
         static void SourceChanged(FrameworkElement fe)
         {
@@ -64,8 +65,8 @@ namespace Tempo
             obj.SetValue(IsEnabledProperty, value);
         }
         public static readonly DependencyProperty IsEnabledProperty =
-            DependencyProperty.RegisterAttached("IsEnabled", typeof(bool), typeof(CollapseIfEmpty), 
-                new PropertyMetadata(false, (s,e) => IsEnabledChanged(s as FrameworkElement)));
+            DependencyProperty.RegisterAttached("IsEnabled", typeof(bool), typeof(CollapseIfEmpty),
+                new PropertyMetadata(false, (s, e) => IsEnabledChanged(s as FrameworkElement)));
 
         private static void IsEnabledChanged(FrameworkElement frameworkElement, bool isUpdate = false)
         {
@@ -93,19 +94,19 @@ namespace Tempo
             changeProperty = null;
             canBeEmptyObject = null;
 
-            if(value == null)
+            if (value == null)
             {
                 isEmpty = true;
             }
-            else if(value is string)
+            else if (value is string)
             {
                 isEmpty = string.IsNullOrEmpty(value as string);
             }
-            else if(value is IList)
+            else if (value is IList)
             {
                 isEmpty = (value as IList).Count == 0;
             }
-            else if(value is ICanBeEmpty)
+            else if (value is ICanBeEmpty)
             {
                 canBeEmptyObject = value as ICanBeEmpty;
                 isEmpty = canBeEmptyObject.IsEmpty;
@@ -144,6 +145,10 @@ namespace Tempo
                     }
                 }
             }
+            else if (value is Run run)
+            {
+                isEmpty = string.IsNullOrEmpty(run.Text);
+            }
 
             return isEmpty;
         }
@@ -161,8 +166,8 @@ namespace Tempo
 
         // Set the default value to a sentinal value so that any value for the property will trigger the changed callback
         public static readonly DependencyProperty IsEnabledForProperty =
-            DependencyProperty.RegisterAttached("IsEnabledFor", typeof(Object), typeof(CollapseIfEmpty), 
-                new PropertyMetadata("7de85e61-f596-4bf8-bf87-6fc24d0be418", (s,e) => IsEnabledForChanged(s as FrameworkElement)));
+            DependencyProperty.RegisterAttached("IsEnabledFor", typeof(Object), typeof(CollapseIfEmpty),
+                new PropertyMetadata("7de85e61-f596-4bf8-bf87-6fc24d0be418", (s, e) => IsEnabledForChanged(s as FrameworkElement)));
 
         private static void IsEnabledForChanged(FrameworkElement frameworkElement, bool isUpdate = false)
         {
@@ -180,11 +185,13 @@ namespace Tempo
             {
                 if ((target is FrameworkElement) && changeProperty != null)
                 {
+                    // For properties on a FrameworkElement we can listen for DP change notifications
                     // bugbug:  Never unregisters
                     (target as FrameworkElement).RegisterPropertyChangedCallback(changeProperty, (s, dp) => TargetPropertyChanged(frameworkElement));
                 }
                 else if (canBeEmptyObject != null)
                 {
+                    // For non-FEs we can handle objects that support ICanBeEmpty 
                     canBeEmptyObject.IsEmptyChanged += (s, e) => TargetPropertyChanged(frameworkElement);
                 }
             }

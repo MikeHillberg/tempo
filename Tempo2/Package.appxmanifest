@@ -25,7 +25,7 @@
 	<Applications>
 		<Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
 			<uap:VisualElements DisplayName="Tempo API Viewer" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="This app lets you search and display the APIs for the Universal Windows Platform (UWP)." BackgroundColor="transparent">
-				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Tempo of the UWP (Preview)" Square71x71Logo="Assets\Square71x71Logo.png">
+				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Tempo of the UWP (Preview)" Square71x71Logo="Assets\Square71x71Logo.png" Square310x310Logo="Assets\LargeTile.png">
 				</uap:DefaultTile>
 				<uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#8894C6" />
 			</uap:VisualElements>

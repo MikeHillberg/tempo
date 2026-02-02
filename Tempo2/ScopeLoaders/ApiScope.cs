@@ -1,5 +1,7 @@
-﻿using System;
+﻿using CommonLibrary;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -28,7 +30,7 @@ namespace Tempo
                     DebugLog.Append($"UsingCppProjections changed for {this.Name}: {App.Instance.UsingCppProjections}");
 
                     var typeSet = GetTypeSet();
-                    if (typeSet != null 
+                    if (typeSet != null
                         && typeSet.IsWinmd
                         && typeSet.UsesWinRTProjections != !App.Instance.UsingCppProjections)
                     {
@@ -102,6 +104,12 @@ namespace Tempo
             {
                 loader.CachedAllNames = loader.Preload2();
             }
+
+            DebugLog.Append("ApiScopeLoader Preload complete");
+            Manager.PostToUIThread(() =>
+            {
+                AreApiScopesPreloading.Value = false;
+            });
         }
 
         protected KeyValuePair<string, string>[] Preload1()
@@ -128,6 +136,8 @@ namespace Tempo
             return null;
         }
 
+        public static ReifiedProperty<bool> AreApiScopesPreloading = new(true, oneChangeNotification:true);
+
 
         //// Implement Preload pass 1
         //protected abstract KeyValuePair<string, string>[] Preload1();
@@ -146,7 +156,7 @@ namespace Tempo
             Debug.Assert(Thread.CurrentThread != Manager.MainThread);
 
             var typeSetLoader = GetTypeSetLoader();
-            if(typeSetLoader == null)
+            if (typeSetLoader == null)
             {
                 return null;
             }
@@ -164,7 +174,7 @@ namespace Tempo
             // This needs to wait until CurrentTypeSet is set
             _ = BackgroundHelper2.DoWorkAsync<object>(() =>
             {
-                if(!IsSelected)
+                if (!IsSelected)
                 {
                     return null;
                 }
@@ -217,7 +227,19 @@ namespace Tempo
 
         public abstract bool IsSelected { get; set; }
 
-        protected KeyValuePair<string, string>[] CachedAllNames { get; private set; }
+        KeyValuePair<string, string>[] _cachedAllNames;
+        protected KeyValuePair<string, string>[] CachedAllNames
+        {
+            get => _cachedAllNames;
+            private set
+            {
+                _cachedAllNames = value;
+                if (value != null)
+                {
+                    RaiseAllNamesChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// All type/member names in this type set
@@ -228,9 +250,16 @@ namespace Tempo
             {
                 // If we have a TypeSet, and it's loaded its names, use that
                 var typeSet = GetTypeSet();
-                if (typeSet != null && typeSet.AllNames != null)
+                if (typeSet != null )
                 {
-                    return typeSet.AllNames;
+                    if (typeSet.AllNames != null)
+                    {
+                        return typeSet.AllNames;
+                    }
+                    else
+                    {
+                        typeSet.RegisterAllNamesChanged(RaiseAllNamesChanged);
+                    }    
                 }
 
                 // Otherwise return the cached value (which too could be null)
@@ -238,6 +267,16 @@ namespace Tempo
             }
         }
 
+        OneTimeCallbacks _allNamesChangedCallback = new OneTimeCallbacks();
+        public void RegisterAllNamesChanged(Action callback)
+        {
+            _allNamesChangedCallback.Add(callback);
+        }
+
+        void RaiseAllNamesChanged()
+        {
+            _allNamesChangedCallback?.Invoke();
+        }
 
         protected abstract string LoadingMessage { get; }
 
