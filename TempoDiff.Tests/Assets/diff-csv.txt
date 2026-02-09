@@ -1,0 +1,27 @@
+Kind,Version,Namespace,Type,Member,Return,Parameters
+ClassLibrary
+
+Type,"",ClassLibrary,"ExampleClass",
+Event,"",ClassLibrary,"ExampleClass",ActionEvent2a,"Action<String>",
+Event,"",ClassLibrary,"ExampleClass",ActionEvent2b,"Action<String>",
+Property,"",ClassLibrary,"ExampleClass",AutoProperty2a,"String",{get|set}
+Property,"",ClassLibrary,"ExampleClass",AutoProperty2b,"String",{get|set}
+Event,"",ClassLibrary,"ExampleClass",Event2a,"EventHandler",
+Event,"",ClassLibrary,"ExampleClass",Event2b,"EventHandler",
+Method,"",ClassLibrary,"ExampleClass",GenericMethod2a,"List<T>",(T item)
+Method,"",ClassLibrary,"ExampleClass",GenericMethod2b,"List<T>",(T item)
+Method,"",ClassLibrary,"ExampleClass",Method2a,"Void",()
+Method,"",ClassLibrary,"ExampleClass",Method2b,"Void",()
+Method,"",ClassLibrary,"ExampleClass",OnEvent2a,"Void",(EventArgs e)
+Method,"",ClassLibrary,"ExampleClass",OnEvent2b,"Void",(EventArgs e)
+Property,"",ClassLibrary,"ExampleClass",Property2a,"Int32",{get|set}
+Property,"",ClassLibrary,"ExampleClass",Property2b,"Int32",{get|set}
+Field,"",ClassLibrary,"ExampleClass",StringField2a,"String",
+Field,"",ClassLibrary,"ExampleClass",StringField2b,"String",
+Method,"",ClassLibrary,"ExampleClass",StringMethod2a,"String",(Int32 param)
+Method,"",ClassLibrary,"ExampleClass",StringMethod2b,"String",(Int32 param)
+Method,"",ClassLibrary,"ExampleClass",VirtualMethod2a,"Void",()
+Method,"",ClassLibrary,"ExampleClass",VirtualMethod2b,"Void",()
+Property,"",ClassLibrary,"ExampleClass",VirtualProperty2a,"Double",{get|set}
+Property,"",ClassLibrary,"ExampleClass",VirtualProperty2b,"Double",{get|set}
+

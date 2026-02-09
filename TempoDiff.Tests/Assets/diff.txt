@@ -1,0 +1,26 @@
+ClassLibrary
+
+    ExampleClass
+        ActionEvent2a
+        ActionEvent2b
+        AutoProperty2a
+        AutoProperty2b
+        Event2a
+        Event2b
+        GenericMethod2a
+        GenericMethod2b
+        Method2a
+        Method2b
+        OnEvent2a
+        OnEvent2b
+        Property2a
+        Property2b
+        StringField2a
+        StringField2b
+        StringMethod2a
+        StringMethod2b
+        VirtualMethod2a
+        VirtualMethod2b
+        VirtualProperty2a
+        VirtualProperty2b
+
