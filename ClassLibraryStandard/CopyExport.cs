@@ -206,8 +206,9 @@ namespace Tempo
             bool asCsv,
             bool flat,
             bool groupByNamespace = false,
-            bool compressTypes = false)
-        { 
+            bool compressTypes = false,
+            bool markExperimental = false)
+        {
             const string separator = ",";
 
             var memberTableText = new StringBuilder();
@@ -236,7 +237,12 @@ namespace Tempo
             // If outputting CSV, create a header row
             if (asCsv)
             {
-                memberTableText.AppendLine("Kind,Version,Namespace,Type,Member,Return,Parameters");
+                memberTableText.Append("Kind,Version,Namespace,Type,Member,Return,Parameters");
+                if (markExperimental)
+                {
+                    memberTableText.Append(",Experimental");
+                }
+                memberTableText.AppendLine();
             }
 
             // Stringize each item
@@ -291,7 +297,8 @@ namespace Tempo
                         memberTableText,
                         typeItem,
                         flat,
-                        groupByNamespace);
+                        groupByNamespace,
+                        markExperimental);
                     
                     // compressTypes means that if all members of a type are included, don't
                     // bother including the members. (Useful for baseline compare mode.)
@@ -383,8 +390,13 @@ namespace Tempo
                                 memberTableText.Append("{get}");
                         }
 
+                        if (markExperimental)
+                        {
+                            memberTableText.Append(separator);
+                            memberTableText.Append(vm.IsExperimental ? "Experimental" : string.Empty);
+                        }
 
-                        memberTableText.AppendLine("");
+                        memberTableText.AppendLine();
 
                     }
 
@@ -395,16 +407,26 @@ namespace Tempo
                         // In flat mode write out Namespace.TypeName.MemberName
                         if (flat)
                         {
-                            memberTableText.AppendLine(
+                            var display =
                                 (item as BaseViewModel).DeclaringType.PrettyFullName
                                 + "."
-                                + (item as BaseViewModel).PrettyName);
+                                + (item as BaseViewModel).PrettyName;
+                            if (markExperimental && vm.IsExperimental)
+                            {
+                                display += " [Experimental]";
+                            }
+                            memberTableText.AppendLine(display);
                         }
 
                         // When not flat mode, just write out the type name
                         else
                         {
-                            memberTableText.AppendLine((item as BaseViewModel).PrettyName);
+                            var display = (item as BaseViewModel).PrettyName;
+                            if (markExperimental && vm.IsExperimental)
+                            {
+                                display += " [Experimental]";
+                            }
+                            memberTableText.AppendLine(display);
                         }
                     }
                 }
@@ -444,10 +466,12 @@ namespace Tempo
             StringBuilder memberTableText,
             TypeViewModel type,
             bool flat,
-            bool groupByNamespace)
+            bool groupByNamespace,
+            bool markExperimental)
         {
             const string separator = ",";
             typeTableText = memberTableText;
+            var experimentalSuffix = markExperimental && type.IsExperimental ? " [Experimental]" : string.Empty;
 
 
             // For CSV, write out several columns
@@ -474,25 +498,32 @@ namespace Tempo
                     typeTableText.AppendQuoted(type.BaseType.FullName);
                 }
 
-                typeTableText.AppendLine("");
+                if (markExperimental)
+                {
+                    typeTableText.Append(separator);
+                    typeTableText.Append(type.IsExperimental ? "Experimental" : string.Empty);
+                }
+
+                typeTableText.AppendLine();
             }
 
             // For flat, write out: Namespace.Name
             else if (flat)
             {
-                typeTableText.AppendLine((type as TypeViewModel).PrettyFullName);
+                typeTableText.AppendLine((type as TypeViewModel).PrettyFullName + experimentalSuffix);
             }
 
             // When grouping by namespace, just write out Name
             else if (groupByNamespace)
             {
-                typeTableText.AppendLine($"    {(type as TypeViewModel).PrettyName}");
+                typeTableText.AppendLine($"    {(type as TypeViewModel).PrettyName}{experimentalSuffix}");
             }
 
             // Otherwise, write out: Name (Namespace)
             else
             {
                 typeTableText.Append((type as TypeViewModel).PrettyName);
+                typeTableText.Append(experimentalSuffix);
                 typeTableText.Append(" (");
                 typeTableText.Append((type as TypeViewModel).Namespace);
                 typeTableText.AppendLine(")");
