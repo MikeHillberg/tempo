@@ -6,8 +6,10 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Popups;
@@ -114,6 +116,21 @@ namespace Tempo
                 _searchString = App.Instance.SearchText;
                 DoSearch();
             }
+        }
+
+        /// <summary>
+        /// Calculate if the "See Also" popup should display based on what's going on with other scopes
+        /// </summary>
+        Visibility IsSeeAlsoVisible(ObservableCollection<ApiScopeLoader> list, bool apiScopesPreloading, bool slowSearchInProgress)
+        {
+            if (slowSearchInProgress)
+            {
+                // Don't show See Also behind the smoke layer (looks weird)
+                return Visibility.Collapsed;
+            }
+
+            // Show see also if the list of scopes is non-empty or still being calculated
+            return (list != null && list.Count > 0 || apiScopesPreloading) ? Visibility.Visible : Visibility.Collapsed;
         }
 
 
@@ -340,13 +357,24 @@ namespace Tempo
 
         static int _cacheCounter = 0;
 
+        CancellationTokenSource _searchCancellationTokenSource = null;
+
         private async void DoSearch()
         {
+            // Shut down previous search
+            if (_searchCancellationTokenSource != null)
+            {
+                _searchCancellationTokenSource.Cancel();
+            }
+            _searchCancellationTokenSource = new();
+
+
             // HomePage gets disabled when loading with /diff command line
             HomePage.Instance.IsEnabled = true;
 
             // Reset the list of api scopes that match the search term
-            MatchingApiScopes = null;
+            // I think there's a problem with x:Bind not handling change notifications to null, so set it to empty list
+            MatchingApiScopes = new();
 
             var shouldContinue = await App.EnsureApiScopeLoadedAsync();
             if (!shouldContinue)
@@ -373,7 +401,7 @@ namespace Tempo
 
             // Make sure what the user sees is in sync
             // (They can get out of sync if the search string came in as a command line argument)
-            if(_searchBox.Text != _searchString)
+            if (_searchBox.Text != _searchString)
             {
                 _searchBox.Text = _searchString;
             }
@@ -489,58 +517,89 @@ namespace Tempo
         private void CheckForOtherMatchingApiScopes(SearchExpression searchExpression)
         {
             var regex = searchExpression?.TypeRegex;
-            if(regex == null)
+            if (regex == null)
             {
                 return;
             }
 
-            List<ApiScopeLoader> matchingScopes = null;
+            // Make a copy of the cancellation toke before going async
+            var cancellationToken = _searchCancellationTokenSource.Token;
+
             foreach (var scopeLoader in ApiScopeLoader.ScopeLoaders)
             {
-                if(scopeLoader.IsSelected)
+                if (scopeLoader.IsSelected)
                 {
                     // Current scope
                     continue;
                 }
 
                 var allNames = scopeLoader.AllNames;
-                if(allNames == null)
+                if (allNames == null)
                 {
-                    // We're not fully loaded yet
+                    // This scope isn't fully loaded yet
+                    // bugbug: Race condition if scopeLoader.AllNames is now set
+
+                    scopeLoader.RegisterAllNamesChanged(
+                        () => Manager.PostToUIThread(() =>
+                        {
+                            CheckForMatchingApiScope(
+                                        regex,
+                                        scopeLoader,
+                                        scopeLoader.AllNames,
+                                        cancellationToken);
+                        }));
+
                     continue;
                 }
 
-                foreach (var name in allNames)
-                {
-                    var match = regex.Match(name.Value);
-                    if (match != Match.Empty)
-                    {
-                        if(matchingScopes == null)
-                        {
-                            matchingScopes = new List<ApiScopeLoader>();
-                        }
-                        matchingScopes.Add(scopeLoader);
-                        break;
-                    }
-                }
+                CheckForMatchingApiScope(regex, scopeLoader, allNames, cancellationToken);
 
             }
-
-            MatchingApiScopes = matchingScopes;
         }
 
+        /// <summary>
+        /// If the current search has a match in a scope, add it to MatchingApiScopes
+        /// </summary>
+        private void CheckForMatchingApiScope(
+            Regex regex,
+            ApiScopeLoader scopeLoader,
+            KeyValuePair<string, string>[] allNames,
+            CancellationToken cancellationToken)
+        {
+            // This could be an off-thread completion for an old out-of-date search
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var matchingScopes = MatchingApiScopes;
+            if (matchingScopes == null)
+            {
+                // Don't think this can ever happen
+                return;
+            }
+
+            foreach (var name in allNames)
+            {
+                var match = regex.Match(name.Value);
+                if (match != Match.Empty)
+                {
+                    matchingScopes.Add(scopeLoader);
+                    break;
+                }
+            }
+        }
 
         /// <summary>
         /// List of scopes that match the current search term (other than the currently selected scope)
         /// </summary>
-        internal IEnumerable<ApiScopeLoader> MatchingApiScopes
+        internal ObservableCollection<ApiScopeLoader> MatchingApiScopes
         {
-            get { return (IEnumerable<ApiScopeLoader>)GetValue(MatchingApiScopesProperty); }
+            get { return (ObservableCollection<ApiScopeLoader>)GetValue(MatchingApiScopesProperty); }
             set { SetValue(MatchingApiScopesProperty, value); }
         }
         public static readonly DependencyProperty MatchingApiScopesProperty =
-            DependencyProperty.Register("MatchingApiScopes", typeof(IEnumerable<ApiScopeLoader>), typeof(SearchResults), new PropertyMetadata(0));
-
+            DependencyProperty.Register("MatchingApiScopes", typeof(ObservableCollection<ApiScopeLoader>), typeof(SearchResults), new PropertyMetadata(0));
 
         /// <summary>
         /// Indicates that search has taken too long, we should show a progress UI
@@ -836,7 +895,7 @@ namespace Tempo
                 foreach (var item in _listView.Items)
                 {
                     var itemVM = item as MemberOrTypeViewModelBase;
-                    if(isType)
+                    if (isType)
                     {
                         var typeVM = item as TypeViewModel;
                         if (typeVM != null && typeVM.FullName == name)
@@ -848,7 +907,7 @@ namespace Tempo
                     else
                     {
                         var memberVM = item as MemberViewModelBase;
-                        if(memberVM != null && memberVM.FullName == name)
+                        if (memberVM != null && memberVM.FullName == name)
                         {
                             targetItem = memberVM;
                             break;

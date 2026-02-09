@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows10.0.19041</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Tempo</RootNamespace>
@@ -11,7 +11,7 @@
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
@@ -32,17 +32,6 @@
     <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
   </PropertyGroup>
 
-  <!-- Build and restore the diff console project so its outputs can be packaged -->
-  <Target Name="BuildDiffProject" BeforeTargets="PrepareForBuild">
-    <MSBuild Projects="..\TempoDiff\TempoDiff.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration)" />
-  </Target>
-  <!-- Copy diff outputs into this project's output directory -->
-  <Target Name="CopyDiffOutputs" AfterTargets="Build">
-    <ItemGroup>
-      <DiffFiles Include="..\TempoDiff\bin\$(Configuration)\net6.0\*.*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(DiffFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
-  </Target>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>bin\x86\Debug\</OutputPath>
@@ -77,6 +66,7 @@
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <LayoutDir></LayoutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -116,12 +106,12 @@
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
     <ProjectReference Include="..\middleweight-reflection\MiddleweightReflection\MiddleweightReflection.csproj" />
+    <ProjectReference Include="..\TempoDiff\TempoDiff.csproj" />
     <ProjectReference Include="..\TempoPSProvider2\TempoPSProvider2.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -14,15 +14,27 @@ namespace CommonLibrary
     /// In code there's an overload to get the T value,
     /// but there's no overloaded assignment operator in C#, so you need to do ".Value" (same for x:Bind)
     /// </summary>
-    // Property value with built-in change notification
     public class ReifiedProperty<T> : INotifyPropertyChanged
     {
-        T _value;
+        T _value = default;
         private Action _changeCallback;
+        private PropertyChangedEventHandler _propertyChanged;
 
-        public ReifiedProperty() {}
+        bool _oneChangeNotification = false;
+        bool _hasChanged = false;
 
-        public ReifiedProperty(T value) { this.Value = value; }
+        public ReifiedProperty() { }
+
+        /// <summary>
+        /// oneChangeNotification means that after the first change the callback is cleared, avoiding leaks
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="oneChangeNotification"></param>
+        public ReifiedProperty(T value, bool oneChangeNotification = false)
+        {
+            _value = value;
+            this._oneChangeNotification = oneChangeNotification;
+        }
 
         public ReifiedProperty(T value, Action changeCallback)
         {
@@ -50,8 +62,13 @@ namespace CommonLibrary
 
         void SetValue(T value, bool quiet)
         {
+            if (EqualityComparer<T>.Default.Equals(_value, value))
+            {
+                return;
+            }
             _value = value;
-
+            _hasChanged = true;
+            
             if (!quiet)
             {
                 RaisePropertyChanged();
@@ -60,19 +77,42 @@ namespace CommonLibrary
 
         public void RaisePropertyChanged()
         {
-            PropertyChanged?.Invoke(this, _args);
+            //Debug.Assert(!_hasChanged || !_oneChangeNotification);
+
+            _propertyChanged?.Invoke(this, _args);
             _changeCallback?.Invoke();
+
+            if (_oneChangeNotification)
+            {
+                _propertyChanged = null;
+                _changeCallback = null;
+            }
         }
 
         static PropertyChangedEventArgs _args = new PropertyChangedEventArgs(nameof(Value));
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (_oneChangeNotification && _hasChanged)
+                {
+                    // Ignore any further subscriptions
+                    return;
+                }
+                _propertyChanged += value;
+            }
+            remove
+            {
+                _propertyChanged -= value;
+            }
+        }
 
         static public implicit operator T(ReifiedProperty<T> r) => r.Value;
 
         public override string ToString()
         {
-            if(Value != null)
+            if (Value != null)
             {
                 return Value.ToString();
             }

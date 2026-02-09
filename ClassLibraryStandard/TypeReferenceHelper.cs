@@ -295,7 +295,7 @@ namespace Tempo
             // If this is e.g. Foo[], walk Foo
             if (candidateType.UnmodifedType != null)
             {
-                if(WalkTypesInAncestorsOrGenericArgumentsRecursive(candidateType.UnmodifedType, null, check))
+                if(WalkTypesInAncestorsOrGenericArgumentsRecursive(candidateType.UnmodifedType, member, check))
                 {
                     result = true;
                 }

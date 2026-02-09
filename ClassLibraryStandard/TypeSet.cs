@@ -141,6 +141,28 @@ namespace Tempo
             {
                 _allNames = value;
                 RaisePropertyChanged();
+                RaiseAllNamesChanged();
+            }
+        }
+
+        List<Action> _allNamesChangedCallback = new List<Action> ();
+        public void RegisterAllNamesChanged(Action callback)
+        {
+            var callbacks = _allNamesChangedCallback;
+            if (callbacks == null)
+            {
+                return;
+            }
+            callbacks.Add(callback);
+        }
+
+        void RaiseAllNamesChanged()
+        {
+            var callbacks = _allNamesChangedCallback;
+            _allNamesChangedCallback = null;
+            foreach (var callback in callbacks)
+            {
+                callback.Invoke();
             }
         }
 

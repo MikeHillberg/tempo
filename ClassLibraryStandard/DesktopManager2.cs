@@ -523,22 +523,29 @@ namespace Tempo
                 ILogger logger = NullLogger.Instance;
                 CancellationToken cancellationToken = CancellationToken.None;
 
-                // Get all versions of the package
+                // Get package metadata, filtering out unlisted versions
                 SourceCacheContext cache = new SourceCacheContext();
                 SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-                FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+                
+                PackageMetadataResource metadataResource = await repository.GetResourceAsync<PackageMetadataResource>();
 
-                IEnumerable<NuGetVersion> versions = await resource.GetAllVersionsAsync(
+                IEnumerable<IPackageSearchMetadata> packages = await metadataResource.GetMetadataAsync(
                     packageName,
+                    includePrerelease: true,
+                    includeUnlisted: false,  // Ignore the WinAppSDK version that got unlisted and confuses the ordinality
                     cache,
                     logger,
                     cancellationToken);
+
+                // Extract versions from metadata
+                IEnumerable<NuGetVersion> versions = packages.Select(p => p.Identity.Version);
 
                 if (versionRange == null)
                 {
                     // Filter either to not a prerelease, or to the right prerelease (experimental vs preview)
                     if (string.IsNullOrEmpty(prereleaseTag))
                     {
+                        // bugbug: Could filter out prerelease in the GetMetadataAsync call above
                         versions = versions.Where(v => !v.IsPrerelease);
                     }
                     else
@@ -704,7 +711,6 @@ namespace Tempo
                             }
                             else
                             {
-                                DebugLog.Append($"Loading {filename}");
                                 typeSet.AssemblyLocations.Add(new AssemblyLocation(filename));
                             }
 
@@ -903,9 +909,22 @@ namespace Tempo
         {
             dependencyFilenames = null;
 
-            // Download the nupkg from nuget.org (or use the cached copy)
-            var downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, task, prereleaseTag);
-            downloadTask.Wait();
+            Task<PackageLocationAndVersion> downloadTask = null;
+            try
+            {
+                // Download the nupkg from nuget.org (or use the cached copy)
+                downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, task, prereleaseTag);
+                downloadTask.Wait();
+            }
+            catch(Exception ex)
+            {
+                DebugLog.Append($"Failed to download {packageName}");
+                DebugLog.Append(ex);
+
+                // bugbug: show an error dialog somehow
+                return null;
+            }
+
             var packageLocationAndVersion = downloadTask.Result;
             if (packageLocationAndVersion == null || string.IsNullOrEmpty(packageLocationAndVersion.PrimaryPath))
             {

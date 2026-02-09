@@ -34,7 +34,6 @@ namespace Tempo
         }
 
 
-
         public bool CanGoBack
         {
             get

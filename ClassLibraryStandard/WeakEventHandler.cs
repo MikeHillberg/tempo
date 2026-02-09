@@ -15,7 +15,6 @@ namespace Tempo
 
         public WeakEventHandler()
         {
-
         }
 
         public void Add(THandler value)

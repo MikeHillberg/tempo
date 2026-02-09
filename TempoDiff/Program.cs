@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Tempo;
@@ -18,7 +16,22 @@ namespace TempoDiff
         {
             if (args.Length < 2)
             {
-                Console.Error.WriteLine("Usage: TempoDiff.exe <baselinePath> <newPath> [--csv] [--flat] [--showexp]");
+                Console.Error.WriteLine("Usage: tempo-diff <baselinePath> <newPath> [/csv] [/fqn]\n");
+
+                Console.Error.WriteLine("Paths can be a managed assembly, a Windows winmd, a Nuget nupkg, or a directory\n");
+
+                Console.Error.WriteLine("Optional flags:\n" +
+                                        "  /csv   Output results in CSV format\n" +
+                                        "  /fqn   Output type/member names in fully-qualified format\n");
+
+                Console.Error.WriteLine("E.g.:  tempo-diff ver1.dll ver2.dll\n" +
+                                        "       tempo-diff ver1.winmd ver2.winmd\n" +
+                                        "       tempo-diff ver1.nupkg ver2.nupkg\n" +
+                                        "       tempo-diff dir1 dir2\n");
+
+                Console.Error.WriteLine("To see the diff in the UX app, use `tempo /diff`, e.g.:\n" +
+                                        "  tempo /diff dir1 dir2\n");
+
                 return 1;
             }
 
@@ -30,21 +43,19 @@ namespace TempoDiff
 
             try
             {
-                // Initialize backend library without UI
-                var localCache = Path.Combine(Path.GetTempPath(), "TempoDiffCache");
-                Directory.CreateDirectory(localCache);
-                DesktopManager2.Initialize(wpfApp: false, packagesCachePath: localCache);
-                DesktopManager2.CommandLineMode = true; // forces sync
-                // No UI dispatcher in CLI; run posted actions inline
-                Manager.PostToUIThread = (action) => action();
 
-                // Reset settings for a clean diff pass
+                // Initialize shared library across solution
+                // We won't be downloading any packages from nuget.org, so don't need a packagedCachePath
+                DesktopManager2.Initialize(wpfApp: false, packagesCachePath: null);
+                DesktopManager2.CommandLineMode = true; // forces sync
+
+                // Put the search into diff mode
                 Manager.ResetSettings();
                 Manager.Settings.CompareToBaseline = true;
 
                 // Expand folders to file lists
-                var baselineFiles = ExpandToFiles(baselineArg);
-                var newFiles = ExpandToFiles(newArg);
+                var baselineFiles = Helpers.ExpandDirectories(baselineArg);
+                var newFiles = Helpers.ExpandDirectories(newArg);
 
                 if (baselineFiles.Count == 0)
                 {
@@ -121,32 +132,8 @@ namespace TempoDiff
             }
         }
 
-        private static List<string> ExpandToFiles(string path)
-        {
-            var paths = new List<string>();
-            if (File.Exists(path))
-            {
-                paths.Add(path);
-                return paths;
-            }
 
-            if (Directory.Exists(path))
-            {
-                var files = Directory.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly)
-                    .Where(f => HasSupportedExtension(f))
-                    .ToList();
-                paths.AddRange(files);
-                return paths;
-            }
 
-            // Not found; return empty to be handled by caller
-            return paths;
-        }
 
-        private static bool HasSupportedExtension(string filename)
-        {
-            var ext = Path.GetExtension(filename).ToLowerInvariant();
-            return ext == ".dll" || ext == ".winmd" || ext == ".nupkg";
-        }
     }
 }
