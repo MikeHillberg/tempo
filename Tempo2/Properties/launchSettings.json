@@ -2,6 +2,7 @@
   "profiles": {
     "Tempo (Package)": {
       "commandName": "MsixPackage",
+      "commandLineArgs": "C:\\Users\\mikehill\\repos\\tempo\\TempoDiff.Tests\\assets\\d1.dll C:\\Users\\mikehill\\repos\\tempo\\TempoDiff.Tests\\assets\\d2.dll /showexp",
       "nativeDebugging": false,
       "doNotLaunchApp": false
     },

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace ClassLibrary
+namespace ExampleClassLibrary
 {
     public class ExampleClass
     {

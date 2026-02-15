@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="TempoDiff.Tests" />
+    <InternalsVisibleTo Include="Tempo.Tests" />
   </ItemGroup>
 
   <ItemGroup>

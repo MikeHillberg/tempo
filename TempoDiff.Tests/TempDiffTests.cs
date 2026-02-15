@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Tempo;
 using TempoDiff;
 
 namespace TempoDiff.Tests
@@ -42,7 +43,27 @@ namespace TempoDiff.Tests
         [Fact]
         public void Main_WithTestDllFiles_CsvFqnOutputMatchesExpectedDiff()
         {
-            AssertOutputMatchesExpectedDiff("diff-csv-fqn.txt", "/csv", "/fqn");
+            // Also validate that both "/" and "--" switch prefixes work
+            AssertOutputMatchesExpectedDiff("diff-csv-fqn.txt", "/csv", "--fqn");
+        }
+
+        [Fact]
+        public void Main_WithTestDllFiles_ShowExpOutputMatchesExpectedDiff()
+        {
+            AssertOutputMatchesExpectedDiff("diff-showexp.txt", "/showexp");
+        }
+
+        [Fact]
+        public void Main_WithTestDllFiles_ShowExpCsvOutputMatchesExpectedDiff()
+        {
+            // Also validate case-inensitive
+            AssertOutputMatchesExpectedDiff("diff-showexp-csv.txt", "/shOWexp", "/cSv");
+        }
+
+        [Fact]
+        public void Main_WithTestDllFiles_ShowExpFqnOutputMatchesExpectedDiff()
+        {
+            AssertOutputMatchesExpectedDiff("diff-showexp-fqn.txt", "/showexp", "/fqn");
         }
 
         private static void AssertOutputMatchesExpectedDiff(string expectedDiffFileName, params string[] additionalArgs)
@@ -91,15 +112,6 @@ namespace TempoDiff.Tests
         private static string NormalizeLineEndings(string text)
         {
             return text.Replace("\r\n", "\n").Replace("\r", "\n");
-        }
-
-        [Fact]
-        public void Main_WithValidArguments_ContainsExpectedFlags()
-        {
-            var args = new string[] { "baseline.dll", "new.dll", "/csv", "/fqn" };
-            
-            Assert.Contains("/csv", args, StringComparer.OrdinalIgnoreCase);
-            Assert.Contains("/fqn", args, StringComparer.OrdinalIgnoreCase);
         }
 
         [Fact]

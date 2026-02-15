@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TempoPSProvider2", "TempoPS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempoDiff", "TempoDiff\TempoDiff.csproj", "{3E46F757-81CF-4EB4-93DD-B9F250FDA538}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TempoDiff.Tests", "TempoDiff.Tests\TempoDiff.Tests.csproj", "{9778A457-AB61-4D62-B9BE-552C420BC58D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tempo.Tests", "TempoDiff.Tests\Tempo.Tests.csproj", "{9778A457-AB61-4D62-B9BE-552C420BC58D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
