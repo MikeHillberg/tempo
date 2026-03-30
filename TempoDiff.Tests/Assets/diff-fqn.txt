@@ -1,0 +1,26 @@
+﻿ClassLibrary
+
+ClassLibrary.ExampleClass
+        ClassLibrary.ExampleClass.ActionEvent2a
+        ClassLibrary.ExampleClass.ActionEvent2b
+        ClassLibrary.ExampleClass.AutoProperty2a
+        ClassLibrary.ExampleClass.AutoProperty2b
+        ClassLibrary.ExampleClass.Event2a
+        ClassLibrary.ExampleClass.Event2b
+        ClassLibrary.ExampleClass.GenericMethod2a
+        ClassLibrary.ExampleClass.GenericMethod2b
+        ClassLibrary.ExampleClass.Method2a
+        ClassLibrary.ExampleClass.Method2b
+        ClassLibrary.ExampleClass.OnEvent2a
+        ClassLibrary.ExampleClass.OnEvent2b
+        ClassLibrary.ExampleClass.Property2a
+        ClassLibrary.ExampleClass.Property2b
+        ClassLibrary.ExampleClass.StringField2a
+        ClassLibrary.ExampleClass.StringField2b
+        ClassLibrary.ExampleClass.StringMethod2a
+        ClassLibrary.ExampleClass.StringMethod2b
+        ClassLibrary.ExampleClass.VirtualMethod2a
+        ClassLibrary.ExampleClass.VirtualMethod2b
+        ClassLibrary.ExampleClass.VirtualProperty2a
+        ClassLibrary.ExampleClass.VirtualProperty2b
+

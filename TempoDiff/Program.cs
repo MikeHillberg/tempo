@@ -12,22 +12,23 @@ namespace TempoDiff
         // Output: prints API diff (new vs baseline) to stdout
         // Exit codes: 0 success, 1 usage error, 2 load error.
         [STAThread]
-        private static int Main(string[] args)
+        internal static int Main(string[] args)
         {
             if (args.Length < 2)
             {
-                Console.Error.WriteLine("Usage: tempo-diff <baselinePath> <newPath> [/csv] [/fqn]\n");
+                Console.Error.WriteLine("Usage: tempo-diff <baselinePath> <newPath> [/csv] [/fqn] [/showexp\n");
 
                 Console.Error.WriteLine("Paths can be a managed assembly, a Windows winmd, a Nuget nupkg, or a directory\n");
 
                 Console.Error.WriteLine("Optional flags:\n" +
-                                        "  /csv   Output results in CSV format\n" +
-                                        "  /fqn   Output type/member names in fully-qualified format\n");
+                                        "  /csv       Output results in CSV format\n" +
+                                        "  /fqn       Output type/member names in fully-qualified format\n" +
+                                        "  /showexp   Highlight experimental APIs in the output\n");
 
                 Console.Error.WriteLine("E.g.:  tempo-diff ver1.dll ver2.dll\n" +
-                                        "       tempo-diff ver1.winmd ver2.winmd\n" +
-                                        "       tempo-diff ver1.nupkg ver2.nupkg\n" +
-                                        "       tempo-diff dir1 dir2\n");
+                                        "       tempo-diff ver1.winmd ver2.winmd /fqn\n" +
+                                        "       tempo-diff ver1.nupkg ver2.nupkg /csv\n" +
+                                        "       tempo-diff dir1 dir2 /showexp /csv\n");
 
                 Console.Error.WriteLine("To see the diff in the UX app, use `tempo /diff`, e.g.:\n" +
                                         "  tempo /diff dir1 dir2\n");
@@ -37,10 +38,9 @@ namespace TempoDiff
 
             var baselineArg = args[0];
             var newArg = args[1];
-            var asCsv = args.Contains("--csv", StringComparer.OrdinalIgnoreCase);
-            var flat = args.Contains("--flat", StringComparer.OrdinalIgnoreCase);
-            var showExperimental = args.Contains("--showexp", StringComparer.OrdinalIgnoreCase);
-
+            var asCsv = IsSwitchSet(args, "csv");
+            var flat = IsSwitchSet(args, "fqn");
+            var showExperimental = IsSwitchSet(args, "showexp");
             try
             {
 
@@ -132,8 +132,10 @@ namespace TempoDiff
             }
         }
 
-
-
-
+        static bool IsSwitchSet(string[] args, string switchName)
+        {
+            return args.Contains($"/{switchName}", StringComparer.OrdinalIgnoreCase)
+                   || args.Contains($"--{switchName}", StringComparer.OrdinalIgnoreCase);
+        }
     }
 }
