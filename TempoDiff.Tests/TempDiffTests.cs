@@ -1,66 +1,69 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tempo;
 using TempoDiff;
 
-namespace TempoDiff.Tests
+namespace Tempo.Tests
 {
+    [TestClass]
+    [DoNotParallelize]
     public class TempDiffTests
     {
-        [Fact]
+        [TestMethod]
         public void Main_WithNoArguments_ReturnsUsageError()
         {
             var exitCode = InvokeMain(new string[] { });
-            Assert.Equal(1, exitCode);
+            Assert.AreEqual(1, exitCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithOneArgument_ReturnsUsageError()
         {
             var exitCode = InvokeMain(new string[] { "path1" });
-            Assert.Equal(1, exitCode);
+            Assert.AreEqual(1, exitCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_OutputMatchesExpectedDiff()
         {
             AssertOutputMatchesExpectedDiff("diff.txt");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_CsvOutputMatchesExpectedDiff()
         {
             AssertOutputMatchesExpectedDiff("diff-csv.txt", "/csv");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_FqnOutputMatchesExpectedDiff()
         {
             AssertOutputMatchesExpectedDiff("diff-fqn.txt", "/fqn");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_CsvFqnOutputMatchesExpectedDiff()
         {
             // Also validate that both "/" and "--" switch prefixes work
             AssertOutputMatchesExpectedDiff("diff-csv-fqn.txt", "/csv", "--fqn");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_ShowExpOutputMatchesExpectedDiff()
         {
             AssertOutputMatchesExpectedDiff("diff-showexp.txt", "/showexp");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_ShowExpCsvOutputMatchesExpectedDiff()
         {
             // Also validate case-inensitive
             AssertOutputMatchesExpectedDiff("diff-showexp-csv.txt", "/shOWexp", "/cSv");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_WithTestDllFiles_ShowExpFqnOutputMatchesExpectedDiff()
         {
             AssertOutputMatchesExpectedDiff("diff-showexp-fqn.txt", "/showexp", "/fqn");
@@ -76,9 +79,9 @@ namespace TempoDiff.Tests
             var d2Path = Path.Combine(assetsPath, "d2.dll");
             var expectedDiffPath = Path.Combine(assetsPath, expectedDiffFileName);
 
-            Assert.True(File.Exists(d1Path), $"Test asset not found: {d1Path}");
-            Assert.True(File.Exists(d2Path), $"Test asset not found: {d2Path}");
-            Assert.True(File.Exists(expectedDiffPath), $"Expected diff file not found: {expectedDiffPath}");
+            Assert.IsTrue(File.Exists(d1Path), $"Test asset not found: {d1Path}");
+            Assert.IsTrue(File.Exists(d2Path), $"Test asset not found: {d2Path}");
+            Assert.IsTrue(File.Exists(expectedDiffPath), $"Expected diff file not found: {expectedDiffPath}");
 
             var originalOut = Console.Out;
             var originalError = Console.Error;
@@ -92,7 +95,7 @@ namespace TempoDiff.Tests
                 var args = new[] { d1Path, d2Path }.Concat(additionalArgs).ToArray();
                 var exitCode = InvokeMainDirect(args);
 
-                Assert.Equal(0, exitCode);
+                Assert.AreEqual(0, exitCode);
 
                 var actualOutput = outWriter.ToString();
                 var expectedOutput = File.ReadAllText(expectedDiffPath);
@@ -100,7 +103,7 @@ namespace TempoDiff.Tests
                 actualOutput = NormalizeLineEndings(actualOutput.Trim());
                 expectedOutput = NormalizeLineEndings(expectedOutput.Trim());
 
-                Assert.Equal(expectedOutput, actualOutput);
+                Assert.AreEqual(expectedOutput, actualOutput);
             }
             finally
             {
@@ -114,7 +117,7 @@ namespace TempoDiff.Tests
             return text.Replace("\r\n", "\n").Replace("\r", "\n");
         }
 
-        [Fact]
+        [TestMethod]
         public void Main_HelpOutput_ContainsUsageInformation()
         {
             var originalOut = Console.Out;
@@ -129,9 +132,9 @@ namespace TempoDiff.Tests
                 InvokeMainDirect(new string[] { });
 
                 var errorOutput = errorWriter.ToString();
-                Assert.Contains("Usage:", errorOutput);
-                Assert.Contains("/csv", errorOutput);
-                Assert.Contains("/fqn", errorOutput);
+                StringAssert.Contains(errorOutput, "Usage:");
+                StringAssert.Contains(errorOutput, "/csv");
+                StringAssert.Contains(errorOutput, "/fqn");
             }
             finally
             {

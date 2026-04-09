@@ -825,14 +825,15 @@ namespace Tempo
         /// <summary>
         /// Download the specified package from nuget, load it, and return it as a TypeSet
         /// </summary>
-        internal static TypeSet LoadNugetHelper(
+        public static TypeSet LoadNugetHelper(
             string typeSetName,
             string cacheFolderName,
             bool useWinRTProjections,
             string packageName,
             Task task,
             string prereleasePrefix = "",
-            bool loadDependencies = false)
+            bool loadDependencies = false,
+            VersionRange versionRange = null)
         {
             DebugLog.Append($"Loading {packageName}, {prereleasePrefix}");
 
@@ -842,6 +843,7 @@ namespace Tempo
                 prereleasePrefix,
                 loadDependencies,
                 task,
+                versionRange: versionRange,
                 out var dependencyFilenames);
             if (packageLocationAndVersion == null)
             {
@@ -905,6 +907,7 @@ namespace Tempo
             string prereleaseTag,
             bool loadDependencies,
             Task task, // can be null
+            VersionRange versionRange,
             out string[] dependencyFilenames)
         {
             dependencyFilenames = null;
@@ -913,7 +916,11 @@ namespace Tempo
             try
             {
                 // Download the nupkg from nuget.org (or use the cached copy)
-                downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(packageName, task, prereleaseTag);
+                downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(
+                    packageName, 
+                    task, 
+                    prereleaseTag,
+                    versionRange);
                 downloadTask.Wait();
             }
             catch(Exception ex)

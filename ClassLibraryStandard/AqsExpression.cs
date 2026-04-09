@@ -69,7 +69,7 @@ namespace Tempo
         /// <summary>
         /// Worker to parse an AQS string
         /// </summary>
-        /// <param name="propagatingKey">Used by recursive calls from this method</param>
+        /// <param name="propagatingKeyParts">Used by recursive calls from this method</param>
         /// <returns></returns>
         bool TryParse(
             string[] tokenStrings,
@@ -77,7 +77,7 @@ namespace Tempo
             Func<string, bool> keyValidator,
             Func<string, object> customOperandCallback,
             out string errorMessage,
-            string propagatingKey = null)
+            string[] propagatingKeyParts = null)
         {
             // General structure is to convert the expression into post-fix notation.
             // Operator precedence is: NOT (highest), AND, OR
@@ -118,25 +118,47 @@ namespace Tempo
                 // Try to parse this as an operator
                 var op = ParseAqsOperator(tokenString);
 
+                // Bugbug: splitting first on whether it's an operator means you can't have a value that's the same as an operator.
+                // E.g. search on "Name:AND" fails parsing rather than finding "Android".
+                // I think it's structured like this because the expression can start with an operator (NOT),
+                // also operators can be implied ("Button IsClass:True").
+                // Still, I think this can be solved by making this "op == None && !expectingOperand"
                 if (op == AqsOperator.None)
                 {
                     // It's not an operator, so it's an operand
                     expectingOperand = false;
 
-                    // Typical case, no `propagatingKey`
-                    if (propagatingKey == null)
+                    // Typical case, no `propagatingKeyParts`
+                    if (propagatingKeyParts == null)
                     {
-                        if (operatorStack.MyPeekOrDefault() == AqsOperator.Matches)
+                        var topOp = operatorStack.MyPeekOrDefault();
+                        if (IsComparisonOperator(topOp))
                         {
-                            // Last thing we saw was a ":" operator, so this must be the right hand side
-                            // Add it to the expression as a Regex
-                            _expression.Add(new AqsToken(CreateRegex(tokenString)));
+                            // Last thing we saw was a comparison operator, so this must be the right hand side
+                            if (IsNumericComparisonOperator(topOp))
+                            {
+                            // For numeric operators, parse as integer
+                                if (int.TryParse(tokenString, out var numericValue))
+                                {
+                                    _expression.Add(new AqsToken(numericValue));
+                                }
+                                else
+                                {
+                                    // Can't parse as integer, add a placeholder that will evaluate to null
+                                    _expression.Add(AqsToken.CreateInvalidNumericRhs());
+                                }
+                            }
+                            else
+                            {
+                                // Add it to the expression as a Regex
+                                _expression.Add(new AqsToken(CreateRegex(tokenString)));
+                            }
 
-                            // We know the next iteration will push the ":" on, so put it on now,
+                            // We know the next iteration will push the comparison operator on, so put it on now,
                             // which will make it easier on next iteration to figure out if we 
                             // need to add an implicit AND
-                            var matches = operatorStack.Pop();
-                            _expression.Add(new AqsToken(matches));
+                            var comparisonOp = operatorStack.Pop();
+                            _expression.Add(new AqsToken(comparisonOp));
 
                             // Set this to indicate that if the next thing isn't an operator, to add an implicit AND
                             expectingAndor = true;
@@ -145,14 +167,14 @@ namespace Tempo
                         else
                         {
                             // This is a left-hand side. It could be the "a" in "a:1",
-                            // or could be in just "a". To figure out, peek ahead to see if there's a ":"
+                            // or could be just an "a". To figure out, peek ahead to see if there's a ":"
                             // (If not it's treated as a Custom operand
 
                             var customOperand = false;
 
                             var next = tokenStrings.MyPeekNext(tokenIndex);
                             var nextOp = ParseAqsOperator(next);
-                            if (nextOp != AqsOperator.Matches)
+                            if (!IsComparisonOperator(nextOp))
                             {
                                 // What we have is just an operand, no operator coming up,
                                 // treat it as if ":Custom" is coming up
@@ -161,17 +183,15 @@ namespace Tempo
                             else
                             {
                                 // This is the left-hand side of "a:1"
-                                // Break down the property path and validate each part.
-                                // This could be "key:value" or just "value". In the latter case the call to get the
-                                // value will fail.
-                                foreach (var part in tokenString.Split('.'))
+                                // Validate the first part of the property path.
+                                // For dotted paths like "Members.Count", only validate the first part (Members)
+                                // since subsequent parts may be collection properties like Count or Length.
+                                var firstPart = tokenString.Split('.')[0];
+                                if (!keyValidator(firstPart))
                                 {
-                                    if (!keyValidator(part))
-                                    {
-                                        errorMessage = $"Unknown key: {tokenString}";
-                                        SearchExpression.RaiseSearchExpressionError(errorMessage);
-                                        return false;
-                                    }
+                                    errorMessage = $"Unknown key: {tokenString}";
+                                    SearchExpression.RaiseSearchExpressionError(errorMessage);
+                                    return false;
                                 }
                             }
 
@@ -189,8 +209,8 @@ namespace Tempo
 
                             if (!customOperand)
                             {
-                                // Normal case of a lef-hand side
-                                _expression.Add(new AqsToken(tokenString));
+                                // Normal case of a left-hand side - split into parts during parse
+                                _expression.Add(new AqsToken(tokenString.Split('.')));
                             }
                             else
                             {
@@ -221,7 +241,7 @@ namespace Tempo
 
                     else
                     {
-                        // We have a `propagatingKey`
+                        // We have a `propagatingKeyParts`
                         //
                         // What this means is that we're propgating an operand. For example, in
                         //    a:(foo OR bar)
@@ -231,7 +251,7 @@ namespace Tempo
                         // In postfix notation this becomes
                         // "a, foo, MATCHES, a, bar, MATCHES, OR
 
-                        _expression.Add(new AqsToken(propagatingKey));           // LHS
+                        _expression.Add(new AqsToken(propagatingKeyParts));           // LHS
                         _expression.Add(new AqsToken(CreateRegex(tokenString))); // RHS
                         _expression.Add(new AqsToken(AqsOperator.Matches));      // :
                     }
@@ -275,21 +295,21 @@ namespace Tempo
                     if (op == AqsOperator.OpenParen)
                     {
                         // No support yet for nested parens (but should be easy?)
-                        if (propagatingKey != null)
-                        {
-                            errorMessage = "nested parens not supported";
-                            SearchExpression.RaiseSearchExpressionError(errorMessage);
-                            return false;
-                        }
+                            if (propagatingKeyParts != null)
+                            {
+                                errorMessage = "nested parens not supported";
+                                SearchExpression.RaiseSearchExpressionError(errorMessage);
+                                return false;
+                            }
 
                         // Figure out if this paren is for a subexpression or for a value
                         // I.e. is this something like `a:foo AND (b:bar OR c:baz)`
                         // or `a:foo AND b:(bar OR baz)`
-                        // If it's the latter, we'll set `operandToPropagate` to `b`,
+                        // If it's the latter, we'll set `partsToPropagate` to `b`,
                         // then in the recursive call it will convert to
                         // `(b:bar OR b:baz)`
 
-                        string operandToPropagate = null;
+                        string[] partsToPropagate = null;
                         var topOp = operatorStack.MyPeekOrDefault();
                         if (topOp == AqsOperator.Matches)
                         {
@@ -297,16 +317,16 @@ namespace Tempo
                             // `a:foo AND b:(bar OR baz)
 
                             // Remove `a` from the _expression, and `:` from the operatorStack, and pass the `a`
-                            // in to a recursive call as the propagatingKey parameter
+                            // in to a recursive call as the propagatingKeyParts parameter
 
-                            operandToPropagate = _expression.Last().Lhs;
+                            partsToPropagate = _expression.Last().LhsParts;
                             _expression.RemoveAt(_expression.Count - 1);
                             operatorStack.Pop();
                         }
 
                         // Advance past the open paren and recurse
                         ++tokenIndex;
-                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, customOperandCallback, out errorMessage, operandToPropagate))
+                        if (!TryParse(tokenStrings, ref tokenIndex, keyValidator, customOperandCallback, out errorMessage, partsToPropagate))
                         {
                             return false;
                         }
@@ -427,7 +447,7 @@ namespace Tempo
         /// </summary>
         /// <param name="propertyEvaluator">Look up a property value given its name</param>
         /// <param name="customEvaluator">Look up custom operands</param>
-        internal bool Evaluate(Func<string, string> propertyEvaluator, Func<object, bool> customEvaluator)
+        internal bool? Evaluate(Func<string, string> propertyEvaluator, Func<object, bool> customEvaluator)
         {
             if (_expression == null || _expression.Count == 0)
             {
@@ -514,15 +534,8 @@ namespace Tempo
 
                         if (bool1 == null || bool2 == null)
                         {
-                            // One of the values is unknown. We handle that by ignoring it, but how to ignore depends on the context.
-                            // For example if U is unknown, then
-                            // A || U and A && U should be A
-                            // A && U || B should be A || B
-                            // A || U && B should be A && B
-
-                            // If bool1 is null, then the result is bool2, which could be null
-                            // If bool2 is null, then the result is bool1 (which, if null, see previous line)
-                            result = bool1 == null ? bool2 : bool1;
+                            // If either operand is null, propgate as null
+                            result = null;
                         }
 
                         else if (token.Operator == AqsOperator.And)
@@ -541,22 +554,82 @@ namespace Tempo
                     else if (token.Operator == AqsOperator.Matches)
                     {
                         // Use the callback to get the value
-                        if (operand2.Lhs == null)
+                        if (operand2.LhsParts == null)
                         {
                             throw new AqsException("missing lhs");
                         }
-                        var actualValue = propertyEvaluator(operand2.Lhs);
+                        var actualValue = EvaluatePropertyPath(operand2.LhsParts, propertyEvaluator);
 
                         if (actualValue != null)
                         {
-                            var match = operand1.Rhs.Match(actualValue);
-                            var isMatch = match != Match.Empty;
-                            calculation.Push(new AqsToken(isMatch));
+                            if (operand1.Rhs == null)
+                            {
+                                // Regex is null (invalid regex), treat as no match
+                                calculation.Push(new AqsToken((bool?)null));
+                            }
+                            else
+                            {
+                                var match = operand1.Rhs.Match(actualValue);
+                                var isMatch = match != Match.Empty;
+                                calculation.Push(new AqsToken(isMatch));
+                            }
                         }
                         else
                         {
                             // Unrecognized key. That gets represented as null
                             calculation.Push(new AqsToken((bool?)null));
+                        }
+                    }
+
+                    else if (IsNumericComparisonOperator(token.Operator))
+                    {
+                        // Handle numeric comparison operators: :=, :<, :<=, :>, :>=
+                        if (operand2.LhsParts == null)
+                        {
+                            throw new AqsException("missing lhs");
+                        }
+
+                        // Check if RHS was successfully parsed as a number
+                        if (!operand1.HasNumericRhs || operand1.IsInvalidNumericRhs)
+                        {
+                            // RHS couldn't be parsed as an integer, evaluate to null
+                            calculation.Push(new AqsToken((bool?)null));
+                        }
+                        else
+                        {
+                            var actualValue = EvaluatePropertyPath(operand2.LhsParts, propertyEvaluator);
+
+                            if (actualValue != null && int.TryParse(actualValue, out var actualNumericValue))
+                            {
+                                bool? result = null;
+                                var expectedValue = operand1.NumericRhs;
+
+                                switch (token.Operator)
+                                {
+                                    case AqsOperator.Equals:
+                                        result = actualNumericValue == expectedValue;
+                                        break;
+                                    case AqsOperator.LessThan:
+                                        result = actualNumericValue < expectedValue;
+                                        break;
+                                    case AqsOperator.LessThanOrEqual:
+                                        result = actualNumericValue <= expectedValue;
+                                        break;
+                                    case AqsOperator.GreaterThan:
+                                        result = actualNumericValue > expectedValue;
+                                        break;
+                                    case AqsOperator.GreaterThanOrEqual:
+                                        result = actualNumericValue >= expectedValue;
+                                        break;
+                                }
+
+                                calculation.Push(new AqsToken(result));
+                            }
+                            else
+                            {
+                                // Unrecognized key or non-numeric actual value.
+                                calculation.Push(new AqsToken((bool?)null));
+                            }
                         }
                     }
                 }
@@ -569,16 +642,40 @@ namespace Tempo
             }
             else
             {
-                // Verbose code to enable easier breakpoints
-                if (calculation.Pop().Boolean == true)
+                // Return the result, which may be true, false, or null (unknown)
+                return calculation.Pop().Boolean;
+            }
+        }
+
+        /// <summary>
+        /// Evaluate a potentially multi-part property path like "Members.Count".
+        /// First tries the full path, then falls back to evaluating part by part.
+        /// The parts array is pre-split during parsing to avoid repeated splitting.
+        /// </summary>
+        static string EvaluatePropertyPath(string[] propertyPathParts, Func<string, string> propertyEvaluator)
+        {
+            // First, try the full property path (the propertyEvaluator may handle it directly)
+            var fullPath = propertyPathParts.Length == 1 ? propertyPathParts[0] : string.Join(".", propertyPathParts);
+            var result = propertyEvaluator(fullPath);
+            if (result != null)
+            {
+                return result;
+            }
+
+            // If that didn't work and it's a multi-part path, try evaluating part by part
+            if (propertyPathParts.Length > 1)
+            {
+                result = propertyEvaluator(propertyPathParts[0]);
+
+                for (int i = 1; i < propertyPathParts.Length && result != null; i++)
                 {
-                    return true;
-                }
-                else
-                {
-                    return false;
+                    // For subsequent parts, pass just the property name
+                    // The propertyEvaluator needs to track context to handle this
+                    result = propertyEvaluator(propertyPathParts[i]);
                 }
             }
+
+            return result;
         }
 
         public static bool IsOperator(string s)
@@ -613,9 +710,40 @@ namespace Tempo
 
                 case ":":
                     return AqsOperator.Matches;
+
+                case ":=":
+                    return AqsOperator.Equals;
+
+                case ":<":
+                    return AqsOperator.LessThan;
+
+                case ":<=":
+                    return AqsOperator.LessThanOrEqual;
+
+                case ":>":
+                    return AqsOperator.GreaterThan;
+
+                case ":>=":
+                    return AqsOperator.GreaterThanOrEqual;
             }
 
             return AqsOperator.None;
+        }
+
+
+        static bool IsComparisonOperator(AqsOperator op)
+        {
+            return op == AqsOperator.Matches
+                || IsNumericComparisonOperator(op);
+        }
+
+        static bool IsNumericComparisonOperator(AqsOperator op)
+        {
+            return op == AqsOperator.Equals
+                || op == AqsOperator.LessThan
+                || op == AqsOperator.LessThanOrEqual
+                || op == AqsOperator.GreaterThan
+                || op == AqsOperator.GreaterThanOrEqual;
         }
 
 
@@ -628,7 +756,12 @@ namespace Tempo
             Custom, // Case where no operator was given for an operand. (Unary operator)
             OpenParen,
             CloseParen,
-            Matches
+            Matches,
+            Equals,
+            LessThan,
+            LessThanOrEqual,
+            GreaterThan,
+            GreaterThanOrEqual
         }
 
         /// <summary>
@@ -661,11 +794,30 @@ namespace Tempo
             }
 
             /// <summary>
-            /// String for the left hand side
+            /// Numeric right hand side for comparison operators
             /// </summary>
-            public AqsToken(string lhs)
+            public AqsToken(int numericRhs)
             {
-                Lhs = lhs;
+                NumericRhs = numericRhs;
+                HasNumericRhs = true;
+            }
+
+            /// <summary>
+            /// Mark as an invalid numeric RHS (couldn't be parsed as integer)
+            /// </summary>
+            public static AqsToken CreateInvalidNumericRhs()
+            {
+                return new AqsToken() { IsInvalidNumericRhs = true };
+            }
+
+            private AqsToken() { }
+
+            /// <summary>
+            /// String array for the left hand side property path parts (pre-split on '.')
+            /// </summary>
+            public AqsToken(string[] lhsParts)
+            {
+                LhsParts = lhsParts;
             }
 
             public AqsToken(AqsOperator op)
@@ -686,7 +838,7 @@ namespace Tempo
             public object CustomOperand => _customOperandHolder?.CustomOperand;
 
 
-            public bool IsOperand { get { return Lhs != null || Rhs != null || IsCustomOperand; } }
+            public bool IsOperand { get { return LhsParts != null || Rhs != null || HasNumericRhs || IsInvalidNumericRhs || IsCustomOperand; } }
             public bool IsOperator => Operator != AqsOperator.None;
             public bool IsBoolean => !IsOperand && !IsOperator;
             public bool IsCustomOperand => _customOperandHolder != null;
@@ -694,13 +846,17 @@ namespace Tempo
 
             public override string ToString()
             {
-                if (Lhs != null)
+                if (LhsParts != null)
                 {
-                    return Lhs.ToString();
+                    return string.Join(".", LhsParts);
                 }
                 else if (Rhs != null)
                 {
                     return Rhs.ToString();
+                }
+                else if (HasNumericRhs)
+                {
+                    return NumericRhs.ToString();
                 }
                 else if (IsOperator)
                 {
@@ -717,8 +873,11 @@ namespace Tempo
             }
 
             // Only one of these is ever set
-            public string Lhs = null;
+            public string[] LhsParts = null;
             public Regex Rhs = null;
+            public int NumericRhs = 0;
+            public bool HasNumericRhs = false;
+            public bool IsInvalidNumericRhs = false;
             public bool? Boolean = null;
             public AqsOperator Operator = AqsOperator.None;
             private CustomOperandHolder _customOperandHolder;

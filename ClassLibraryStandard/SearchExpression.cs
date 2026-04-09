@@ -76,6 +76,8 @@ namespace Tempo
         /// <returns>Boolean evaluation of the AQS</returns>
         public bool? EvaluateAqsExpression(Func<string, string> propertyEvaluator, Func<CustomOperand,bool> customEvaluator)
         {
+            EnsureRegex();
+
             if (_aqsExpression == null)
             {
                 return null;
@@ -236,12 +238,25 @@ namespace Tempo
         AqsExpression TryParseAqs(string searchString, Func<string,object> customOperandCallback)
         {
             // Make sure that all AQS operators are space-separated
+            // Handle multi-character comparison operators first by replacing with placeholders
+            // to prevent the later ":" replacement from breaking them
+            searchString = searchString.Replace(":>=", "\x01GTE\x01");
+            searchString = searchString.Replace(":<=", "\x01LTE\x01");
+            searchString = searchString.Replace(":>", "\x01GT\x01");
+            searchString = searchString.Replace(":<", "\x01LT\x01");
+            searchString = searchString.Replace(":=", "\x01EQ\x01");
             searchString = searchString.Replace(":", " : ");
             searchString = searchString.Replace("(", " ( ");
             searchString = searchString.Replace(")", " ) ");
             searchString = searchString.Replace("!", " ! ");
             searchString = searchString.Replace("||", " || ");
             searchString = searchString.Replace("&&", " && ");
+            // Now restore the placeholders to actual operators with spaces
+            searchString = searchString.Replace("\x01GTE\x01", " :>= ");
+            searchString = searchString.Replace("\x01LTE\x01", " :<= ");
+            searchString = searchString.Replace("\x01GT\x01", " :> ");
+            searchString = searchString.Replace("\x01LT\x01", " :< ");
+            searchString = searchString.Replace("\x01EQ\x01", " := ");
 
             return AqsExpression.TryParse(
                 searchString,

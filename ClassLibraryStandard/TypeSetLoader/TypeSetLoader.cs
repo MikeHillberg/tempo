@@ -110,6 +110,7 @@ namespace Tempo
                     PrereleaseTag,
                     _loadDependentPackages,
                     task,
+                    versionRange: null,
                     out dependencyFilenames);
             }
             catch(Exception ex)

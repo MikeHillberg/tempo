@@ -12,6 +12,10 @@ namespace Tempo
 
         public static IEnumerable<AttributeTypeInfo> WrapCustomAttributes(IEnumerable<CustomAttributeViewModel> customAttributes)
         {
+            // bugbug
+            // In the c++ projection some attributes lose their arguments.
+            // Maybe just AttributeUsage, because both CLI and WinRT have one but they're different?
+
             foreach (var a in customAttributes)
             {
                 var sb = new StringBuilder();
@@ -41,6 +45,8 @@ namespace Tempo
                 }
 
                 var args = a.ConstructorArguments;
+                var namedArguments = a.NamedArguments;
+
                 if (args != null)
                 {
                     var guidString = a.TryParseGuidAttribute(); // String.Empty if it's not a Guid attribute
@@ -53,7 +59,7 @@ namespace Tempo
                     else
                     {
                         // Write out the constructor arguments in "(Type) value" format
-                        for(int i = 0; i < args.Count; i++)
+                        for (int i = 0; i < args.Count; i++)
                         {
                             var constructorArgument = args[i];
 
@@ -61,6 +67,7 @@ namespace Tempo
                                 ? "null"
                                 : constructorArgument.Value.ToString();
 
+                            // For enums, find the field with the matching value and use the field's name
                             if (constructorArgument.ArgumentType.IsEnum)
                             {
                                 foreach (var field in constructorArgument.ArgumentType.Fields)
@@ -78,14 +85,27 @@ namespace Tempo
                                 }
                             }
 
-                            sb.AppendFormat("({0}) ", constructorArgument.ArgumentType.Name);
+                            // Special case for AttributeTargets which in WinRT shows up as a .Net
+                            // type rather than the Windows AttributeTargets type.
+                            // Some attributes project wrong, e.g. ProtectedAttribute attribute targets projects as a 0, should be 1024 (Interface),
+                            // seems to align with attributes that are internal implementation details for WinRT?
+                            else if (constructorArgument.ArgumentType.FullName == "System.AttributeTargets"
+                                      && constructorArgument.Value is UInt32)
+                            {
+                                var targets = (System.AttributeTargets)(UInt32)constructorArgument.Value;
+                                argumentValue = targets.ToString();
+                            }
 
-                            if (constructorArgument.Value is UInt32)
-                                sb.AppendFormat("0x{0:X}", constructorArgument.Value);
-                            else
-                                sb.AppendFormat("{0}", argumentValue);
+                            // Otherwise just use the numeric value
+                            else if (constructorArgument.Value is UInt32)
+                            {
+                                argumentValue = constructorArgument.Value.ToString();
+                            }
 
-                            if (i < args.Count - 1)
+                            sb.AppendFormat($"({constructorArgument.ArgumentType.Name}) {argumentValue}");
+
+                            // Add a newline between constructor arguments and between constructor & named arguments
+                            if (i < args.Count - 1 || namedArguments.Count != 0)
                             {
                                 sb.AppendLine();
                             }
@@ -94,8 +114,7 @@ namespace Tempo
                 }
 
                 // Write out the named arguments in "Name=Value" format
-                var namedArguments = a.NamedArguments;
-                for(int i = 0; i < namedArguments.Count; i++)
+                for (int i = 0; i < namedArguments.Count; i++)
                 {
                     var property = a.NamedArguments[i];
 

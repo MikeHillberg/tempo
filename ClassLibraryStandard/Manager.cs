@@ -1095,8 +1095,13 @@ namespace Tempo
                     //    }
                     //}
 
-                    else
+                    if (searchExpression.HasAqsExpression)
                     {
+                        if(LastType == "CoreWebView2")
+                        {
+                            int j = 646;
+                        }
+
                         // Check for AQS conditions
                         var aqsResult = EvaluateAqsExpression(
                             searchExpression,
@@ -1114,7 +1119,13 @@ namespace Tempo
                         {
                             meaningfulMatch = true;
                         }
-                        else if (aqsResult == false)
+
+                        //else if (aqsResult == false)
+                        // If it failed to match move on.
+                        // If null is returned it means it didn't make sense; e.g.
+                        // checking for the Guid on a member (Guid can only be on a type)
+                        // So fail that case too
+                        else
                         {
                             meaningfulMatch = false;
 
