@@ -170,7 +170,7 @@ namespace Tempo
         {
             get
             {
-                return Assembly == typeof(Object).GetTypeInfo().Assembly;
+                return ReflectionAssembly == typeof(Object).GetTypeInfo().Assembly;
             }
         }
 
@@ -2353,7 +2353,12 @@ namespace Tempo
 
         //abstract public string FullName { get; }
         //abstract public string Namespace { get; }
-        abstract public Assembly Assembly { get; }
+        abstract public AssemblyViewModel Assembly { get; }
+
+        /// <summary>
+        /// The underlying System.Reflection.Assembly, if available. Used by reflection-based code paths.
+        /// </summary>
+        virtual public System.Reflection.Assembly ReflectionAssembly => null;
 
         abstract public string AssemblyLocation { get; }
 

@@ -149,6 +149,16 @@ namespace Tempo
                 });
             if (!shouldContinue)
                 return;
+
+            shouldContinue = TeachingTips.TryShow(
+                TeachingTipIds.Assemblies, _root, _assembliesButton,
+                () => new TeachingTip()
+                {
+                    Title = "Browse assemblies",
+                    Subtitle = "View the loaded assemblies and their metadata, references, and attributes",
+                });
+            if (!shouldContinue)
+                return;
         }
 
         (string Title, string Subtitle) PowerShellTipText = (
@@ -333,6 +343,11 @@ namespace Tempo
         private void ShowNamespaces(object sender, RoutedEventArgs e)
         {
             App.GotoNamespaces("");
+        }
+
+        private void ShowAssemblies(object sender, RoutedEventArgs e)
+        {
+            App.GotoAssemblies();
         }
 
         public Settings Settings { get { return Manager.Settings; } }

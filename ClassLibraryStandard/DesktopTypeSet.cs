@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -13,18 +13,18 @@ namespace Tempo
             : base(name, usesWinRTProjections, cacheDirectoryPath)
         { }
 
-        protected virtual string GetXmlFileName(Assembly a)
+        protected virtual string GetXmlFileName(AssemblyViewModel a)
         {
             int index = a.Location.LastIndexOf('.');
             return a.Location.Substring(0, index) + ".xml";
         }
-        public Dictionary<Assembly, XElement> Xml { get; private set; }
+        public Dictionary<string, XElement> Xml { get; private set; }
 
         public override IEnumerable<XElement> GetXmls(TypeViewModel type)
         {
             XElement xml = null;
-            if (Xml != null)
-                Xml.TryGetValue(type.Assembly, out xml);
+            if (Xml != null && type.Assembly != null)
+                Xml.TryGetValue(type.Assembly.Name, out xml);
             return new XElement[] { xml };
         }
 
@@ -66,12 +66,12 @@ namespace Tempo
                 if (File.Exists(name))
                 {
                     if (Xml == null)
-                        Xml = new Dictionary<Assembly, XElement>();
+                        Xml = new Dictionary<string, XElement>();
 
                     //Xml[a] = XElement.Load(new StreamReader(name));
                     XElement element = null;
                     element = XElement.Load(new StreamReader(name));
-                    Xml.Add(a, element);
+                    Xml.Add(a.Name, element);
                 }
             }
 
@@ -85,7 +85,7 @@ namespace Tempo
         public static string StaticName = "Wpf";
         public WpfTypeSet() : base(StaticName) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return Environment.ExpandEnvironmentVariables("%ProgramFiles%")
                 + @"\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\"
@@ -100,7 +100,7 @@ namespace Tempo
         public static string StaticName = "WinForms";
         public WinFormsTypeSet() : base(StaticName) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
             //return Environment.ExpandEnvironmentVariables("%ProgramFiles%")
@@ -115,7 +115,7 @@ namespace Tempo
         public static string StaticName = "XamForms";
         public XamFormsTypeSet() : base(StaticName) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
             //return Environment.ExpandEnvironmentVariables("%ProgramFiles%")
@@ -131,7 +131,7 @@ namespace Tempo
         public static string StaticName = "Cards";
         public CardsTypeSet() : base(StaticName) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
         }
@@ -142,7 +142,7 @@ namespace Tempo
         public static string StaticName = "WinUI2";
         public WinUI2TypeSet() : base(StaticName, true) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
         }
@@ -155,7 +155,7 @@ namespace Tempo
 
         public WinAppTypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
         }
@@ -167,7 +167,7 @@ namespace Tempo
         internal static readonly string StaticName = "WebView2";
         public WebView2TypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
         }
@@ -180,7 +180,7 @@ namespace Tempo
 
         public Win32TypeSet(bool useWinRTProjections) : base(StaticName, useWinRTProjections) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return null;
         }
@@ -241,7 +241,7 @@ namespace Tempo
     {
         public SilverlightTypeSet(string name) : base(name) { }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             var name = base.GetXmlFileName(a);
 

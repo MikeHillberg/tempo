@@ -23,7 +23,7 @@ namespace Tempo
         { 
         }
 
-        protected override string GetXmlFileName(Assembly a)
+        protected override string GetXmlFileName(AssemblyViewModel a)
         {
             return Environment.ExpandEnvironmentVariables("%ProgramFiles%")
                 + @"\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\"

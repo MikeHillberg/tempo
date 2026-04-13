@@ -168,7 +168,252 @@ namespace Tempo.Tests
             }
         }
 
+        [TestMethod]
+        public void TypeSetAssemblies_ArePopulated()
+        {
+            Assert.IsNotNull(_winAppSdkTypes.Assemblies);
+            Assert.AreEqual(34, _winAppSdkTypes.Assemblies.Count, $"TypeSet should have 34 assemblies loaded, got {_winAppSdkTypes.Assemblies.Count}: {string.Join(", ", _winAppSdkTypes.Assemblies.Select(a => a.Name))}");
+
+            // All assemblies should have names
+            foreach (var asm in _winAppSdkTypes.Assemblies)
+            {
+                Assert.IsFalse(string.IsNullOrEmpty(asm.Name), "Assembly should have a name");
+            }
+
+            // Should be sorted by name
+            var names = _winAppSdkTypes.Assemblies.Select(a => a.Name).ToList();
+            CollectionAssert.AreEqual(names.OrderBy(n => n).ToList(), names, "Assemblies should be sorted by name");
+        }
+
+        [TestMethod]
+        public void TypeSetAssemblies_ContainWinAppSdkAssembly()
+        {
+            // The WinAppSDK nupkg contains Microsoft.UI.Xaml among others
+            var uiXaml = _winAppSdkTypes.Assemblies.FirstOrDefault(a => a.Name == "Microsoft.UI.Xaml");
+            Assert.IsNotNull(uiXaml, $"Expected Microsoft.UI.Xaml assembly. Found: {string.Join(", ", _winAppSdkTypes.Assemblies.Select(a => a.Name))}");
+            Assert.IsNotNull(uiXaml.Version);
+        }
+
+        [TestMethod]
+        public void TypeViewModel_AssemblyProperty_IsPopulated()
+        {
+            // Get a known type and verify its Assembly property
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.ItemsPresenter");
+            var asm = type.Assembly;
+
+            Assert.IsNotNull(asm, "TypeViewModel.Assembly should not be null");
+            Assert.IsFalse(string.IsNullOrEmpty(asm.Name), "Assembly name should not be empty");
+            Assert.IsNotNull(asm.Version, "Assembly version should not be null");
+        }
+
+        [TestMethod]
+        public void AssemblyViewModel_ReferencedAssemblies_ArePopulated()
+        {
+            // Find an assembly that has referenced assemblies
+            var asmWithRefs = _winAppSdkTypes.Assemblies.FirstOrDefault(a => a.ReferencedAssemblies.Count > 0);
+            Assert.IsNotNull(asmWithRefs, $"At least one assembly should have references. Assembly count: {_winAppSdkTypes.Assemblies.Count}");
+
+            foreach (var r in asmWithRefs.ReferencedAssemblies)
+            {
+                Assert.IsFalse(string.IsNullOrEmpty(r.Name), "Referenced assembly should have a name");
+            }
+        }
+
+        [TestMethod]
+        public void AssemblyViewModel_CustomAttributes_ArePopulated()
+        {
+            // Not all assemblies have custom attributes (WinRT WinMDs often don't).
+            // Just verify the property is accessible without throwing.
+            foreach (var asm in _winAppSdkTypes.Assemblies)
+            {
+                var attrs = asm.CustomAttributes;
+                Assert.IsNotNull(attrs, $"CustomAttributes should not be null for {asm.Name}");
+            }
+        }
 
 
+
+        // ===== Member ViewModel Tests =====
+
+        [TestMethod]
+        public void ValidatePropertyViewModel()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.Button");
+            Assert.AreEqual(2, type.Properties.Count, $"Button should have exactly 2 direct properties, got {type.Properties.Count}");
+
+            var flyoutProp = type.Properties.First(p => p.Name == "Flyout");
+            Assert.AreEqual("Flyout", flyoutProp.Name);
+            Assert.AreEqual(MemberKind.Property, flyoutProp.MemberKind);
+            Assert.IsTrue(flyoutProp.IsPublic);
+            Assert.IsFalse(flyoutProp.IsStatic);
+            Assert.IsTrue(flyoutProp.CanRead);
+            Assert.IsTrue(flyoutProp.CanWrite);
+            Assert.AreEqual("FlyoutBase", flyoutProp.PropertyType.Name);
+            Assert.AreEqual("Button", flyoutProp.DeclaringType.Name);
+
+            var dpProp = type.Properties.First(p => p.Name == "FlyoutProperty");
+            Assert.AreEqual("DependencyProperty", dpProp.PropertyType.Name);
+            Assert.IsTrue(dpProp.CanRead);
+            Assert.IsFalse(dpProp.CanWrite);
+        }
+
+        [TestMethod]
+        public void ValidateMethodViewModel()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.StackPanel");
+            var methods = type.Methods;
+            Assert.AreEqual(3, methods.Count, $"StackPanel should have exactly 3 direct methods, got {methods.Count}");
+
+            var method = methods.First(m => m.Name == "GetInsertionIndexes");
+            Assert.AreEqual("GetInsertionIndexes", method.Name);
+            Assert.AreEqual(MemberKind.Method, method.MemberKind);
+            Assert.AreEqual("Void", method.ReturnType.Name);
+            Assert.AreEqual(3, method.Parameters.Count);
+            Assert.IsTrue(method.IsPublic);
+            Assert.IsFalse(method.IsStatic);
+            Assert.AreEqual("StackPanel", method.DeclaringType.Name);
+        }
+
+        [TestMethod]
+        public void ValidateMethodParameters()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.StackPanel");
+            var method = type.Methods.First(m => m.Name == "GetInsertionIndexes");
+
+            Assert.AreEqual(3, method.Parameters.Count);
+            Assert.AreEqual("position", method.Parameters[0].Name);
+            Assert.AreEqual("Point", method.Parameters[0].ParameterType.Name);
+            Assert.AreEqual("first", method.Parameters[1].Name);
+            Assert.AreEqual("second", method.Parameters[2].Name);
+        }
+
+        [TestMethod]
+        public void ValidateEventViewModel()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Input.AccessKeyManager");
+            Assert.AreEqual(1, type.Events.Count, $"AccessKeyManager should have exactly 1 event, got {type.Events.Count}");
+
+            var ev = type.Events[0];
+            Assert.AreEqual("IsDisplayModeEnabledChanged", ev.Name);
+            Assert.AreEqual(MemberKind.Event, ev.MemberKind);
+            Assert.AreEqual("TypedEventHandler`2", ev.EventHandlerType.Name);
+        }
+
+        [TestMethod]
+        public void ValidateConstructorViewModel()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.Button");
+            Assert.AreEqual(1, type.Constructors.Count, $"Button should have exactly 1 constructor, got {type.Constructors.Count}");
+
+            var ctor = type.Constructors[0];
+            Assert.AreEqual(MemberKind.Constructor, ctor.MemberKind);
+            Assert.AreEqual("Button", ctor.DeclaringType.Name);
+            Assert.AreEqual(0, ctor.Parameters.Count);
+        }
+
+        [TestMethod]
+        public void ValidateButtonHasNoDirectMethodsOrEvents()
+        {
+            // Button inherits everything — it has 0 direct methods and 0 direct events
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.Button");
+            Assert.AreEqual(0, type.Methods.Count, $"Button should have 0 direct methods, got {type.Methods.Count}");
+            Assert.AreEqual(0, type.Events.Count, $"Button should have 0 direct events, got {type.Events.Count}");
+        }
+
+        // ===== ModifierCodeString / TypeKind Tests =====
+
+        [TestMethod]
+        public void ValidateModifierCodeString_SealedClass()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.ItemsPresenter");
+            Assert.AreEqual("public", type.ModifierCodeString);
+            Assert.AreEqual(TypeKind.Class, type.TypeKind);
+            Assert.IsTrue(type.IsSealed);
+        }
+
+        [TestMethod]
+        public void ValidateModifierCodeString_Interface()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.IAnimatedVisual");
+            Assert.AreEqual(TypeKind.Interface, type.TypeKind);
+            Assert.AreEqual("public abstract", type.ModifierCodeString);
+        }
+
+        [TestMethod]
+        public void ValidateModifierCodeString_Enum()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Visibility");
+            Assert.AreEqual(TypeKind.Enum, type.TypeKind);
+            Assert.AreEqual("public", type.ModifierCodeString);
+        }
+
+        [TestMethod]
+        public void ValidateModifierCodeString_Struct()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.Windows.Security.AccessControl.AccessControlContract");
+            Assert.AreEqual(TypeKind.Struct, type.TypeKind);
+        }
+
+        [TestMethod]
+        public void ValidateModifierCodeString_Delegate()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Printing.AddPagesEventHandler");
+            Assert.IsTrue(type.IsDelegate);
+        }
+
+        // ===== Export Tests =====
+
+        [TestMethod]
+        public void ExportCsv_SingleType()
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.Controls.Button");
+            var csv = CopyExport.GetItemsAsCsv(new[] { type }, forceAllTypes: true);
+
+            var expected =
+                "Declaring type,Name,Member Kind,Namespace,Base type,Return type,Contract,Contract version,Version,\r\n"
+                + "\"Button\",,\"Class\",\"Microsoft.UI.Xaml.Controls\",\"ButtonBase\",,\"WinUIContract\",\" 1\",\"Microsoft.WindowsAppSDK.WinUI.nupkg\",\r\n";
+            Assert.AreEqual(expected, csv);
+        }
+
+        [TestMethod]
+        public void ExportCsv_MultipleTypes()
+        {
+            var types = _winAppSdkTypes.Types
+                .Where(t => t.Namespace == "Microsoft.UI.Xaml.Controls" && t.IsClass)
+                .Take(5)
+                .Cast<BaseViewModel>();
+
+            var csv = CopyExport.GetItemsAsCsv(types, forceAllTypes: true);
+            var lines = csv.Split("\r\n", System.StringSplitOptions.RemoveEmptyEntries);
+            Assert.AreEqual(6, lines.Length, $"Expected header + 5 data rows, got {lines.Length}: {string.Join(" | ", lines)}");
+
+            // Verify header
+            Assert.AreEqual("Declaring type,Name,Member Kind,Namespace,Base type,Return type,Contract,Contract version,Version,", lines[0]);
+
+            // Verify first data row
+            Assert.AreEqual(
+                "\"AnchorRequestedEventArgs\",,\"Class\",\"Microsoft.UI.Xaml.Controls\",,,\"WinUIContract\",\" 1\",\"Microsoft.WindowsAppSDK.WinUI.nupkg\",",
+                lines[1]);
+        }
+
+        [TestMethod]
+        public void ExportCsv_ExportHelperBasics()
+        {
+            var helper = new ExportHelper();
+            helper.AddKey("Name");
+            helper.AddKey("Value");
+
+            helper.CreateNewRow();
+            helper.AppendCell("Name", "Test1");
+            helper.AppendCell("Value", "123");
+
+            helper.CreateNewRow();
+            helper.AppendCell("Name", "Test2");
+            helper.AppendCell("Value", "456");
+
+            var csv = helper.ToString();
+            var expected = "Name,Value,\r\n\"Test1\",\"123\",\r\n\"Test2\",\"456\",\r\n";
+            Assert.AreEqual(expected, csv);
+        }
     }
 }

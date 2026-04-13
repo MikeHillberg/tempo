@@ -169,17 +169,18 @@ namespace Tempo
     internal enum TeachingTipIds
     {
         None               = 0,
-        CustomFiles        = 0x001,
-        Filters            = 0x002,
-        ApiScopeSwitcher   = 0x004,
-        CommandPrompt      = 0x008,
-        SearchSyntax       = 0x010,
-        CppProjection      = 0x020,
-        PowerShell         = 0x040,
-        NewWindow          = 0x080,
-        Win32Scope         = 0x100,
-        WebView2Scope      = 0x200,
-        DotNetScope        = 0x400,
-        DotNetWindowsScope = 0x800
+        CustomFiles        = 0x0001,
+        Filters            = 0x0002,
+        ApiScopeSwitcher   = 0x0004,
+        CommandPrompt      = 0x0008,
+        SearchSyntax       = 0x0010,
+        CppProjection      = 0x0020,
+        PowerShell         = 0x0040,
+        NewWindow          = 0x0080,
+        Win32Scope         = 0x0100,
+        WebView2Scope      = 0x0200,
+        DotNetScope        = 0x0400,
+        DotNetWindowsScope = 0x0800,
+        Assemblies         = 0x1000
     }
 }

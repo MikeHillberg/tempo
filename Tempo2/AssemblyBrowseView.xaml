@@ -1,0 +1,111 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.AssemblyBrowseView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
+          Padding="{StaticResource ContentMargin2}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="0,0,0,20">
+            <local:CommonCommandBar />
+            <local:HeadingBar Heading="Assemblies" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnDefinitions="300,*" ColumnSpacing="20">
+
+            <!-- Assembly list (primary) -->
+            <ListView x:Name="_assemblyList"
+                      ItemsSource="{x:Bind Assemblies, Mode=OneWay}"
+                      SelectionMode="Single"
+                      SelectedItem="{x:Bind SelectedAssembly, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:AssemblyViewModel">
+                        <TextBlock Text="{x:Bind Name}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <!-- Assembly detail (secondary) -->
+            <ScrollViewer Grid.Column="1" Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Padding="10">
+                <StackPanel x:Name="_detailPanel" Visibility="Collapsed" local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly, Mode=OneWay}">
+
+                    <local:HeadingBar Heading="{x:Bind SelectedAssembly.Name, Mode=OneWay}" SubSubHeading="assembly" />
+
+                    <!-- Full name -->
+                    <TextBlock Text="{x:Bind SelectedAssembly.FullName, Mode=OneWay}"
+                               TextWrapping="Wrap" IsTextSelectionEnabled="True" 
+                               Style="{ThemeResource BodyTextBlockStyle}" 
+                               Margin="0,10,0,0" />
+
+                    <!-- Metadata grid -->
+                    <Grid ColumnDefinitions="Auto,*" RowSpacing="2" Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.VersionString, Mode=OneWay}">Version</TextBlock>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind SelectedAssembly.VersionString, Mode=OneWay}" 
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.VersionString, Mode=OneWay}" IsTextSelectionEnabled="True" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.CultureDisplay, Mode=OneWay}">Culture</TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind SelectedAssembly.CultureDisplay, Mode=OneWay}" 
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.CultureDisplay, Mode=OneWay}" IsTextSelectionEnabled="True" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.PublicKeyToken, Mode=OneWay}">PublicKeyToken</TextBlock>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind SelectedAssembly.PublicKeyToken, Mode=OneWay}" 
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.PublicKeyToken, Mode=OneWay}" IsTextSelectionEnabled="True" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.TargetFramework, Mode=OneWay}">TargetFramework</TextBlock>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind SelectedAssembly.TargetFramework, Mode=OneWay}" 
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.TargetFramework, Mode=OneWay}" IsTextSelectionEnabled="True" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" FontWeight="Bold" Margin="0,8,10,0"
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.Location, Mode=OneWay}">Location</TextBlock>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind SelectedAssembly.Location, Mode=OneWay}" 
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.Location, Mode=OneWay}" Margin="0,8,0,0" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </Grid>
+
+                    <!-- Referenced assemblies -->
+                    <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _referencesList, Mode=OneWay}" Margin="0,15,0,0">
+                        <local:StackListHeaderItem>References</local:StackListHeaderItem>
+                        <ItemsControl x:Name="_referencesList" 
+                                      ItemsSource="{x:Bind ReferenceNames, Mode=OneWay}"
+                                      IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{x:Bind}" IsTextSelectionEnabled="True" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Custom attributes -->
+                    <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView, Mode=OneWay}" Margin="0,10,0,0">
+                        <local:StackListHeaderItem>Attributes</local:StackListHeaderItem>
+                        <local:AttributesView2
+                            x:Name="_attributesView"
+                            AttributeTypeInfos="{x:Bind AttributeInfos, Mode=OneWay}" />
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+
+</local:MySerializableControl>

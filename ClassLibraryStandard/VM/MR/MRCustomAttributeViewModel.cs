@@ -11,11 +11,19 @@ namespace Tempo
     {
         MrCustomAttribute _attribute;
         MRTypeViewModel _targetType;
+        TypeSet _typeSet;
 
         public MRCustomAttributeViewModel(MrCustomAttribute attribute, MRTypeViewModel targetType)
         {
             _attribute = attribute;
             _targetType = targetType;
+            _typeSet = targetType?.TypeSet;
+        }
+
+        public MRCustomAttributeViewModel(MrCustomAttribute attribute, TypeSet typeSet)
+        {
+            _attribute = attribute;
+            _typeSet = typeSet;
         }
 
         public override string ToString()
@@ -82,11 +90,11 @@ namespace Tempo
                         var value = arg.Value;
                         if (arg.Type.GetFullName() == "System.Type")
                         {
-                            value = MRTypeViewModel.GetFromCache(arg.Value as MrType, _targetType.TypeSet);
+                            value = MRTypeViewModel.GetFromCache(arg.Value as MrType, _typeSet);
                         }
 
                         _constructorArguments.Add(new MRCustomAttributeTypedArgumentViewModel(
-                                                                    MRTypeViewModel.GetFromCache(arg.Type, _targetType.TypeSet) as MRTypeViewModel,
+                                                                    MRTypeViewModel.GetFromCache(arg.Type, _typeSet) as MRTypeViewModel,
                                                                     value)
                                                                     as CustomAttributeTypedArgumentViewModel);
                     }
@@ -100,7 +108,7 @@ namespace Tempo
 
                         _namedArguments.Add(new MRCustomAttributeNamedArgumentViewModel(
                                                                     arg.Name,
-                                                                    MRTypeViewModel.GetFromCache(arg.Type, _targetType.TypeSet) as MRTypeViewModel,
+                                                                    MRTypeViewModel.GetFromCache(arg.Type, _typeSet) as MRTypeViewModel,
                                                                     value)
                                                                     as CustomAttributeNamedArgumentViewModel);
                     }

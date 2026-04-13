@@ -256,7 +256,18 @@ namespace Tempo
 
         public override bool IsInterface => Type.IsInterface;
 
-        public override Assembly Assembly => null;
+        AssemblyViewModel _assemblyViewModel;
+        public override AssemblyViewModel Assembly
+        {
+            get
+            {
+                if (_assemblyViewModel == null && Type.Assembly != null)
+                {
+                    _assemblyViewModel = new AssemblyViewModel(Type.Assembly, TypeSet);
+                }
+                return _assemblyViewModel;
+            }
+        }
         public override string AssemblyLocation => this.Type.AssemblyLocation;
 
         public override bool IsEnum

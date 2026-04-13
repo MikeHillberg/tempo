@@ -11,6 +11,12 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
+
+  <!-- Build output root: uses TEMPO_BUILD_ROOT env var if set -->
+  <PropertyGroup Condition="'$(TEMPO_BUILD_ROOT)' != ''">
+    <BaseOutputPath>$(TEMPO_BUILD_ROOT)\TempoPSProvider2\</BaseOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
     <ProjectReference Include="..\middleweight-reflection\MiddleweightReflection\MiddleweightReflection.csproj" />

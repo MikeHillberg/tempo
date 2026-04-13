@@ -123,7 +123,7 @@ namespace Tempo
             get { return false; }
         }
 
-        public List<Assembly> Assemblies { get; set; } = new List<Assembly>();
+        public List<AssemblyViewModel> Assemblies { get; set; } = new List<AssemblyViewModel>();
 
         public List<AssemblyLocation> AssemblyLocations { get; } = new List<AssemblyLocation>();
 

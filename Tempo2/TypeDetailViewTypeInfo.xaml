@@ -164,9 +164,16 @@
                         AttributeTypeInfos="{x:Bind local:AttributeTypeInfo.WrapCustomAttributes(TypeVM.CustomAttributes), Mode=OneWay}"/>
                 </StackPanel>
 
-                <StackPanel>
-                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
-                    <StackPanel>
+                <StackPanel Visibility="{x:Bind HasAssemblyViewModel(TypeVM), Mode=OneWay}">
+                    <local:StackListHeaderItem >Assembly</local:StackListHeaderItem>
+                    <StackPanel Spacing="5">
+                        <!-- Assembly name (click to navigate) -->
+                        <TextBlock>
+                            <Hyperlink Click="AssemblyClick">
+                                <Run Text="{x:Bind TypeVM.Assembly.Name, Mode=OneWay}" />
+                            </Hyperlink>
+                        </TextBlock>
+
                         <!-- DLL/winmd name -->
                         <TextBlock Text="{x:Bind ToFile(TypeVM.AssemblyLocation), Mode=OneWay}"
                                    TextWrapping="Wrap"
@@ -182,8 +189,13 @@
                                    IsTextSelectionEnabled="True"
                                    TextWrapping="Wrap"
                                    local:CollapseIfEmpty.IsEnabled="True" />
+                    </StackPanel>
+                </StackPanel>
 
-                        <TextBlock Margin="0,10,0,0"><Run Text="{x:Bind TypeVM.TotalMembers, Mode=OneWay}" IsTextScaleFactorEnabled="True" /> total members</TextBlock>
+                <StackPanel>
+                    <local:StackListHeaderItem >More</local:StackListHeaderItem>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,0"><Run Text="{x:Bind TypeVM.TotalMembers, Mode=OneWay}" IsTextScaleFactorEnabled="True" /> total members</TextBlock>
 
                         <TextBlock Margin="0,15,0,0"
                                    HorizontalAlignment="Left"><Hyperlink Click="ShowAllModelProperties_Click"

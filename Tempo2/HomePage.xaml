@@ -95,6 +95,16 @@
                             </StackPanel>
                         </Button>
 
+                        <Button x:Name="_assembliesButton" Click="ShowAssemblies"
+                                HorizontalAlignment="Stretch"
+                                ToolTipService.ToolTip="Browse loaded assemblies and their metadata">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <!-- Library icon -->
+                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8F1;"/>
+                                <TextBlock>Assemblies</TextBlock>
+                            </StackPanel>
+                        </Button>
+
                         <Button x:Name="_psButton" Click="GoToPSClick"
                                 HorizontalAlignment="Stretch" >
                             <ToolTipService.ToolTip>

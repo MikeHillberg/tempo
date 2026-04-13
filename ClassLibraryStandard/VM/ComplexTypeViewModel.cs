@@ -10,13 +10,7 @@ namespace Tempo
     // For things I don't support well yet:  CLR projection types and parameterized types
     public class ComplexTypeViewModel : TypeViewModel
     {
-        public override Assembly Assembly
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override AssemblyViewModel Assembly => null;
         public override string AssemblyLocation => null;
 
         public override TypeAttributes Attributes

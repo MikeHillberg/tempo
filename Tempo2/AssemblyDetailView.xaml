@@ -1,0 +1,89 @@
+﻿<local:MySerializableControl
+    x:Class="Tempo.AssemblyDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tempo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource SystemControlPageBackgroundChromeMediumLowBrush}"
+          Padding="{StaticResource ContentMargin2}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="0,0,0,20">
+            <local:CommonCommandBar />
+            <local:HeadingBar Heading="{x:Bind AssemblyVM.Name, Mode=OneWay}" SubSubHeading="assembly" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel>
+
+                <!-- Assembly metadata -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="{x:Bind FormatFullName(), Mode=OneWay}" 
+                               TextWrapping="Wrap" IsTextSelectionEnabled="True" 
+                               Style="{ThemeResource BodyTextBlockStyle}" />
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"  RowSpacing="2" Margin="0,8,0,0">
+                        <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   Visibility="{x:Bind HasVersion(), Mode=OneWay}">Version</TextBlock>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind FormatVersion(), Mode=OneWay}" IsTextSelectionEnabled="True"
+                                   Visibility="{x:Bind HasVersion(), Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   Visibility="{x:Bind HasCulture(), Mode=OneWay}">Culture</TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind FormatCulture(), Mode=OneWay}" IsTextSelectionEnabled="True"
+                                   Visibility="{x:Bind HasCulture(), Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   Visibility="{x:Bind HasPublicKeyToken(), Mode=OneWay}">PublicKeyToken</TextBlock>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind FormatPublicKeyToken(), Mode=OneWay}" 
+                                   IsTextSelectionEnabled="True"
+                                   Visibility="{x:Bind HasPublicKeyToken(), Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   Visibility="{x:Bind HasTargetFramework(), Mode=OneWay}">TargetFramework</TextBlock>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind FormatTargetFramework(), Mode=OneWay}" 
+                                   IsTextSelectionEnabled="True"
+                                   Visibility="{x:Bind HasTargetFramework(), Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" FontWeight="Bold" Margin="0,8,10,0"
+                                   Visibility="{x:Bind HasLocation(), Mode=OneWay}">Location</TextBlock>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind FormatLocation(), Mode=OneWay}" 
+                                   Margin="0,8,0,0" TextWrapping="Wrap" IsTextSelectionEnabled="True"
+                                   Visibility="{x:Bind HasLocation(), Mode=OneWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Referenced assemblies -->
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _referencesList, Mode=OneWay}">
+                    <local:StackListHeaderItem>References</local:StackListHeaderItem>
+                    <ItemsControl x:Name="_referencesList" 
+                                  ItemsSource="{x:Bind ReferenceNames, Mode=OneWay}"
+                                  IsTabStop="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{x:Bind}" IsTextSelectionEnabled="True" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Custom attributes -->
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView, Mode=OneWay}" 
+                            Margin="0,10,0,0">
+                    <local:StackListHeaderItem>Attributes</local:StackListHeaderItem>
+                    <local:AttributesView2
+                        x:Name="_attributesView"
+                        AttributeTypeInfos="{x:Bind AttributeInfos, Mode=OneWay}" />
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</local:MySerializableControl>

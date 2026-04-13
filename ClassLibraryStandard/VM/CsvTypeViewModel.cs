@@ -14,13 +14,7 @@ namespace Tempo
 
         public override bool IsProtected => false;
 
-        public override Assembly Assembly
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override AssemblyViewModel Assembly => null;
 
         public override bool IsInternal => throw new NotImplementedException();
         public override string AssemblyLocation => null;

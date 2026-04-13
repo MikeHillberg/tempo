@@ -155,6 +155,11 @@ namespace Tempo
                              orderby tvm.Name
                              select tvm).ToList();
 
+            typeSet.Assemblies = loadContext.LoadedAssemblies
+                .Select(a => new AssemblyViewModel(a, typeSet))
+                .OrderBy(a => a.Name)
+                .ToList();
+
             (typeSet as MRTypeSet).SetIsWinmd(true);
 
             typeSet.Namespaces = Types2Namespaces.Convert(typeSet.Types);
@@ -752,6 +757,11 @@ namespace Tempo
                                where tvm.Name != "<Module>"
                                orderby tvm.Name
                                select tvm).ToList();
+
+                typeSet.Assemblies = loadContext.LoadedAssemblies
+                    .Select(a => new AssemblyViewModel(a, typeSet))
+                    .OrderBy(a => a.Name)
+                    .ToList();
 
                 typeSet.Namespaces = Types2Namespaces.Convert(typeSet.Types);
 

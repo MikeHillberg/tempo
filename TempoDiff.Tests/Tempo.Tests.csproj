@@ -8,6 +8,11 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <!-- Build output root: uses TEMPO_BUILD_ROOT env var if set -->
+  <PropertyGroup Condition="'$(TEMPO_BUILD_ROOT)' != ''">
+    <BaseOutputPath>$(TEMPO_BUILD_ROOT)\TempoDiff.Tests\</BaseOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Examples\**" />
     <EmbeddedResource Remove="Examples\**" />

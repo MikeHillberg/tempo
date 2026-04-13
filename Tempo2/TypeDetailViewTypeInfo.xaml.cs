@@ -43,13 +43,22 @@ namespace Tempo
             App.GotoNamespaces(TypeVM.Namespace);
         }
 
+        private void AssemblyClick(object sender, RoutedEventArgs e)
+        {
+            if (TypeVM?.Assembly != null)
+            {
+                App.GotoAssembly(TypeVM.Assembly);
+            }
+        }
+
         string ToFileOrDirectory(string path, bool toFile)
         {
             // Nupkg paths are of the form:
             // Path/to/package.nupkg!path/to/assembly.dll
             // So first split out the nupkg prefix
             var parts = path.Split("!");
-            if(parts.Length > 1 )
+            bool isNupkg = parts.Length > 1;
+            if(isNupkg)
             {
                 path = parts[1];
             }
@@ -61,13 +70,20 @@ namespace Tempo
             }
             if (i == -1)
             {
+                if (!toFile && isNupkg)
+                {
+                    return "/" + path;
+                }
                 return path;
             }
 
             if(toFile)
                 return path.Substring(i + 1);
             else
-                return path.Substring(0, i);
+            {
+                var dir = path.Substring(0, i);
+                return isNupkg ? "/" + dir : dir;
+            }
         }
 
         string ToFile(string path)
@@ -120,6 +136,11 @@ namespace Tempo
         private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
             App.NavigateToReferencingTypes(this.TypeVM);
+        }
+
+        Visibility HasAssemblyViewModel(TypeViewModel typeVM)
+        {
+            return typeVM?.Assembly != null ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

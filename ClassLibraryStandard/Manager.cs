@@ -265,7 +265,7 @@ namespace Tempo
             return t.IsPublic
                    || Settings.InternalInterfaces
                    || t.Name == "INotifyPropertyChanged"
-                   || (t1 is Type) && t.Assembly.CodeBase.EndsWith(".winmd")
+                   || (t1 is Type) && t.ReflectionAssembly.CodeBase.EndsWith(".winmd")
                    || t.FullName.StartsWith("Windows.Foundation");
         }
         static public bool TypeMatchesSearch(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref DebuggaBool meaningfulMatch)
@@ -1097,11 +1097,6 @@ namespace Tempo
 
                     if (searchExpression.HasAqsExpression)
                     {
-                        if(LastType == "CoreWebView2")
-                        {
-                            int j = 646;
-                        }
-
                         // Check for AQS conditions
                         var aqsResult = EvaluateAqsExpression(
                             searchExpression,

@@ -1725,6 +1725,16 @@ namespace Tempo
             InternalNavigate(typeof(NamespaceView), initial);
         }
 
+        public static void GotoAssembly(AssemblyViewModel assemblyVM)
+        {
+            InternalNavigate(typeof(AssemblyDetailView), assemblyVM);
+        }
+
+        public static void GotoAssemblies()
+        {
+            InternalNavigate(typeof(AssemblyBrowseView), null);
+        }
+
         /// <summary>
         /// Show the search filters, either navigating or in a flyout
         /// </summary>
