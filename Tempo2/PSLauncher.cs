@@ -76,7 +76,7 @@ namespace Tempo
             // WPF is still using reflection, so we have actual Assemblies
             foreach (var assembly in Manager.CurrentTypeSet.Assemblies)
             {
-                if (!filenameList.Contains(assembly.Location))
+                if (assembly.Location != null && !filenameList.Contains(assembly.Location))
                 {
                     filenameList.Add(assembly.Location);
                 }

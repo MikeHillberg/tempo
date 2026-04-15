@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -17,7 +17,7 @@ namespace Tempo
             var shouldContinue = await App.EnsureApiScopeLoadedAsync();
             if (!shouldContinue) return;
 
-            Assemblies = Manager.CurrentTypeSet.Assemblies;
+            Assemblies = Manager.CurrentTypeSet?.Assemblies;
         }
 
         protected override object OnSuspending() => null;
@@ -60,11 +60,27 @@ namespace Tempo
                 return;
             }
 
-            ReferenceNames = selected.ReferencedAssemblies
-                .Select(r => $"{r.Name}, Version={r.Version}")
-                .ToList();
+            try
+            {
+                ReferenceNames = selected.ReferencedAssemblies
+                    .Select(r => $"{r.Name}, Version={r.Version}")
+                    .ToList();
+            }
+            catch(Exception ex)
+            {
+                UnhandledExceptionManager.ProcessException(ex);
+                ReferenceNames = new List<string>();
+            }
 
-            AttributeInfos = AttributeTypeInfo.WrapCustomAttributes(selected.CustomAttributes).ToList();
+            try
+            {
+                AttributeInfos = AttributeTypeInfo.WrapCustomAttributes(selected.CustomAttributes).ToList();
+            }
+            catch(Exception ex)
+            {
+                UnhandledExceptionManager.ProcessException(ex);
+                AttributeInfos = new List<AttributeTypeInfo>();
+            }
         }
 
         public List<string> ReferenceNames

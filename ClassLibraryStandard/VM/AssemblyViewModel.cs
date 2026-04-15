@@ -135,9 +135,17 @@ namespace Tempo
             {
                 if (_customAttributes == null)
                 {
-                    _customAttributes = _assembly.GetCustomAttributes()
-                        .Select(a => (CustomAttributeViewModel)new MRCustomAttributeViewModel(a, _typeSet))
-                        .ToList();
+                    try
+                    {
+                        _customAttributes = _assembly.GetCustomAttributes()
+                            .Select(a => (CustomAttributeViewModel)new MRCustomAttributeViewModel(a, _typeSet))
+                            .ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        UnhandledExceptionManager.ProcessException(ex);
+                        _customAttributes = new List<CustomAttributeViewModel>();
+                    }
                 }
                 return _customAttributes;
             }
@@ -156,16 +164,23 @@ namespace Tempo
                 if (!_targetFrameworkChecked)
                 {
                     _targetFrameworkChecked = true;
-                    foreach (var attr in CustomAttributes)
+                    try
                     {
-                        if (attr.Name == "TargetFrameworkAttribute")
+                        foreach (var attr in CustomAttributes)
                         {
-                            if (attr.ConstructorArguments.Count > 0)
+                            if (attr.Name == "TargetFrameworkAttribute")
                             {
-                                _targetFramework = attr.ConstructorArguments[0].Value as string;
+                                if (attr.ConstructorArguments != null && attr.ConstructorArguments.Count > 0)
+                                {
+                                    _targetFramework = attr.ConstructorArguments[0].Value as string;
+                                }
+                                break;
                             }
-                            break;
                         }
+                    }
+                    catch (Exception ex)
+                    { 
+                        UnhandledExceptionManager.ProcessException(ex);
                     }
                 }
                 return _targetFramework;

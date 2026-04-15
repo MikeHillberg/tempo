@@ -7,7 +7,6 @@
     <AssemblyName>TempoUwp</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <PackageCertificateKeyFile>Tempo2_StoreKey.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
@@ -21,8 +20,8 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <Platforms>x86;x64;arm64</Platforms>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <AppxPackageDir>C:\Users\MikeHill\source\repos\tempo\AppPackages\</AppxPackageDir>
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+    <AppxPackageDir>$(MSBuildProjectDirectory)\AppPackages\</AppxPackageDir>
     <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
     <!-- bugbug: remove this when picking up cswinrt with the bug fix -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

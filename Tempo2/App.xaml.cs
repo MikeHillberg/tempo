@@ -75,7 +75,9 @@ namespace Tempo
             // Figure out light/dark mode
             LoadThemeSetting();
 
+            // Listen for unhandled exceptions on the UI thread and internally
             UnhandledException += App_UnhandledException;
+            UnhandledExceptionManager.UnhandledException += UnhandledExceptionManager_UnhandledException;
 
             Settings.Changed += (_, e) =>
             {
@@ -733,7 +735,7 @@ namespace Tempo
             for (int i = 1; i < args.Length; i++)
             {
                 var arg = args[i].ToLower();
-                if(arg.Length == 0)
+                if (arg.Length == 0)
                 {
                     // Don't think this is possible, but don't crash
                     continue;
@@ -1149,11 +1151,11 @@ namespace Tempo
                 {
                     return "WebView2 APIs";
                 }
-                else if(IsDotNetScope)
+                else if (IsDotNetScope)
                 {
                     return "DotNet Runtime APIs";
                 }
-                else if(IsDotNetWindowsScope)
+                else if (IsDotNetWindowsScope)
                 {
                     return "DotNet Windows Desktop APIs";
                 }
@@ -1530,7 +1532,7 @@ namespace Tempo
                 sb.Remove(sb.Length - 1, 1);
             }
 
-            setting = sb.ToString(); 
+            setting = sb.ToString();
 
             // Write to the ApplicationDataContainer
             // There's a size limit on these values and it can throw
@@ -1920,6 +1922,14 @@ namespace Tempo
             e.Handled = true;
             var t = d.ShowAsync();
 #endif
+
+            e.Handled = true;
+            DebugLog.Append(e.Exception, "Unhandled exception");
+        }
+
+        private void UnhandledExceptionManager_UnhandledException(object sender, CommonUnhandledExceptionArgs e)
+        {
+            DebugLog.Append(e.Exception, $"Unhandled exception in {e.Location}");
         }
 
         static private RootFrame RootFrame
@@ -2296,9 +2306,9 @@ namespace Tempo
         /// </summary>
         public bool ShowingDocPage
         {
-            get 
-            { 
-                if(_showingDocPage == null)
+            get
+            {
+                if (_showingDocPage == null)
                 {
                     // Default to false, but read the setting
                     _showingDocPage = false;
@@ -2313,7 +2323,7 @@ namespace Tempo
                     }
                 }
 
-                return _showingDocPage == true; 
+                return _showingDocPage == true;
             }
 
             set

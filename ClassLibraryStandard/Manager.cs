@@ -265,7 +265,7 @@ namespace Tempo
             return t.IsPublic
                    || Settings.InternalInterfaces
                    || t.Name == "INotifyPropertyChanged"
-                   || (t1 is Type) && t.ReflectionAssembly.CodeBase.EndsWith(".winmd")
+                   || (t1 is Type) && t.ReflectionAssembly?.CodeBase?.EndsWith(".winmd") == true
                    || t.FullName.StartsWith("Windows.Foundation");
         }
         static public bool TypeMatchesSearch(TypeViewModel t, Regex filter, bool filterOnBaseTypes, Settings settings, ref bool abort, ref DebuggaBool meaningfulMatch)

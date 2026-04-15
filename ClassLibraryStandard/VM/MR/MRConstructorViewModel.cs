@@ -25,7 +25,7 @@ namespace Tempo
 
         public override bool IsFinal => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Final);
 
-        public override bool IsPrivate => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Private);
+        public override bool IsPrivate => (_constructor.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Private;
 
         public override bool IsSealed => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Final);
 
@@ -33,7 +33,7 @@ namespace Tempo
 
         public override bool IsStatic => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Static);
 
-        public override bool IsPublic => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Public);
+        public override bool IsPublic => (_constructor.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Public;
 
         public override bool IsVirtual => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Virtual);
 
@@ -52,13 +52,13 @@ namespace Tempo
             }
         }
 
-        public override bool IsFamily => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Family);
+        public override bool IsFamily => (_constructor.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Family;
 
-        public override bool IsFamilyOrAssembly => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.FamORAssem);
+        public override bool IsFamilyOrAssembly => (_constructor.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.FamORAssem;
 
-        public override bool IsFamilyAndAssembly => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.FamANDAssem);
+        public override bool IsFamilyAndAssembly => (_constructor.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.FamANDAssem;
 
-        public override bool IsAssembly => _constructor.MethodDefinition.Attributes.HasFlag(MethodAttributes.Assembly);
+        public override bool IsAssembly => (_constructor.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Assembly;
 
         public override MyMemberTypes MemberType => MyMemberTypes.Constructor;
 

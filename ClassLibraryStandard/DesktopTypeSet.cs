@@ -15,7 +15,9 @@ namespace Tempo
 
         protected virtual string GetXmlFileName(AssemblyViewModel a)
         {
+            if (a?.Location == null) return null;
             int index = a.Location.LastIndexOf('.');
+            if (index == -1) return null;
             return a.Location.Substring(0, index) + ".xml";
         }
         public Dictionary<string, XElement> Xml { get; private set; }
@@ -23,7 +25,7 @@ namespace Tempo
         public override IEnumerable<XElement> GetXmls(TypeViewModel type)
         {
             XElement xml = null;
-            if (Xml != null && type.Assembly != null)
+            if (Xml != null && type.Assembly?.Name != null)
                 Xml.TryGetValue(type.Assembly.Name, out xml);
             return new XElement[] { xml };
         }
@@ -44,7 +46,7 @@ namespace Tempo
                     {
                         _isWinmd = false;
                     }
-                    else if (Assemblies[0].Location.EndsWith(".winmd", StringComparison.InvariantCultureIgnoreCase))
+                    else if (Assemblies[0].Location?.EndsWith(".winmd", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         _isWinmd = true;
                     }
@@ -63,7 +65,7 @@ namespace Tempo
             {
                 var name = GetXmlFileName(a);
 
-                if (File.Exists(name))
+                if (name != null && a.Name != null && File.Exists(name))
                 {
                     if (Xml == null)
                         Xml = new Dictionary<string, XElement>();

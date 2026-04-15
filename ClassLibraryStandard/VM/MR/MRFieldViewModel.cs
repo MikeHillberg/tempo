@@ -39,7 +39,7 @@ namespace Tempo
             }
         }
 
-        public override bool IsPrivate => _field.Definition.Attributes.HasFlag(FieldAttributes.Private);
+        public override bool IsPrivate => (_field.Definition.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Private;
 
         public override FieldAttributes Attributes => _field.Definition.Attributes;
 
@@ -61,17 +61,17 @@ namespace Tempo
 
         public override TypeViewModel ReturnType => FieldType;
 
-        public override bool IsPublic => _field.Definition.Attributes.HasFlag(FieldAttributes.Public);
+        public override bool IsPublic => (_field.Definition.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Public;
 
         public override string Name => _field.GetName();
 
-        public override bool IsFamily => _field.Definition.Attributes.HasFlag(FieldAttributes.Family);
+        public override bool IsFamily => (_field.Definition.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Family;
 
-        public override bool IsFamilyOrAssembly => _field.Definition.Attributes.HasFlag(FieldAttributes.FamORAssem);
+        public override bool IsFamilyOrAssembly => (_field.Definition.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.FamORAssem;
 
-        public override bool IsFamilyAndAssembly => _field.Definition.Attributes.HasFlag(FieldAttributes.FamANDAssem);
+        public override bool IsFamilyAndAssembly => (_field.Definition.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.FamANDAssem;
 
-        public override bool IsAssembly => _field.Definition.Attributes.HasFlag(FieldAttributes.Assembly);
+        public override bool IsAssembly => (_field.Definition.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Assembly;
 
         public override bool GetIsSpecialName()
         {

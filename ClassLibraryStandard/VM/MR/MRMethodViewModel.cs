@@ -40,13 +40,13 @@ namespace Tempo
             return PrettyName;
         }
 
-        public override bool IsPrivate => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Private);
+        public override bool IsPrivate => (_method.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Private;
 
         public override bool IsSealed => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Final);
 
         public override bool IsStatic => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Static);
 
-        public override bool IsPublic => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Public);
+        public override bool IsPublic => (_method.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Public;
 
         public override bool IsVirtual => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Virtual);
 
@@ -82,13 +82,13 @@ namespace Tempo
         //    return false;
         //}
 
-        public override bool IsFamily => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Family);
+        public override bool IsFamily => (_method.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Family;
 
-        public override bool IsFamilyOrAssembly => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.FamORAssem);
+        public override bool IsFamilyOrAssembly => (_method.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.FamORAssem;
 
-        public override bool IsFamilyAndAssembly => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.FamANDAssem);
+        public override bool IsFamilyAndAssembly => (_method.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.FamANDAssem;
 
-        public override bool IsAssembly => _method.MethodDefinition.Attributes.HasFlag(MethodAttributes.Assembly);
+        public override bool IsAssembly => (_method.MethodDefinition.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Assembly;
 
         public override MyMemberTypes MemberType => MyMemberTypes.Method;
 

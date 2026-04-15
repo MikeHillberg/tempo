@@ -60,7 +60,7 @@
                 </StackPanel>
 
                 <!-- Referenced assemblies -->
-                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _referencesList, Mode=OneWay}">
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _referencesList, Mode=OneTime}">
                     <local:StackListHeaderItem>References</local:StackListHeaderItem>
                     <ItemsControl x:Name="_referencesList" 
                                   ItemsSource="{x:Bind ReferenceNames, Mode=OneWay}"
@@ -74,7 +74,7 @@
                 </StackPanel>
 
                 <!-- Custom attributes -->
-                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView, Mode=OneWay}" 
+                <StackPanel local:CollapseIfEmpty.IsEnabledFor="{x:Bind _attributesView, Mode=OneTime}" 
                             Margin="0,10,0,0">
                     <local:StackListHeaderItem>Attributes</local:StackListHeaderItem>
                     <local:AttributesView2

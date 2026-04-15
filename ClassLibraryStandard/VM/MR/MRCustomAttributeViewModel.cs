@@ -88,13 +88,16 @@ namespace Tempo
                     foreach (var arg in constructorArguments)
                     {
                         var value = arg.Value;
-                        if (arg.Type.GetFullName() == "System.Type")
+                        if (_typeSet != null && arg.Type.GetFullName() == "System.Type")
                         {
                             value = MRTypeViewModel.GetFromCache(arg.Value as MrType, _typeSet);
                         }
 
+                        var argType = _typeSet != null 
+                            ? MRTypeViewModel.GetFromCache(arg.Type, _typeSet) as MRTypeViewModel 
+                            : null;
                         _constructorArguments.Add(new MRCustomAttributeTypedArgumentViewModel(
-                                                                    MRTypeViewModel.GetFromCache(arg.Type, _typeSet) as MRTypeViewModel,
+                                                                    argType,
                                                                     value)
                                                                     as CustomAttributeTypedArgumentViewModel);
                     }
@@ -106,9 +109,12 @@ namespace Tempo
                     {
                         var value = arg.Value;
 
+                        var argType = _typeSet != null 
+                            ? MRTypeViewModel.GetFromCache(arg.Type, _typeSet) as MRTypeViewModel 
+                            : null;
                         _namedArguments.Add(new MRCustomAttributeNamedArgumentViewModel(
                                                                     arg.Name,
-                                                                    MRTypeViewModel.GetFromCache(arg.Type, _typeSet) as MRTypeViewModel,
+                                                                    argType,
                                                                     value)
                                                                     as CustomAttributeNamedArgumentViewModel);
                     }

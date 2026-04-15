@@ -915,6 +915,8 @@ namespace Tempo
 
                 if (IsPublic)
                     sb.Append("public ");
+                else if (IsProtected && IsInternal)
+                    sb.Append("protected internal ");
                 else if (IsInternal)
                     sb.Append("internal ");
                 else if (IsProtected)

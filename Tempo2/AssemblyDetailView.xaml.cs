@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -16,11 +17,27 @@ namespace Tempo
             AssemblyVM = parameter as AssemblyViewModel;
             if (AssemblyVM == null) return;
 
-            ReferenceNames = AssemblyVM.ReferencedAssemblies
-                .Select(r => $"{r.Name}, Version={r.Version}")
-                .ToList();
+            try
+            {
+                ReferenceNames = AssemblyVM.ReferencedAssemblies
+                    .Select(r => $"{r.Name}, Version={r.Version}")
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                UnhandledExceptionManager.ProcessException(ex);
+                ReferenceNames = new List<string>();
+            }
 
-            AttributeInfos = AttributeTypeInfo.WrapCustomAttributes(AssemblyVM.CustomAttributes).ToList();
+            try
+            {
+                AttributeInfos = AttributeTypeInfo.WrapCustomAttributes(AssemblyVM.CustomAttributes).ToList();
+            }
+            catch (Exception ex)
+            {
+                UnhandledExceptionManager.ProcessException(ex);
+                AttributeInfos = new List<AttributeTypeInfo>();
+            }
         }
 
         protected override object OnSuspending()
