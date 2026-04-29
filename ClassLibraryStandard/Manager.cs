@@ -670,7 +670,7 @@ namespace Tempo
 
                 //if (filterOnName && MatchesFilter(filter, TypeShortOrFullName(settings, t, filter), ref meaningfulMatch))
                 if (filterOnName
-                    && MatchesRegex(filter, t.PrettyName, ref meaningfulMatch))
+                    && MatchesRegex(filter, TypeShortOrFullName(settings, t, filter), ref meaningfulMatch))
                 {
                     t.SetNameMatchGeneration();
                     return true;

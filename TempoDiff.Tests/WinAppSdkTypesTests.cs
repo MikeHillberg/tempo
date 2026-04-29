@@ -673,5 +673,25 @@ namespace Tempo.Tests
             Assert.AreEqual(1, totalWithReferencedBy,
                 $"Expected 1 type with ReferencedBy > 0, got {totalWithReferencedBy}");
         }
+
+        [TestMethod]
+        public void SearchByFullName_FindsButton()
+        {
+            Manager.Settings.MemberKind = MemberKind.Type;
+            Manager.Settings.FilterOnFullName = true;
+
+            var searchExpression = new SearchExpression { RawValue = "Microsoft.UI.Xaml.Controls.Button" };
+            var members = Manager.GetMembers(searchExpression, iteration: 0);
+
+            Assert.IsNotNull(members);
+
+            var buttonType = members.OfType<TypeViewModel>()
+                .FirstOrDefault(t => t.FullName == "Microsoft.UI.Xaml.Controls.Button");
+            Assert.IsNotNull(buttonType, 
+                $"Expected to find Microsoft.UI.Xaml.Controls.Button. Found: {string.Join(", ", members.OfType<TypeViewModel>().Select(t => t.FullName))}");
+
+            Assert.AreEqual(1, members.Count, 
+                $"Expected 1 result for full name search. Found: {members.Count} - {string.Join(", ", members.OfType<TypeViewModel>().Select(t => t.FullName))}");
+        }
     }
 }
