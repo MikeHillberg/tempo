@@ -1217,4 +1217,10 @@ namespace Tempo
         Experimental
     }
 
+    public enum WebView2Channel
+    {
+        Stable,
+        Preview
+    }
+
 }

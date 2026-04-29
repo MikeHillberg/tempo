@@ -1016,6 +1016,12 @@ namespace Tempo
                         meaningfulMatch = true;
                         typeMatchesFilters = true;
                     }
+                    else
+                    {
+                        // AQS was inconclusive (null) — the properties didn't exist on this type.
+                        // Don't treat this type as a meaningful match.
+                        meaningfulMatch = false;
+                    }
                 }
 
 
@@ -1166,6 +1172,11 @@ namespace Tempo
                 }
                 else
                 {
+                    // Complicated check to figure out if we should return this type
+                    // We should return it if it's "interesting";
+                    // if it just didn't not match it's not interesting.
+                    // We will still return it though if a member matched in a meaningful way,
+                    // so that members are always grouped by type
                     if (typeMatches && !returnedType
                         && (typeMatchesFilters && (someMemberMatches || !Settings.IsMemberRequired())
                             || someMemberMatches
@@ -1173,6 +1184,7 @@ namespace Tempo
                             || Settings.IgnoreAllSettings)
                         && (Settings.ShowTypes || Settings.IgnoreAllSettings)
                         && (meaningfulTypeMatch || someMemberMatches || searchExpression.WhereCondition == null)
+                        && (!searchExpression.HasAqsExpression || someMemberMatches || meaningfulTypeMatch)
                         )
                     {
                         if (ShouldCountAsMatchingType(meaningfulTypeMatch, typeMatchesFilters, Settings))

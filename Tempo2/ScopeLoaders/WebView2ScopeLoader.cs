@@ -14,6 +14,7 @@
             if (_typeSetLoader == null)
             {
                 _typeSetLoader = new WebView2TypeSetLoader(
+                    App.Instance.WebView2Channel,
                     !App.Instance.UsingCppProjections);
             }
 

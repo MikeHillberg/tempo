@@ -29,6 +29,17 @@ namespace Tempo
 
         public override bool IsRef => ParameterType.Name.EndsWith("&") && !IsOut;
 
+        public override bool HasDefaultValue => _parameter.HasDefaultValue;
+
+        public override object DefaultValue
+        {
+            get
+            {
+                try { return _parameter.GetDefaultValue(); }
+                catch { return null; }
+            }
+        }
+
         //public override bool IsRetval => _parameter.Attributes.HasFlag(ParameterAttributes.Retval);
 
         public override bool IsPublic => true;

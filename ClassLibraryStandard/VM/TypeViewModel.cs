@@ -118,20 +118,28 @@ namespace Tempo
         }
         async void UpdateReferendedByAsync()
         {
-            int referenceIndex = ++Manager._referenceIndex;
-            IList<TypeViewModel> types = null;
-
-            types = await BackgroundHelper2.DoWorkAsync(() =>
+            TypeSet.IncrementPendingReferencedBy();
+            try
             {
-                return TypeReferenceHelper.FindReferencingTypes(this, referenceIndex).ToList();
-            });
+                int referenceIndex = ++Manager._referenceIndex;
+                IList<TypeViewModel> types = null;
+
+                types = await BackgroundHelper2.DoWorkAsync(() =>
+                {
+                    return TypeReferenceHelper.FindReferencingTypes(this, referenceIndex).ToList();
+                });
 
 
-            if (_referencedBy == null && referenceIndex == Manager._referenceIndex)
+                if (_referencedBy == null && referenceIndex == Manager._referenceIndex)
+                {
+                    _referencedBy = types;
+
+                    RaisePropertyChanged("ReferencedByAsync");
+                }
+            }
+            finally
             {
-                _referencedBy = types;
-
-                RaisePropertyChanged("ReferencedByAsync");
+                TypeSet.DecrementPendingReferencedBy();
             }
         }
 
@@ -2154,6 +2162,58 @@ namespace Tempo
         abstract public bool IsVoid { get; }
         abstract public bool IsByRef { get; }
         abstract public System.Reflection.GenericParameterAttributes GenericParameterAttributes { get; }
+
+        /// <summary>
+        /// Type constraints on this generic parameter (e.g. the types in "where T : IDisposable, Stream").
+        /// Returns empty if this is not a generic parameter or has no type constraints.
+        /// </summary>
+        virtual public IList<TypeViewModel> GenericConstraints => Array.Empty<TypeViewModel>();
+
+        /// <summary>
+        /// Gets a C#-style constraint clause string for this generic parameter.
+        /// E.g. "where T : class, IDisposable, new()" or null if no constraints.
+        /// </summary>
+        virtual public string GenericConstraintClause => null;
+
+        /// <summary>
+        /// True if this generic parameter has constraints.
+        /// </summary>
+        public bool HasGenericConstraintClause => GenericConstraintClause != null;
+
+        /// <summary>
+        /// Gets all constraint clauses for a generic type's parameters.
+        /// E.g. for Class1&lt;T1, T2&gt; where T1 : Stream where T2 : class,
+        /// returns ["where T1 : Stream", "where T2 : class"].
+        /// Returns empty if not a generic type or no parameters have constraints.
+        /// </summary>
+        virtual public IList<string> GenericParameterConstraintClauses
+        {
+            get
+            {
+                if (!IsGenericType) return Array.Empty<string>();
+                try
+                {
+                    var clauses = new List<string>();
+                    foreach (var arg in GetGenericArguments())
+                    {
+                        if (arg.IsGenericParameter && arg.GenericConstraintClause != null)
+                        {
+                            clauses.Add(arg.GenericConstraintClause);
+                        }
+                    }
+                    return clauses;
+                }
+                catch
+                {
+                    return Array.Empty<string>();
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if this generic type has any parameters with constraints.
+        /// </summary>
+        public bool HasGenericParameterConstraintClauses => GenericParameterConstraintClauses.Count > 0;
 
         TypeViewModel _baseType = null;
         bool _baseTypeChecked = false;

@@ -275,6 +275,16 @@ namespace Tempo
 
             GenerateTypeName(parameter.ParameterType, inlines, withUpArrow: true);
             inlines.Add($" {parameter.Name}");
+
+            if (parameter.HasDefaultValue)
+            {
+                var defaultStr = parameter.DefaultValueString ?? "null";
+                inlines.Add(new Run()
+                {
+                    Text = $" = {defaultStr}",
+                    Foreground = new SolidColorBrush() { Color = Colors.Blue }
+                });
+            }
         }
 
         static void InsertProperty(RichTextBlock textBlock, PropertyViewModel property)
@@ -421,6 +431,61 @@ namespace Tempo
             }
             else
             {
+                // Add generic constraint clauses if any
+                if (type.HasGenericParameterConstraintClauses)
+                {
+                    foreach (var arg in type.GetGenericArguments())
+                    {
+                        if (!arg.IsGenericParameter) continue;
+
+                        var attrs = arg.GenericParameterAttributes;
+                        var constraints = arg.GenericConstraints;
+                        var hasClass = attrs.HasFlag(System.Reflection.GenericParameterAttributes.ReferenceTypeConstraint);
+                        var hasStruct = attrs.HasFlag(System.Reflection.GenericParameterAttributes.NotNullableValueTypeConstraint);
+                        var hasNew = attrs.HasFlag(System.Reflection.GenericParameterAttributes.DefaultConstructorConstraint) && !hasStruct;
+                        var hasTypeConstraints = constraints.Count > 0;
+
+                        if (!hasClass && !hasStruct && !hasNew && !hasTypeConstraints) continue;
+
+                        // "where T : "
+                        textBlock.Inlines.Add(new Run()
+                        {
+                            Foreground = _blueBrush,
+                            Text = $"\n    where "
+                        });
+                        textBlock.Inlines.Add($"{arg.Name}");
+                        textBlock.Inlines.Add(new Run()
+                        {
+                            Foreground = _blueBrush,
+                            Text = " : "
+                        });
+
+                        var first2 = true;
+                        if (hasClass)
+                        {
+                            textBlock.Inlines.Add(new Run() { Foreground = _blueBrush, Text = "class" });
+                            first2 = false;
+                        }
+                        if (hasStruct)
+                        {
+                            textBlock.Inlines.Add(new Run() { Foreground = _blueBrush, Text = "struct" });
+                            first2 = false;
+                        }
+                        foreach (var constraint in constraints)
+                        {
+                            if (constraint.FullName == "System.ValueType") continue;
+                            if (!first2) textBlock.Inlines.Add(", ");
+                            GenerateTypeName(constraint, textBlock.Inlines);
+                            first2 = false;
+                        }
+                        if (hasNew)
+                        {
+                            if (!first2) textBlock.Inlines.Add(", ");
+                            textBlock.Inlines.Add(new Run() { Foreground = _blueBrush, Text = "new()" });
+                        }
+                    }
+                }
+
                 textBlock.Inlines.Add("\n{...}");
             }
 

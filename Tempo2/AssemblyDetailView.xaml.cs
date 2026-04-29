@@ -108,5 +108,10 @@ namespace Tempo
         {
             return !string.IsNullOrEmpty(AssemblyVM?.Location) ? Visibility.Visible : Visibility.Collapsed;
         }
+        string FormatMvid() => AssemblyVM?.ModelVersionIdString ?? "";
+        Visibility HasMvid()
+        {
+            return !string.IsNullOrEmpty(AssemblyVM?.ModelVersionIdString) ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 }

@@ -172,12 +172,63 @@ namespace Tempo
 
         public override bool IsModifiedType => Type.IsModifiedType;
 
+        GenericParameterAttributes _genericParameterAttributes = GenericParameterAttributes.None;
+        IList<TypeViewModel> _genericConstraints;
+        string _constraintClause;
+        bool _genericConstraintsLoaded;
+
+        void EnsureGenericConstraintsLoaded()
+        {
+            if (_genericConstraintsLoaded) return;
+            _genericConstraintsLoaded = true;
+            _genericConstraints = Array.Empty<TypeViewModel>();
+
+            if (!Type.IsGenericParameter) return;
+
+            try
+            {
+                if (!Type.TryGetGenericParameterAttributesAndConstraints(out var attrs, out var constraints))
+                    return;
+
+                _genericParameterAttributes = attrs;
+
+                // Build the GenericConstraints list
+                if (constraints.Length > 0)
+                {
+                    _genericConstraints = constraints
+                        .Select(c => GetFromCache(c, TypeSet))
+                        .ToList();
+                }
+
+                // Build the constraint clause string
+                var parts = new List<string>();
+                if (attrs.HasFlag(GenericParameterAttributes.ReferenceTypeConstraint))
+                    parts.Add("class");
+                if (attrs.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint))
+                    parts.Add("struct");
+                foreach (var c in _genericConstraints)
+                {
+                    if (c.FullName == "System.ValueType") continue;
+                    parts.Add(c.PrettyName);
+                }
+                if (attrs.HasFlag(GenericParameterAttributes.DefaultConstructorConstraint)
+                    && !attrs.HasFlag(GenericParameterAttributes.NotNullableValueTypeConstraint))
+                    parts.Add("new()");
+
+                if (parts.Count > 0)
+                {
+                    _constraintClause = $"where {Name} : {string.Join(", ", parts)}";
+                }
+            }
+            catch { }
+        }
+
         public override GenericParameterAttributes GenericParameterAttributes
         {
             get
             {
-                // bugbug
-                return GenericParameterAttributes.None;
+                EnsureGenericConstraintsLoaded();
+                return _genericParameterAttributes;
             }
         }
 
@@ -194,6 +245,24 @@ namespace Tempo
             get
             {
                 return Type.IsGenericParameter;
+            }
+        }
+
+        public override IList<TypeViewModel> GenericConstraints
+        {
+            get
+            {
+                EnsureGenericConstraintsLoaded();
+                return _genericConstraints;
+            }
+        }
+
+        public override string GenericConstraintClause
+        {
+            get
+            {
+                EnsureGenericConstraintsLoaded();
+                return _constraintClause;
             }
         }
 

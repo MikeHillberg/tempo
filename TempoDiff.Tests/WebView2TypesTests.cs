@@ -111,5 +111,33 @@ namespace Tempo.Tests
             Assert.IsFalse(typeVM.IsInternal, "CoreWebView2EnvironmentOptions should not be internal");
             Assert.AreEqual(MemberKind.Type, typeVM.MemberKind, "CoreWebView2EnvironmentOptions's MemberKind should be Type");
         }
+
+#if !DEBUG // Release only because it's expensive
+        [TestMethod]
+#endif
+        public void WebView2TypeSetLoader_StableChannel_Loads()
+        {
+            // Verify that the Stable channel loader can be created and loads types
+            var loader = new WebView2TypeSetLoader(WebView2Channel.Stable, useWinrtProjections: false);
+            var typeSet = loader.Load();
+
+            Assert.IsNotNull(typeSet, "Stable channel should load a type set");
+            Assert.IsNotNull(typeSet.Types, "Stable channel should have types");
+            Assert.IsTrue(typeSet.Types.Count > 0, "Stable channel should have at least some types");
+        }
+
+#if !DEBUG // Release only because it's expensive
+        [TestMethod]
+#endif
+        public void WebView2TypeSetLoader_PreviewChannel_Loads()
+        {
+            // Verify that the Preview channel loader can be created and loads types
+            var loader = new WebView2TypeSetLoader(WebView2Channel.Preview, useWinrtProjections: false);
+            var typeSet = loader.Load();
+
+            Assert.IsNotNull(typeSet, "Preview channel should load a type set");
+            Assert.IsNotNull(typeSet.Types, "Preview channel should have types");
+            Assert.IsTrue(typeSet.Types.Count > 0, "Preview channel should have at least some types");
+        }
     }
 }

@@ -397,7 +397,7 @@ namespace Tempo
             // If the property itself isn't deprecated, the getter might be
             // (Not sure what causes this to happen)
             var getter = Getter;
-            if(getter == null)
+            if (getter == null)
             {
                 // This shouldn't ever happen
                 return false;
@@ -896,9 +896,11 @@ namespace Tempo
     abstract public class ParameterViewModel : BaseViewModel
     {
         public override MemberKind MemberKind { get { return MemberKind.Any; } }
+
         public override string Version
         {
-            get { throw new NotImplementedException(); }
+            // Parameters don't have a version, but better to retur null than throw
+            get { return null; }
         }
 
         public int ParameterIndex { get; set; } = -1;
@@ -945,15 +947,18 @@ namespace Tempo
 
         public override bool IsFamilyOrAssembly
         {
-            get { throw new NotImplementedException(); }
+            // Not valid
+            get => false;
         }
         public override bool IsFamilyAndAssembly
         {
-            get { throw new NotImplementedException(); }
+            // Not valid
+            get => false;
         }
         public override bool IsAssembly
         {
-            get { throw new NotImplementedException(); }
+            // Not valid
+            get => false;
         }
 
         public override MyMemberTypes MemberType { get { return (MyMemberTypes)0; } }
@@ -963,9 +968,44 @@ namespace Tempo
 
         virtual public bool IsRef { get => false; }
 
+        /// <summary>
+        /// Whether this parameter has a default value.
+        /// </summary>
+        virtual public bool HasDefaultValue => false;
+
+        /// <summary>
+        /// The default value, or null if none. May be a boxed primitive, string, or null.
+        /// </summary>
+        virtual public object DefaultValue => null;
+
+        /// <summary>
+        /// Display string for the default value (e.g. "null", "0", "\"hello\"", "true").
+        /// Returns null if no default.
+        /// </summary>
+        virtual public string DefaultValueString
+        {
+            get
+            {
+                if (!HasDefaultValue)
+                {
+                    return null;
+                }
+
+                var val = DefaultValue;
+
+                if (val == null) return "null";
+                if (val is string s) return $"\"{s}\"";
+                if (val is char c) return $"'{c}'";
+                if (val is bool b) return b ? "true" : "false";
+
+                return val.ToString();
+            }
+        }
+
         public override bool IsStatic
         {
-            get { throw new NotImplementedException(); }
+            // Not valid
+            get => false;
         }
 
 
@@ -1068,9 +1108,9 @@ namespace Tempo
             get
             {
                 var isUnsafe = false;
-                foreach(var parameter in this.Parameters)
+                foreach (var parameter in this.Parameters)
                 {
-                    if(parameter.IsUnsafe)
+                    if (parameter.IsUnsafe)
                     {
                         isUnsafe = true;
                         break;
@@ -1556,7 +1596,7 @@ namespace Tempo
 
                 // Get the whole type page from GitHub
                 var reader = await this.DeclaringType.GetApiDocPageAsync();
-                if(reader == null)
+                if (reader == null)
                 {
                     return "";
                 }

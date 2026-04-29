@@ -528,6 +528,63 @@ namespace Tempo
                     }
                 });
 
+            // Accelerators that were previously only on CommonCommandBar XAML.
+            // Registered here so they also work when WebView2 has focus.
+
+            // Ctrl+M: Go to doc page
+            SetupAccelerator(
+                VirtualKey.M,
+                VirtualKeyModifiers.Control,
+                () => App.GoToMsdn());
+
+            // Ctrl+Shift+M: Copy rich text link
+            SetupAccelerator(
+                VirtualKey.M,
+                VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
+                () => App.CopyMsdnLink(asMarkdown: false));
+
+            // Ctrl+Shift+D: Copy markdown link
+            SetupAccelerator(
+                VirtualKey.D,
+                VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
+                () => App.CopyMsdnLink(asMarkdown: true));
+
+            // Ctrl+W: Windows scope
+            SetupAccelerator(
+                VirtualKey.W,
+                VirtualKeyModifiers.Control,
+                () => { if (!App.Instance.IsWinPlatformScope) { App.Instance.IsWinPlatformScope = true; App.Instance.GotoSearch(); } });
+
+            // Ctrl+K: WinAppSDK scope
+            SetupAccelerator(
+                VirtualKey.K,
+                VirtualKeyModifiers.Control,
+                () => { if (!App.Instance.IsWinAppScope) { App.Instance.IsWinAppScope = true; App.Instance.GotoSearch(); } });
+
+            // Ctrl+3: Win32 scope
+            SetupAccelerator(
+                (VirtualKey)51,
+                VirtualKeyModifiers.Control,
+                () => { if (!App.Instance.IsWin32Scope) { App.Instance.IsWin32Scope = true; App.Instance.GotoSearch(); } });
+
+            // Ctrl+2: WebView2 scope
+            SetupAccelerator(
+                (VirtualKey)50,
+                VirtualKeyModifiers.Control,
+                () => { if (!App.Instance.IsWebView2Scope) { App.Instance.IsWebView2Scope = true; App.Instance.GotoSearch(); } });
+
+            // Ctrl+Shift+N: New window
+            SetupAccelerator(
+                VirtualKey.N,
+                VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
+                () => App.LaunchNewWindow());
+
+            // F1: Help
+            SetupAccelerator(
+                VirtualKey.F1,
+                VirtualKeyModifiers.None,
+                () => App.Instance.ShowHelp());
+
             // Reset is Alt+Home to match Edge
             // A key accelerator doesn't work though if keyboard focus is in the ListView because of this issue:
             // https://github.com/microsoft/microsoft-ui-xaml/issues/9885
@@ -572,6 +629,27 @@ namespace Tempo
                 action();
             };
             RootFrame.KeyboardAccelerators.Add(accel);
+
+            // Keep a second copy so we can call from WebView2
+            _acceleratorActions[(key, modifiers)] = action;
+        }
+
+        // Copy of the accelerators so that we can call them from WebView2.
+        static Dictionary<(VirtualKey, VirtualKeyModifiers), Action> _acceleratorActions
+            = new Dictionary<(VirtualKey, VirtualKeyModifiers), Action>();
+
+        /// <summary>
+        /// Try to invoke a keyboard accelerator matching the given key and modifiers.
+        /// Used by WebView2 to forward keyboard shortcuts that it captures.
+        /// </summary>
+        internal static bool TryInvokeAccelerator(VirtualKey key, VirtualKeyModifiers modifiers)
+        {
+            if (_acceleratorActions.TryGetValue((key, modifiers), out var action))
+            {
+                action();
+                return true;
+            }
+            return false;
         }
 
 
@@ -935,6 +1013,7 @@ namespace Tempo
         // AppDataContainer setting names
         const string _currentScopeSettingName = "ApiScope";
         const string _winAppSdkChannelSettingName = "WinAppSdkChannel";
+        const string _webView2ChannelSettingName = "WebView2Channel";
 
         /// <summary>
         /// Persist the scope to settings
@@ -980,6 +1059,9 @@ namespace Tempo
 
             // Save the WinAppSDK channel name (preview/experimental/stable)
             settings.Values[_winAppSdkChannelSettingName] = WinAppSDKChannel.ToString();
+
+            // Save the WebView2 channel name (stable/preview)
+            settings.Values[_webView2ChannelSettingName] = WebView2Channel.ToString();
         }
 
         /// <summary>
@@ -1004,6 +1086,16 @@ namespace Tempo
                 {
                     _winAppSDKChannel = (WinAppSDKChannel)channel;
                     RaisePropertyChange(nameof(WinAppSDKChannel));
+                }
+            }
+
+            // Read the WebView2 channel name
+            if (settings.Values.TryGetValue(_webView2ChannelSettingName, out var webView2ChannelSetting))
+            {
+                if (Enum.TryParse(typeof(WebView2Channel), webView2ChannelSetting as string, out var wv2Channel))
+                {
+                    _webView2Channel = (WebView2Channel)wv2Channel;
+                    RaisePropertyChange(nameof(WebView2Channel));
                 }
             }
 
@@ -2203,6 +2295,33 @@ namespace Tempo
             }
         }
 
+
+        // Default to Stable, but this can be overwritten at startup from app settings
+        WebView2Channel _webView2Channel = WebView2Channel.Stable;
+
+        public WebView2Channel WebView2Channel
+        {
+            get { return _webView2Channel; }
+            set
+            {
+                if (_webView2Channel != value)
+                {
+                    _webView2Channel = value;
+                    RaisePropertyChange();
+
+                    // Reload WebView2
+                    Manager.WebView2TypeSet = null;
+                    _webView2ScopeLoader?.Close();
+                    _webView2ScopeLoader = new WebView2ScopeLoader();
+                    _webView2ScopeLoader.StartMakeCurrent();
+
+                    ApiScopeLoader.RaiseApiScopeInfoChanged();
+
+                    SaveCurrentScope();
+                }
+            }
+        }
+
         private static void MoveToMainAndFocusToSearch()
         {
             if (RootFrame.Content is HomePage)
@@ -2282,6 +2401,35 @@ namespace Tempo
             contentDialog.Title = "Exception";
             contentDialog.Content = e.Message;
             var t = contentDialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// Launch a new window (process) with the same state as the current one.
+        /// </summary>
+        internal static void LaunchNewWindow()
+        {
+            var encodedSearchText = System.Net.WebUtility.UrlEncode(App.Instance.SearchText);
+
+            string currentItemString = "";
+            var currentItem = App.CurrentItem;
+            if (currentItem != null)
+            {
+                if (currentItem is TypeViewModel currentType)
+                {
+                    currentItemString = $"type:{currentType.FullName}";
+                }
+                else if (currentItem is MemberViewModelBase currentMember)
+                {
+                    currentItemString = $"member:{currentMember.FullName}";
+                }
+            }
+            currentItemString = $"selection={System.Net.WebUtility.UrlEncode(currentItemString)}";
+
+            var settings = Manager.Settings.ToJson();
+            settings = $"settings={System.Net.WebUtility.UrlEncode(settings)}";
+
+            var uri = new Uri($"tempo:{encodedSearchText}?{currentItemString}&{settings}");
+            _ = Launcher.LaunchUriAsync(uri);
         }
 
         /// <summary>

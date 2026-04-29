@@ -1,6 +1,9 @@
+using System.Diagnostics;
 using System.IO;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuGet.Versioning;
 using Tempo;
@@ -414,6 +417,261 @@ namespace Tempo.Tests
             var csv = helper.ToString();
             var expected = "Name,Value,\r\n\"Test1\",\"123\",\r\n\"Test2\",\"456\",\r\n";
             Assert.AreEqual(expected, csv);
+        }
+
+        [TestMethod]
+        public void GetMembers_WithAqsMethodFilter_ExcludesTypesWithNoMatchingMembers()
+        {
+            ModelTests.ResetManagerState();
+            Manager.CurrentTypeSet = _winAppSdkTypes;
+            Manager.Settings.MemberKind = MemberKind.Any;
+            var searchExpression = new SearchExpression { RawValue = "IsMethod:True Parameters.Count:>0" };
+            var members = Manager.GetMembers(searchExpression, iteration: 0);
+
+            Assert.IsNotNull(members);
+            Assert.IsTrue(members.Count > 0, "Expected results for 'IsMethod:True Parameters.Count:>0'");
+
+            // The key invariant: every type in results should have at least one method with parameters after it
+            for (int i = 0; i < members.Count; i++)
+            {
+                if (members[i] is TypeViewModel type)
+                {
+                    var hasChildMethod = false;
+                    for (int j = i + 1; j < members.Count && !(members[j] is TypeViewModel); j++)
+                    {
+                        if (members[j] is MethodViewModel method && method.Parameters.Count > 0)
+                        {
+                            hasChildMethod = true;
+                            break;
+                        }
+                    }
+                    Assert.IsTrue(hasChildMethod,
+                        $"Type '{type.FullName}' in results has no matching methods with parameters after it");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void ValidateGenericConstraints()
+        {
+            // Check that GenericParameterAttributes and GenericConstraints are accessible
+            // WinRT types may not have many generic types, so iterate through what we have
+            var genericTypes = _winAppSdkTypes.Types
+                .Where(t => t.IsGenericType)
+                .ToList();
+
+            // Even if there are no generic types, verify the properties don't throw
+            foreach (var gt in genericTypes)
+            {
+                var args = gt.GetGenericArguments();
+                Assert.IsNotNull(args);
+                foreach (var arg in args)
+                {
+                    var attrs = arg.GenericParameterAttributes;
+                    var constraints = arg.GenericConstraints;
+                    Assert.IsNotNull(constraints);
+                }
+            }
+
+            // Verify GenericParameterConstraintClauses property is accessible on all types
+            foreach (var type in _winAppSdkTypes.Types.Take(100))
+            {
+                var clauses = type.GenericParameterConstraintClauses;
+                Assert.IsNotNull(clauses);
+            }
+        }
+
+        [TestMethod]
+        public void GetMembers_WithIsMethodOnly_ExcludesOrphanTypes()
+        {
+            ModelTests.ResetManagerState();
+            Manager.CurrentTypeSet = _winAppSdkTypes;
+            Manager.Settings.MemberKind = MemberKind.Any;
+            var searchExpression = new SearchExpression { RawValue = "IsMethod:True" };
+            var members = Manager.GetMembers(searchExpression, iteration: 0);
+
+            Assert.IsNotNull(members);
+            Assert.IsTrue(members.Count > 0);
+
+            // Every type should have at least one method after it
+            for (int i = 0; i < members.Count; i++)
+            {
+                if (members[i] is TypeViewModel type)
+                {
+                    var hasMethod = false;
+                    for (int j = i + 1; j < members.Count && !(members[j] is TypeViewModel); j++)
+                    {
+                        if (members[j] is MethodViewModel) { hasMethod = true; break; }
+                    }
+                    Assert.IsTrue(hasMethod,
+                        $"Type '{type.FullName}' has no matching methods after it");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void GetMembers_WithIsPropertyAndCanWrite_ReturnsWritableProperties()
+        {
+            ModelTests.ResetManagerState();
+            Manager.CurrentTypeSet = _winAppSdkTypes;
+            Manager.Settings.MemberKind = MemberKind.Any;
+            var searchExpression = new SearchExpression { RawValue = "IsProperty:True CanWrite:True" };
+            var members = Manager.GetMembers(searchExpression, iteration: 0);
+
+            Assert.IsNotNull(members);
+            Assert.IsTrue(members.Count > 0, "Expected results for writable properties");
+
+            // All non-type results should be writable properties
+            foreach (var member in members)
+            {
+                if (member is PropertyViewModel prop)
+                {
+                    Assert.IsTrue(prop.CanWrite,
+                        $"Property '{prop.DeclaringType.Name}.{prop.Name}' should be writable");
+                }
+            }
+        }
+
+#if !DEBUG // Release only because it's expensive
+        [TestMethod]
+#endif
+        public void ExerciseAllViewModelProperties()
+        {
+            // Enumerate all types, members, and parameters, calling ToString on every
+            // non-null property value. This flushes out crashes, asserts, and null refs
+            // in lazy property getters across the entire type set.
+
+            var errors = new System.Collections.Generic.List<string>();
+
+            foreach (var type in _winAppSdkTypes.Types)
+            {
+                ExerciseProperties(type, $"Type:{type.FullName}", errors);
+
+                foreach (var prop in type.Properties)
+                {
+                    ExerciseProperties(prop, $"Property:{type.Name}.{prop.Name}", errors);
+                }
+
+                foreach (var method in type.Methods)
+                {
+                    ExerciseProperties(method, $"Method:{type.Name}.{method.Name}", errors);
+
+                    foreach (var param in method.Parameters)
+                    {
+                        ExerciseProperties(param, $"Parameter:{type.Name}.{method.Name}.{param.Name}", errors);
+                    }
+                }
+
+                foreach (var ev in type.Events)
+                {
+                    ExerciseProperties(ev, $"Event:{type.Name}.{ev.Name}", errors);
+                }
+
+                foreach (var ctor in type.Constructors)
+                {
+                    ExerciseProperties(ctor, $"Constructor:{type.Name}", errors);
+
+                    foreach (var param in ctor.Parameters)
+                    {
+                        ExerciseProperties(param, $"CtorParameter:{type.Name}.{param.Name}", errors);
+                    }
+                }
+            }
+
+            // Report unique error types for debugging
+            var uniqueErrors = errors.GroupBy(e => e.Split(':')[1]?.Trim()).Select(g => $"{g.Key}: {g.Count()} occurrences").ToList();
+            Assert.AreEqual(0, errors.Count,
+                $"Found {errors.Count} errors ({uniqueErrors.Count} unique types):\n{string.Join("\n", uniqueErrors.Take(20))}\n\nFirst errors:\n{string.Join("\n", errors.Take(5))}");
+        }
+
+        static readonly HashSet<string> _skipProperties = new HashSet<string>
+        {
+            // ReturnedByAsync/ReferencedByAsync trigger async background work that crashes the test host
+            "ReturnedByAsync",
+            "ReferencedByAsync",
+
+            // FieldsAsync can trigger background work
+            "FieldsAsync",
+
+            // ApiDescriptionAsync hits GitHub and gets rate-limited
+            "ApiDescriptionAsync",
+            "ApiDesignNotes"
+        };
+
+        static void ExerciseProperties(object vm, string context, System.Collections.Generic.List<string> errors)
+        {
+            foreach (var prop in vm.GetType().GetProperties(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+            {
+                // Skip indexers
+                if (prop.GetIndexParameters().Length > 0) continue;
+
+                // Skip properties that trigger background work and crash the test host
+                if (_skipProperties.Contains(prop.Name)) continue;
+
+                var value = prop.GetValue(vm);
+                value?.ToString();
+            }
+        }
+
+//#if !DEBUG // Release only because it's expensive
+        [TestMethod]
+        [TestCategory("Expensive")]
+        public void ValidateReferencedByAsync()
+        {
+            // First wait for ReturnedByCalculated to be done (triggered by OnTypesUpdated)
+            var timeout = TimeSpan.FromSeconds(30);
+            var sw = Stopwatch.StartNew();
+            while (!_winAppSdkTypes.ReturnedByCalculated && sw.Elapsed < timeout)
+            {
+                Thread.Sleep(100);
+            }
+            Assert.IsTrue(_winAppSdkTypes.ReturnedByCalculated, "ReturnedBy should be calculated by now");
+
+            // Set up a semaphore to wait for all ReferencedBy calculations to complete
+            var semaphore = new ManualResetEventSlim(false);
+            _winAppSdkTypes.AllReferencedByCalculationsCompleted += (s, e) =>
+            {
+                semaphore.Set();
+            };
+
+            // Trigger ReferencedByAsync on all types (this starts async calculations)
+            foreach (var type in _winAppSdkTypes.Types)
+            {
+                _ = type.ReferencedByAsync;
+            }
+
+            // If nothing was pending (already calculated or no types), we're done
+            if (_winAppSdkTypes.PendingReferencedByCount > 0)
+            {
+                var completed = semaphore.Wait(timeout);
+                Assert.IsTrue(completed,
+                    $"Timed out waiting for ReferencedBy calculations. Pending: {_winAppSdkTypes.PendingReferencedByCount}");
+            }
+
+            // Now validate: check ReturnedByAsync counts for known types
+            var totalWithReturnedBy = _winAppSdkTypes.Types
+                .Count(t => t.ReturnedByAsync != null && t.ReturnedByAsync.Count > 0);
+            Assert.AreEqual(1022, totalWithReturnedBy,
+                $"Expected 1022 types with ReturnedBy > 0, got {totalWithReturnedBy}");
+
+            var depProp = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.DependencyProperty");
+            Assert.AreEqual(1850, depProp.ReturnedByAsync.Count,
+                $"DependencyProperty ReturnedBy count should be 1850, got {depProp.ReturnedByAsync.Count}");
+
+            var uiElement = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.UIElement");
+            Assert.AreEqual(158, uiElement.ReturnedByAsync.Count,
+                $"UIElement ReturnedBy count should be 158, got {uiElement.ReturnedByAsync.Count}");
+
+            var frameworkElement = _winAppSdkTypes.Types.First(t => t.FullName == "Microsoft.UI.Xaml.FrameworkElement");
+            Assert.AreEqual(70, frameworkElement.ReturnedByAsync.Count,
+                $"FrameworkElement ReturnedBy count should be 70, got {frameworkElement.ReturnedByAsync.Count}");
+
+            // Validate ReferencedByAsync
+            var totalWithReferencedBy = _winAppSdkTypes.Types
+                .Count(t => t.ReferencedByAsync != null && t.ReferencedByAsync.Count > 0);
+            Assert.AreEqual(1, totalWithReferencedBy,
+                $"Expected 1 type with ReferencedBy > 0, got {totalWithReferencedBy}");
         }
     }
 }

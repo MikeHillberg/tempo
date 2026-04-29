@@ -218,19 +218,35 @@
                         </StackPanel>
                     </RadioButton>
 
-                    <RadioButton Grid.Row="1" Grid.Column="1" 
+                    <Grid Grid.Row="1" Grid.Column="1"
+                          Grid.ColumnDefinitions="*,Auto">
+                        <RadioButton Grid.ColumnSpan="2"
                                  IsChecked="{x:Bind ((local:App)local:App.Current).IsWebView2Scope, Mode=TwoWay}" 
                                  VerticalAlignment="Top"
+                                     HorizontalAlignment="Left"
                                  GroupName="Test"
                                  DoubleTapped="ApiScope_RadioButton_DoubleTapped"
                                  AccessKey="2">
-                        <StackPanel>
-                            <TextBlock x:Name="_webView2ScopeLabel">WebView<Underline>2</Underline></TextBlock>
-                            <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
-                                WebView2 APIs, downloaded from nuget.org
-                            </TextBlock>
-                        </StackPanel>
-                    </RadioButton>
+                            <StackPanel>
+                                <TextBlock x:Name="_webView2ScopeLabel">WebView<Underline>2</Underline></TextBlock>
+                                <TextBlock Margin="0,10,0,0"  TextWrapping="Wrap" >
+                                    WebView2 APIs, downloaded from nuget.org
+                                </TextBlock>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <DropDownButton x:Name="_webView2VersionButton"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Top"
+                                        Content="{x:Bind local:App.Instance.WebView2Channel, Mode=OneWay}">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Click="SelectWebView2Stable">Stable</MenuFlyoutItem>
+                                    <MenuFlyoutItem Click="SelectWebView2Preview">Preview</MenuFlyoutItem>
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </Grid>
 
 
                     <RadioButton Grid.Row="2" Grid.Column="0" 

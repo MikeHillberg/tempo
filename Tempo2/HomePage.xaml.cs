@@ -888,6 +888,15 @@ namespace Tempo
         {
             App.Instance.WinAppSDKChannel = WinAppSDKChannel.Experimental;
         }
+
+        private void SelectWebView2Stable(object sender, RoutedEventArgs e)
+        {
+            App.Instance.WebView2Channel = WebView2Channel.Stable;
+        }
+        private void SelectWebView2Preview(object sender, RoutedEventArgs e)
+        {
+            App.Instance.WebView2Channel = WebView2Channel.Preview;
+        }
     }
 
     public class SplitFilename

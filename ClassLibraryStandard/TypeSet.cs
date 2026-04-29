@@ -447,6 +447,29 @@ namespace Tempo
         }
         public bool ReturnedByCalculated = false;
 
+        /// <summary>
+        /// Counter tracking how many ReferencedBy calculations are in progress.
+        /// When this goes to zero, AllReferencedByCalculationsCompleted is raised.
+        /// </summary>
+        int _pendingReferencedByCount = 0;
+        public event EventHandler AllReferencedByCalculationsCompleted;
+
+        internal void IncrementPendingReferencedBy()
+        {
+            Interlocked.Increment(ref _pendingReferencedByCount);
+        }
+
+        internal void DecrementPendingReferencedBy()
+        {
+            var count = Interlocked.Decrement(ref _pendingReferencedByCount);
+            if (count == 0)
+            {
+                AllReferencedByCalculationsCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public int PendingReferencedByCount => _pendingReferencedByCount;
+
         async public void LoadContracts()
         {
             //var dispatcher = Dispatcher.CurrentDispatcher;

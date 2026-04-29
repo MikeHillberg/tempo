@@ -89,6 +89,28 @@ namespace Tempo
         public string HashAlgorithm => _assembly.HashAlgorithm.ToString();
 
         /// <summary>
+        /// Module Version ID (MVID) — a GUID that uniquely identifies this build.
+        /// </summary>
+        public Guid ModelVersionId => _assembly.Mvid;
+
+        /// <summary>
+        /// MVID as a display string, or empty if not available.
+        /// </summary>
+        public string ModelVersionIdString
+        {
+            get
+            {
+                var mvid = _assembly.Mvid;
+                return mvid == Guid.Empty ? "" : mvid.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Module name (typically the filename).
+        /// </summary>
+        public string ModuleName => _assembly.ModuleName;
+
+        /// <summary>
         /// Whether the assembly is strong-named.
         /// </summary>
         public bool IsStrongNamed => !_assembly.PublicKey.IsEmpty;

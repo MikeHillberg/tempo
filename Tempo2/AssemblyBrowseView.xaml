@@ -53,6 +53,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
@@ -79,6 +80,11 @@
                                    local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.Location, Mode=OneWay}">Location</TextBlock>
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind SelectedAssembly.Location, Mode=OneWay}" 
                                    local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.Location, Mode=OneWay}" Margin="0,8,0,0" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.ModelVersionIdString, Mode=OneWay}">MVID</TextBlock>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind SelectedAssembly.ModelVersionIdString, Mode=OneWay}" 
+                                   local:CollapseIfEmpty.Source="{x:Bind SelectedAssembly.ModelVersionIdString, Mode=OneWay}" IsTextSelectionEnabled="True" />
                     </Grid>
 
                     <!-- Referenced assemblies -->

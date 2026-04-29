@@ -31,6 +31,25 @@ namespace Tempo
         private void CommonCommandBar_Loaded(object sender, RoutedEventArgs e)
         {
             ShowTeachingTips();
+            AddCodeBehindAccelerators();
+        }
+
+        /// <summary>
+        /// Add keyboard accelerators from code-behind so they show in the UI
+        /// (tooltips/menu hints), mirroring the app-level accelerators registered
+        /// via App.SetupAccelerator that actually handle the WebView2 path.
+        /// </summary>
+        private void AddCodeBehindAccelerators()
+        {
+            _goToMsdnItem.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = VirtualKey.M });
+            _copyRichTextItem.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, Key = VirtualKey.M });
+            _copyMarkdownItem.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, Key = VirtualKey.D });
+            _selectWindowsItem.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = VirtualKey.W });
+            _selectWinAppSdkItem.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = VirtualKey.K });
+            _selectWin32Item.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = (VirtualKey)51 });
+            _selectWebView2Item.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = (VirtualKey)50 });
+            _newWindowButton.KeyboardAccelerators.Add(new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, Key = VirtualKey.N });
+            _helpButton.KeyboardAccelerators.Add(new KeyboardAccelerator { Key = VirtualKey.F1 });
         }
 
 
@@ -410,37 +429,7 @@ namespace Tempo
         /// </summary>
         private void NewWindow(object sender, RoutedEventArgs e)
         {
-            // We'll launch "tempo:..." to launch the new process.
-            // Pass all the state as parameters. Basically
-            // "tempo:button?selection=type:Windows.UI.Xaml.Controls&settings=[json]"
-
-            // Encode the search string
-            var encodedSearchText = WebUtility.UrlEncode(App.Instance.SearchText);
-
-            // Pass the name of the current selected item so that that can be
-            // selected again in the new window
-
-            string currentItemString = "";
-            var currentItem = App.CurrentItem;
-            if(currentItem != null)
-            {
-                if(currentItem is TypeViewModel currentType)
-                {
-                    currentItemString = $"type:{currentType.FullName}";
-                }
-                else if(currentItem is MemberViewModelBase currentMember)
-                {
-                    currentItemString = $"member:{currentMember.FullName}";
-                }
-            }
-            currentItemString = $"selection={WebUtility.UrlEncode(currentItemString)}";
-
-            // Carry the Settings across as Json
-            var settings = Manager.Settings.ToJson();
-            settings = $"settings={WebUtility.UrlEncode(settings)}";
-
-            var uri = new Uri($"tempo:{encodedSearchText}?{currentItemString}&{settings}");
-            _ = Launcher.LaunchUriAsync(uri);
+            App.LaunchNewWindow();
         }
     }
 }

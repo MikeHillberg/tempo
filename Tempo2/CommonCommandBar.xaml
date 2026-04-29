@@ -50,25 +50,16 @@
 
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem Text="Go to doc page" Click="GoToMsdn"
+                        <MenuFlyoutItem x:Name="_goToMsdnItem" Text="Go to doc page" Click="GoToMsdn"
                                         ToolTipService.ToolTip="Go to this page on documents.microsoft.com">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control" Key="M" />
-                            </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
-                        <MenuFlyoutItem Text="Copy rich text link to clipboard" Click="CopyRichTextToClipboard"
+                        <MenuFlyoutItem x:Name="_copyRichTextItem" Text="Copy rich text link to clipboard" Click="CopyRichTextToClipboard"
                                         ToolTipService.ToolTip="Copy to the clipboard a rich text link to this page on documents.microsoft.com">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control,Shift" Key="M" />
-                            </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
-                        <MenuFlyoutItem Text="Copy markdown text link to clipboard" Click="CopyMarkdownToClipboard"
+                        <MenuFlyoutItem x:Name="_copyMarkdownItem" Text="Copy markdown text link to clipboard" Click="CopyMarkdownToClipboard"
                                         ToolTipService.ToolTip="Copy to the clipboard a markdown link to this page on documents.microsoft.com">
-                            <MenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control,Shift" Key="D" />
-                            </MenuFlyoutItem.KeyboardAccelerators>
                         </MenuFlyoutItem>
 
                         <MenuFlyoutSeparator/>
@@ -116,36 +107,21 @@
 
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <ToggleMenuFlyoutItem Text="Windows" Click="SelectWindowsApis" 
+                        <ToggleMenuFlyoutItem x:Name="_selectWindowsItem" Text="Windows" Click="SelectWindowsApis" 
                                               IsChecked="{x:Bind local:App.Instance.IsWinPlatformScope, Mode=OneWay}">
-                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control" Key="W" />
-                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
-                        <ToggleMenuFlyoutItem Text="WinAppSDK" Click="SelectWinAppSdkApis"
+                        <ToggleMenuFlyoutItem x:Name="_selectWinAppSdkItem" Text="WinAppSDK" Click="SelectWinAppSdkApis"
                                               IsChecked="{x:Bind local:App.Instance.IsWinAppScope, Mode=OneWay}">
-                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control" Key="K" />
-                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
-                        <ToggleMenuFlyoutItem Text="Win32" Click="SelectWin32Apis"
+                        <ToggleMenuFlyoutItem x:Name="_selectWin32Item" Text="Win32" Click="SelectWin32Apis"
                                               IsChecked="{x:Bind local:App.Instance.IsWin32Scope, Mode=OneWay}">
-                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
-                                <!-- This is Control+2, but we have to set Key to 51 rather than "3", 
-                                because "3" gets interpreted as a number, which is VirtualKey.RightButton
-                                (51 is VirtualKey.Number2) -->
-                                <KeyboardAccelerator Modifiers="Control" Key="51"/>
-                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
 
-                        <ToggleMenuFlyoutItem Text="WebView2" Click="SelectWebView2Apis"
+                        <ToggleMenuFlyoutItem x:Name="_selectWebView2Item" Text="WebView2" Click="SelectWebView2Apis"
                                               IsChecked="{x:Bind local:App.Instance.IsWebView2Scope, Mode=OneWay}">
-                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Modifiers="Control" Key="50"/>
-                            </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
 
                         <ToggleMenuFlyoutItem Text="DotNet Runtime" Click="SelectDotNetApis"
@@ -172,9 +148,6 @@
             </AppBarButton>
 
             <AppBarButton x:Name="_newWindowButton" Label="New Window" Icon="NewWindow" Click="NewWindow">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="N" Modifiers="Control,Shift"/>
-                </AppBarButton.KeyboardAccelerators>
                 <ToolTipService.ToolTip>
                     <local:ComplexToolTip
                         Title="{x:Bind NewWindowTipText.Item1}"
@@ -182,10 +155,7 @@
                 </ToolTipService.ToolTip>
             </AppBarButton>
 
-            <AppBarButton Label="Help" Icon="Help" Click="ShowHelp">
-                <AppBarButton.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="F1"/>
-                </AppBarButton.KeyboardAccelerators>
+            <AppBarButton x:Name="_helpButton" Label="Help" Icon="Help" Click="ShowHelp">
             </AppBarButton>
         </CommandBar>
     </Grid>

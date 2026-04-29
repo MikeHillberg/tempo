@@ -49,6 +49,64 @@ namespace Tempo
 
                 await _webView.EnsureCoreWebView2Async();
                 var wv2 = _webView.CoreWebView2;
+
+                // Inject JS on every page load to forward keyboard shortcuts back to the app.
+                // WebView2 captures keyboard input and doesn't bubble it out,
+                // so app accelerators (like Ctrl+Shift+M) don't work when focus is in the WebView.
+                var accelScript = @"
+                    document.addEventListener('keydown', (e) => {
+                        // Only send when a modifier is held and a non-modifier key is pressed
+                        const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta'];
+                        if ((e.ctrlKey || e.altKey) && !modifierKeys.includes(e.key)) {
+                            window.chrome.webview.postMessage(JSON.stringify({
+                                type: 'accel',
+                                keyCode: e.keyCode,
+                                ctrl: e.ctrlKey,
+                                shift: e.shiftKey,
+                                alt: e.altKey
+                            }));
+                        }
+                    });
+                ";
+
+                // Register for all future navigations
+                await wv2.AddScriptToExecuteOnDocumentCreatedAsync(accelScript);
+
+                // Also inject into the current page immediately
+                await wv2.ExecuteScriptAsync(accelScript);
+
+                wv2.WebMessageReceived += (s, args) =>
+                {
+                    try
+                    {
+                        // Use TryGetWebMessageAsString because the JS sends a string via JSON.stringify().
+                        // WebMessageAsJson would double-encode it as a JSON string value.
+                        var message = args.TryGetWebMessageAsString();
+                        if (string.IsNullOrEmpty(message))
+                            return;
+
+                        var json = System.Text.Json.JsonDocument.Parse(message);
+                        var root = json.RootElement;
+
+                        if (root.GetProperty("type").GetString() != "accel")
+                            return;
+
+                        var keyCode = root.GetProperty("keyCode").GetInt32();
+                        var ctrl = root.GetProperty("ctrl").GetBoolean();
+                        var shift = root.GetProperty("shift").GetBoolean();
+                        var alt = root.GetProperty("alt").GetBoolean();
+
+                        var modifiers = VirtualKeyModifiers.None;
+                        if (ctrl) modifiers |= VirtualKeyModifiers.Control;
+                        if (shift) modifiers |= VirtualKeyModifiers.Shift;
+                        if (alt) modifiers |= VirtualKeyModifiers.Menu;
+
+                        var virtualKey = (VirtualKey)keyCode;
+
+                        App.TryInvokeAccelerator(virtualKey, modifiers);
+                    }
+                    catch { }
+                };
             }
         }
 

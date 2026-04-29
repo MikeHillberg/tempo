@@ -28,7 +28,7 @@
                                TextWrapping="Wrap" IsTextSelectionEnabled="True" 
                                Style="{ThemeResource BodyTextBlockStyle}" />
 
-                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"  RowSpacing="2" Margin="0,8,0,0">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"  RowSpacing="2" Margin="0,8,0,0">
                         <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
                                    Visibility="{x:Bind HasVersion(), Mode=OneWay}">Version</TextBlock>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind FormatVersion(), Mode=OneWay}" IsTextSelectionEnabled="True"
@@ -56,6 +56,12 @@
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind FormatLocation(), Mode=OneWay}" 
                                    Margin="0,8,0,0" TextWrapping="Wrap" IsTextSelectionEnabled="True"
                                    Visibility="{x:Bind HasLocation(), Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" FontWeight="Bold" Margin="0,0,10,0"
+                                   Visibility="{x:Bind HasMvid(), Mode=OneWay}">MVID</TextBlock>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind FormatMvid(), Mode=OneWay}" 
+                                   IsTextSelectionEnabled="True"
+                                   Visibility="{x:Bind HasMvid(), Mode=OneWay}" />
                     </Grid>
                 </StackPanel>
 
