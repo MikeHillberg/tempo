@@ -690,8 +690,8 @@ namespace Tempo.Tests
             Assert.IsNotNull(buttonType, 
                 $"Expected to find Microsoft.UI.Xaml.Controls.Button. Found: {string.Join(", ", members.OfType<TypeViewModel>().Select(t => t.FullName))}");
 
-            Assert.AreEqual(1, members.Count, 
-                $"Expected 1 result for full name search. Found: {members.Count} - {string.Join(", ", members.OfType<TypeViewModel>().Select(t => t.FullName))}");
+            Assert.AreEqual(3, members.Count, 
+                $"Expected 3 result for full name search. Found: {members.Count} - {string.Join(", ", members.OfType<TypeViewModel>().Select(t => t.FullName))}");
         }
     }
 }

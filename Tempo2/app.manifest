@@ -10,6 +10,9 @@
       -->
       <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/PM</dpiAware>
       <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
+
+      <!-- When launched from a console (ps/cmd), don't attach to it automatically, but maybe we will at runtime -->
+      <consoleAllocationPolicy xmlns="http://schemas.microsoft.com/SMI/2024/WindowsSettings">Detached</consoleAllocationPolicy>
     </windowsSettings>
   </application>
 </assembly>

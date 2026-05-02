@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,60 +12,60 @@ namespace Tempo
     internal class PSLauncher
     {
         /// <summary>
-        /// Launch PowerShell
+        /// Create a ProcessStartInfo configured to launch pwsh with the Tempo drive.
         /// </summary>
-        async static internal void GoToPS(XamlRoot xamlRoot)
+        static internal ProcessStartInfo CreatePwshStartInfo(
+            string typeSetName,
+            bool useWinRTProjections,
+            IEnumerable<string> filenames)
+        {
+            var psexe = "pwsh.exe";
+            var startInfo = new ProcessStartInfo(psexe);
+
+            startInfo.WorkingDirectory = Package.Current.InstalledLocation.Path;
+            startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:\Types";
+
+            var pipeName = $"TempoPipe_{Guid.NewGuid()}";
+            startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey] = pipeName;
+            startInfo.Environment["Tempo_TypeSetName"] = typeSetName;
+            startInfo.Environment[TempoPSProvider.TempoPSProvider.UseWinRTProjectionsKey]
+                = useWinRTProjections ? "1" : "0";
+
+            var builder = new StringBuilder();
+            foreach (var filename in filenames)
+            {
+                builder.Append($"{filename};");
+            }
+            startInfo.Environment[TempoPSProvider.TempoPSProvider.FilenamesKey] = builder.ToString();
+
+            startInfo.UseShellExecute = false;
+
+            return startInfo;
+        }
+
+        /// <summary>
+        /// Launch PowerShell from the UI (waits for API scope to load, shows error dialog on failure)
+        /// </summary>
+        async static internal void LaunchPSFromUI(XamlRoot xamlRoot)
         {
             DebugLog.Append("Launching PowerShell");
 
             var shouldContinue = await App.EnsureApiScopeLoadedAsync();
             if (!shouldContinue)
             {
-                // User canceled the loading dialog, nothing to search
                 return;
             }
 
-
-            // Hope that pwsh (PSCore) is in the path
-            var psexe = "pwsh.exe";
-            var startInfo = new ProcessStartInfo(psexe);
-
-            // Need to be in the Tempo directory in order to find everything
-            // bugbug: Would be a little better to be in the User directory, but add Tempo to the path?
-            startInfo.WorkingDirectory = Package.Current.InstalledLocation.Path;
-            DebugLog.Append(startInfo.WorkingDirectory);
-
-            // Run the startup script to load the Tempo: drive, then cd to it
-            // Bypassing the execution policy check allows scripts to run
-            startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:\Types";
-            DebugLog.Append(startInfo.Arguments);
-
-            // Pass in the exe name so it can call back
-            var pipeName = $"TempoPipe_{Guid.NewGuid().ToString()}";
-            startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey] = pipeName;
-            startInfo.Environment["Tempo_TypeSetName"] = Manager.CurrentTypeSet.Name;
-
-            // Pass in whether to be in C# or C++ mode
-            startInfo.Environment[TempoPSProvider.TempoPSProvider.UseWinRTProjectionsKey]
-                = App.Instance.UsingCppProjections ? "0" : "1";
-
-            // Figure out the filenames of what we're looking at.
-            // For ML type sets it's in AssemblyLocations
+            // Gather filenames from the current type set
             var filenameList = new List<string>();
-
-            // bugbug: CurrentTypeSet can be null
-            DebugLog.Append(Manager.CurrentTypeSet.Name);
             foreach (var assemblyLocation in Manager.CurrentTypeSet.AssemblyLocations)
             {
-                // AssemblyLocation has a path that's either an actual file path
-                // or a relative path within a nupkg
                 if (assemblyLocation.ContainerPath == null)
                 {
                     filenameList.Add(assemblyLocation.Path);
                 }
                 else
                 {
-                    // Add the nupkg path but only once
                     if (!filenameList.Contains(assemblyLocation.ContainerPath))
                     {
                         filenameList.Add(assemblyLocation.ContainerPath);
@@ -73,7 +73,6 @@ namespace Tempo
                 }
             }
 
-            // WPF is still using reflection, so we have actual Assemblies
             foreach (var assembly in Manager.CurrentTypeSet.Assemblies)
             {
                 if (assembly.Location != null && !filenameList.Contains(assembly.Location))
@@ -82,31 +81,25 @@ namespace Tempo
                 }
             }
 
-            // Create a semi-colon separated list of filenames and set it into the environment
-            // for the PS process to pick up
-            var builder = new StringBuilder();
-            foreach (var filename in filenameList)
-            {
-                builder.Append($"{filename};");
-            }
-            startInfo.Environment[TempoPSProvider.TempoPSProvider.FilenamesKey] = builder.ToString();
+            var startInfo = CreatePwshStartInfo(
+                Manager.CurrentTypeSet.Name,
+                !App.Instance.UsingCppProjections,
+                filenameList);
 
-            // Need to set this when you set an environment variable
-            startInfo.UseShellExecute = false;
+            DebugLog.Append(startInfo.WorkingDirectory);
+            DebugLog.Append(startInfo.Arguments);
 
-            // Start a thread that will wait and listen for the PS process to call back (from out-tempo cmdlet)
+            // Start a thread that will wait and listen for the PS process to call back
+            var pipeName = startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey];
             _ = Task.Run(() => PSOutTempoServerThread(pipeName));
 
             try
             {
-                // Start pwsh
                 DebugLog.Append("Process start");
                 Process.Start(startInfo);
             }
             catch (Exception ex)
             {
-                // Probably don't have pwsh installed
-
                 DebugLog.Append($"Failed to launch pwsh. {ex.Message}");
                 var dialog = new CantStartPowerShell()
                 {
@@ -116,40 +109,36 @@ namespace Tempo
             }
         }
 
+        /// <summary>
+        /// Launch PowerShell directly without UI (for /ps mode).
+        /// Opens in a new console window.
+        /// </summary>
+        static internal void LaunchPSFromConsole(IEnumerable<string> filenames)
+        {
+            // Expand any directories to their contained files
+            filenames = Helpers.ExpandDirectories(filenames);
+
+            var startInfo = CreatePwshStartInfo(
+                "Custom",
+                useWinRTProjections: true,
+                filenames);
+
+            // Need UseShellExecute so the new process gets its own console window
+            startInfo.UseShellExecute = true;
+
+            try
+            {
+                Process.Start(startInfo);
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Append(ex, "Failed to launch pwsh in direct mode");
+            }
+        }
+
         // Thread to listen for calls from PS (from the out-tempo cmdlet)
         static void PSOutTempoServerThread(string pipeName)
         {
-            //using (var pipe = new NamedPipeServerStream(pipeName, PipeDirection.In))
-            //{
-            //    try
-            //    {
-            //        // Wait for out-tempo cmdlet to run
-            //        pipe.WaitForConnection();
-
-            //        using (var reader = new StreamReader(pipe))
-            //        {
-            //            // Respond to requests
-            //            while (true)
-            //            {
-            //                // Each line is a request
-            //                var line = reader.ReadLine();
-            //                if (line == null)
-            //                {
-            //                    // PS has exited
-            //                    break;
-            //                }
-
-            //                // Process the request
-            //                ProcessRequestFromPS(line);
-            //            }
-            //        }
-            //    }
-            //    catch (IOException)
-            //    {
-            //        // Catch the IOException that is raised if the pipe is broken
-            //        // or disconnected.
-            //    }
-            //}
         }
 
     }

@@ -2,8 +2,12 @@
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.19041</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>Tempo</RootNamespace>
+
+	<!-- Be a Console (CUI) app rather than a GUI app so that we have the option of writing to the caller's console  -->
+	<!-- See also consoleAllocationPolicy in app.manifest -->
+	<OutputType>Exe</OutputType>
+
+	<RootNamespace>Tempo</RootNamespace>
     <AssemblyName>TempoUwp</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
@@ -138,6 +142,9 @@
   <ItemGroup>
     <Compile Remove="TypeNameView_old.xaml.cs" />
     <Compile Remove="App.xaml.old.cs" />
+    <Compile Remove="AppX\**" />
+    <Page Remove="AppX\**" />
+    <None Remove="AppX\**" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="ADifferentCheckBox.xaml" />

@@ -873,7 +873,7 @@ namespace Tempo
 
         private void GoToPSClick(object sender, object args)
         {
-            PSLauncher.GoToPS(this.XamlRoot);
+            PSLauncher.LaunchPSFromUI(this.XamlRoot);
         }
 
         private void SelectWasdkStable(object sender, RoutedEventArgs e)

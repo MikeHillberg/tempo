@@ -34,6 +34,11 @@
   <ItemGroup>
     <ProjectReference Include="..\TempoDiff\TempoDiff.csproj" />
     <ProjectReference Include="..\ClassLibraryStandard\ClassLibraryStandard.csproj" />
+    <ProjectReference Include="..\TempoPSProvider2\TempoPSProvider2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Tempo2\CommandLineProcessor.cs" Link="CommandLineProcessor.cs" />
   </ItemGroup>
 
 	<ItemGroup>

@@ -26,7 +26,7 @@ using Windows.Foundation.Collections;
 using System.Runtime.InteropServices;
 
 // mikehill_ua: got this error
-// Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007	
+// Error NETSDK1130	Microsoft.Services.Store.Engagement.winmd cannot be referenced. Referencing a Windows Metadata component directly when targeting .NET 5 or higher is not supported. For more information, see https://aka.ms/netsdk1130	UwpTempo2	C:\Program Files\dotnet\sdk\6.0.301\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets	1007
 
 
 // mikehill_ua: Window title is "WinUI Desktop", but I had trouble figuring out where that was coming from
@@ -106,14 +106,26 @@ namespace Tempo
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
         {
-            //for(int i = 0; i < 20; i++)
-            //{
-            //    if(Debugger.IsAttached)
-            //    {
-            //        break;
-            //    }
-            //    Thread.Sleep(500);
-            //}
+            // Show help and exit if /? or /help
+            if (CommandLine.NeedHelp)
+            {
+                ShowCommandLineHelp();
+                Environment.Exit(0);
+                return;
+            }
+
+            // If /ps <files> case, launch PowerShell directly without UI
+            var psFilenames = CommandLine.PSFilenames;
+            if (psFilenames?.Count > 0)
+            {
+                PSLauncher.LaunchPSFromConsole(psFilenames);
+                Environment.Exit(0);
+                return;
+            }
+
+            // Unblock the calling console if necessary
+            // This may exit the process
+            HandleCuiRelaunch();
 
             // Optionally support single instancing
             HandleSingleInstancing();
@@ -165,13 +177,45 @@ namespace Tempo
 
         }
 
+        /// <summary>
+        /// Possibly re-launch the app to unblock the console if we were launched from a console and we're a CUI app.
+        /// </summary>
+        private static void HandleCuiRelaunch()
+        {
+            // This is a CUI (console) process, and for UI launch from a console (ps/cmd) the console waits
+            // for the process to exit before returning to the prompt.
+            // We just figured out that we want to run in UI mode, so we don't want it to wait.
+            // Even though we're a CUI app, if launched from Start, we won't flash a console screen because
+            // we're using detached consoleAllocationPolicy.
+            // So to unblock the calling console, the only option is to re-launch.
+            // Pass an env variable so we don't go into an infinite loop
+
+            var relaunchEnvVar = "TEMPO_RELAUNCHED";
+            if (Environment.GetEnvironmentVariable(relaunchEnvVar) == null)
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                startInfo.Environment[relaunchEnvVar] = "1";
+                foreach (var arg in Environment.GetCommandLineArgs().Skip(1))
+                {
+                    startInfo.ArgumentList.Add(arg);
+                }
+                Process.Start(startInfo);
+                Environment.Exit(0);
+            }
+        }
+
 
         /// <summary>
         /// Register for or redirect to single instance, if requested.
         /// </summary>
         private void HandleSingleInstancing()
         {
-            if (!ShouldAllowSingleInstance())
+            if (!CommandLine.ShouldAllowSingleInstance)
             {
                 return;
             }
@@ -185,7 +229,7 @@ namespace Tempo
 
                 // Call RedirectActivationToAsync to forward this activation to the existing instance.
                 // We need to ensure that that completes before we exit this process.
-                // We can't wait for the async call to complete on this thread, because we don't have 
+                // We can't wait for the async call to complete on this thread, because we don't have
                 // a dispatcher running (for the async to raise Completed on).
                 // So run it on a separate thread, and use a semaphore to block waiting on it to complete.
 
@@ -236,36 +280,6 @@ namespace Tempo
         }
 
         static string _singleInstanceCommandLineArgument = "/singleinstance";
-
-        /// <summary>
-        /// Check if single-instancing is requested (command-line argument)
-        /// </summary>
-        /// <returns></returns>
-        bool ShouldAllowSingleInstance()
-        {
-            // There's a ProcessCommandLine method that runs later (and must be later)
-            // that processes the rest of the arguments. We need to check this earlier
-            // than that though
-
-            var args = Environment.GetCommandLineArgs();
-
-            // The first arg is the name of the exe
-            if (args == null || args.Length == 1)
-            {
-                return false;
-            }
-
-            for (int i = 1; i < args.Length; i++)
-            {
-                var arg = args[i].ToLower();
-                if (arg == _singleInstanceCommandLineArgument)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         /// <summary>
         /// Restore saved settings and track changes to save updates
@@ -524,7 +538,7 @@ namespace Tempo
                 {
                     if (App.HomePage != null && App.HomePage.XamlRoot != null)
                     {
-                        PSLauncher.GoToPS(App.HomePage.XamlRoot);
+                        PSLauncher.LaunchPSFromUI(App.HomePage.XamlRoot);
                     }
                 });
 
@@ -785,145 +799,113 @@ namespace Tempo
         /// <summary>
         /// Check for filenames that should be loaded. This is called by HomePage by which point we have things loaded.
         /// </summary>
+
+        static readonly CommandLineProcessor CommandLine = new CommandLineProcessor(Environment.GetCommandLineArgs());
+
+        /// <summary>
+        /// Attach to the parent process's console and reopen stdout/stderr
+        /// so Console.WriteLine works from a WinExe (GUI subsystem) app.
+        /// </summary>
+        static void AttachToParentConsole()
+        {
+            AttachConsole(ATTACH_PARENT_PROCESS);
+
+            // After AttachConsole, stdout/stderr need to be reopened
+            var stdout = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
+            Console.SetOut(stdout);
+            var stderr = new StreamWriter(Console.OpenStandardError()) { AutoFlush = true };
+            Console.SetError(stderr);
+        }
+
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        static extern bool FreeConsole();
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        static extern bool AttachConsole(int dwProcessId);
+        const int ATTACH_PARENT_PROCESS = -1;
+
+        /// <summary>
+        /// Print command line help to the console and exit.
+        /// </summary>
+        static void ShowCommandLineHelp()
+        {
+            AttachToParentConsole();
+
+            Console.WriteLine();
+            Console.WriteLine("Tempo API Viewer");
+            Console.WriteLine();
+            Console.WriteLine("Usage: tempo [options] [files...]");
+            Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("  <filename(s)>            Open file(s) as custom API scope (.dll, .winmd, .nupkg)");
+            Console.WriteLine("  /ps <files>              Open file(s) in PowerShell with Tempo: drive (no UI)");
+            Console.WriteLine("  /diff <file1> <file2>    Compare two API sets");
+            Console.WriteLine("  /help, /?                Show this help");
+            Console.WriteLine();
+        }
+
         void ProcessCommandLine()
         {
-            // Not sure the best way to debug parameters that are passed in on the command line
-            // (See AppExecutionAlias in Package.appxmanifest)
-            // The solution here is to pass "/waitfordebugger" as a parameter, which will make it
-            // sit until you attach a debugger to the process.
-
-
-            var args = Environment.GetCommandLineArgs();
-            string baselineFilename = null;
-
-            // The first arg is the name of the exe
-            if (args == null || args.Length == 1)
+            if (CommandLine.NormalizedCommandArgs.Length == 0)
             {
                 return;
             }
 
-            List<string> commandLineFilenames = null;
-
-            // These flags track the processing if the /diff switch
-            var waitingForFirstDiff = false;
-            var waitingForSecondDiff = false;
-
-            // Process the command line arguments
-            // (Skip [0]; it's the exe filename)
-            for (int i = 1; i < args.Length; i++)
+            // If asked, wait for a debugger to be attached
+            if (CommandLine.NeedWaitForDebugger)
             {
-                var arg = args[i].ToLower();
-                if (arg.Length == 0)
+                while (!Debugger.IsAttached)
                 {
-                    // Don't think this is possible, but don't crash
-                    continue;
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
-
-                // Allow -foo or /foo interchangeably
-                if (arg[0] == '-')
-                {
-                    arg = $"/" + arg.Substring(1);
-                }
-
-                // If asked, wait for a debugger to be attached
-                if (arg == "/waitfordebugger")
-                {
-                    while (!Debugger.IsAttached)
-                    {
-                        Thread.Sleep(TimeSpan.FromSeconds(1));
-                    }
-                    continue;
-                }
-
-                if (arg == _singleInstanceCommandLineArgument)
-                {
-                    // This is special-cased in the method ShouldAllowSingleInstance()
-                    continue;
-                }
-
-                if (arg == "/diff")
-                {
-                    // Next we should see the baseline file
-                    // Skip to the next argument
-                    waitingForFirstDiff = true;
-                    waitingForSecondDiff = false;
-                    continue;
-                }
-                else if (waitingForFirstDiff)
-                {
-                    // We have /diff and the baseline file
-                    // Next we should see the new file
-                    // Skip to the next argument
-                    baselineFilename = Path.GetFullPath(arg);
-                    waitingForSecondDiff = true;
-                    waitingForFirstDiff = false;
-                    continue;
-                }
-                else if (waitingForSecondDiff)
-                {
-                    // We have a good /diff command line, we know the two filenames
-                    Manager.Settings.CompareToBaseline = true;
-
-                    // On the initial display of the diff, show a message box offering to copy to the clipboard
-                    OfferToCopyResultsToClipboard = true;
-
-                    // (bugbug) When launched with /diff, it hangs on the HomePage for a bit while loading.
-                    // It should be going straight to the loading page and showing a dialog.
-                    // Work around this for now by at least disabling the HomePage
-                    var homePage = HomePage.Instance;
-                    if (homePage != null)
-                    {
-                        homePage.IsEnabled = false;
-                    }
-                }
-                waitingForFirstDiff = waitingForSecondDiff = false;
-
-                if (commandLineFilenames == null)
-                {
-                    commandLineFilenames = new List<string>();
-                }
-
-                // If we get here, we have a custom filename
-                // (Maybe also a baseline filename)
-
-                // Figure out the full custom path name
-                // Path.GetFullPath() doesn't seem to mind invalid characters coming in,
-                // but the docs say it can throw, so show a message box if it does and abort.
-                // Bugbug: is this really necessary? Not doing this for the baseline filename,
-                // maybe something downstream is handling it.
-                try
-                {
-                    var path = args[i];
-                    path = Path.GetFullPath(path);
-                    commandLineFilenames.Add(path);
-                }
-                catch (Exception)
-                {
-                    _ = MyMessageBox.Show(args[i], "Invalid path", closeButtonText: "OK");
-                    return;
-                }
-
             }
 
             // If /diff was used on the command line, check for syntax errors
-            if (waitingForFirstDiff || waitingForSecondDiff)
+            if (CommandLine.HasIncompleteDiff)
             {
                 _ = MyMessageBox.Show("Usage: Tempo /diff file1 file2\r\nFiles can be dll, winmd, nupkg, or directory",
                                       "Invalid paramters",
                                       closeButtonText: "OK");
             }
 
+            // If a filename couldn't be resolved, show an error
+            if (CommandLine.InvalidPathArgument != null)
+            {
+                _ = MyMessageBox.Show(CommandLine.InvalidPathArgument, "Invalid path", closeButtonText: "OK");
+                return;
+            }
+
+            // If we have a valid /diff, set up diff mode
+            if (CommandLine.IsDiffMode)
+            {
+                Manager.Settings.CompareToBaseline = true;
+
+                // On the initial display of the diff, show a message box offering to copy to the clipboard
+                OfferToCopyResultsToClipboard = true;
+
+                // (bugbug) When launched with /diff, it hangs on the HomePage for a bit while loading.
+                // It should be going straight to the loading page and showing a dialog.
+                // Work around this for now by at least disabling the HomePage
+                var homePage = HomePage.Instance;
+                if (homePage != null)
+                {
+                    homePage.IsEnabled = false;
+                }
+            }
+
             // If we got custom filenames, start opening them
+            var commandLineFilenames = CommandLine.CustomFilenames;
             if (commandLineFilenames != null && commandLineFilenames.Count != 0)
             {
                 // commandLineFilenames is a list of file or directory names
                 // Replace the directory names with the names of all the children files
-                commandLineFilenames = Helpers.ExpandDirectories(commandLineFilenames);
+                var expanded = Helpers.ExpandDirectories(commandLineFilenames);
 
                 // Set this so that we don't change the scope to whatever was used the last time
                 _initialScopeSet = true;
 
-                DesktopManager2.CustomApiScopeFileNames.Value = commandLineFilenames.ToArray();
+                DesktopManager2.CustomApiScopeFileNames.Value = expanded.ToArray();
 
                 CustomApiScopeLoader.StartMakeCurrent(navigateToSearchResults: true);
 
@@ -935,11 +917,11 @@ namespace Tempo
             }
 
             // If this was a /diff command line, start opening the baseline filenames
-            if (baselineFilename != null)
+            if (CommandLine.DiffBaselineFilename != null)
             {
                 // baselineFilename is a single file or directory name
                 // Replace the directory name with the names of all the children files
-                var baselineFilenames = Helpers.ExpandDirectories(new string[] { baselineFilename });
+                var baselineFilenames = Helpers.ExpandDirectories(new string[] { CommandLine.DiffBaselineFilename });
                 BaselineApiScopeLoader.StartMakeCurrent(baselineFilenames.ToArray());
 
                 // This has to be called after the StartMakeCurrent,
@@ -1067,7 +1049,7 @@ namespace Tempo
         /// <summary>
         /// Update the current API scope from settings
         /// </summary>
-        /// 
+        ///
         bool _initialScopeSet = false;
         internal void InitializeToPreviousScopeFromSettings()
         {
@@ -1901,7 +1883,7 @@ namespace Tempo
 
         /// <summary>
         /// The search text (search text boxes bind to this)
-        /// </summary>        
+        /// </summary>
         public string SearchText
         {
             get { return _searchText; }
