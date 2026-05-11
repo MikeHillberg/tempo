@@ -49,5 +49,35 @@ namespace Tempo
             var ext = Path.GetExtension(filename).ToLowerInvariant();
             return ext == ".dll" || ext == ".winmd" || ext == ".nupkg";
         }
+
+        /// <summary>
+        /// Find the subdirectory with the highest version number (e.g. "8.0.5") under the given path.
+        /// Returns the full path, or null if not found.
+        /// </summary>
+        static public string FindHighestVersionDirectory(string basePath)
+        {
+            if (!Directory.Exists(basePath))
+            {
+                return null;
+            }
+
+            string bestPath = null;
+            Version bestVersion = null;
+
+            foreach (var dir in Directory.GetDirectories(basePath))
+            {
+                var leaf = Path.GetFileName(dir);
+                if (Version.TryParse(leaf, out var v))
+                {
+                    if (bestVersion == null || v > bestVersion)
+                    {
+                        bestVersion = v;
+                        bestPath = dir;
+                    }
+                }
+            }
+
+            return bestPath;
+        }
     }
 }

@@ -114,11 +114,18 @@ namespace Tempo
                 return;
             }
 
-            // If /ps <files> case, launch PowerShell directly without UI
-            var psFilenames = CommandLine.PSFilenames;
-            if (psFilenames?.Count > 0)
+            // If /ps was specified, launch PowerShell directly without UI
+            if (CommandLine.HasPS)
             {
-                PSLauncher.LaunchPSFromConsole(psFilenames);
+                var psFilenames = CommandLine.PSFilenames;
+                if (psFilenames?.Count > 0)
+                {
+                    PSLauncher.LaunchPSFromConsole(filenames: psFilenames, apiScope: CommandLine.ApiScope);
+                }
+                else
+                {
+                    PSLauncher.LaunchPSFromConsole(apiScope: CommandLine.ApiScope);
+                }
                 Environment.Exit(0);
                 return;
             }
@@ -718,7 +725,7 @@ namespace Tempo
 
                         switch (scope.ToLower())
                         {
-                            case "winappsdk":
+                            case ApiScopeNames.WinAppSdk:
                                 IsWinAppScope = true;
                                 _initialScopeSet = true;
                                 break;
@@ -728,13 +735,28 @@ namespace Tempo
                                 _initialScopeSet = true;
                                 break;
 
-                            case "windows":
+                            case ApiScopeNames.Windows:
                                 IsWinPlatformScope = true;
                                 _initialScopeSet = true;
                                 break;
 
-                            case "win32":
+                            case ApiScopeNames.Win32:
                                 IsWin32Scope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case ApiScopeNames.WebView2:
+                                IsWebView2Scope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case ApiScopeNames.DotNet:
+                                IsDotNetScope = true;
+                                _initialScopeSet = true;
+                                break;
+
+                            case ApiScopeNames.DotNetWindows:
+                                IsDotNetWindowsScope = true;
                                 _initialScopeSet = true;
                                 break;
 
@@ -839,8 +861,14 @@ namespace Tempo
             Console.WriteLine();
             Console.WriteLine("Options:");
             Console.WriteLine("  <filename(s)>            Open file(s) as custom API scope (.dll, .winmd, .nupkg)");
-            Console.WriteLine("  /ps <files>              Open file(s) in PowerShell with Tempo: drive (no UI)");
+            Console.WriteLine("  /ps [files]              Open PowerShell with Tempo: drive (no UI)");
             Console.WriteLine("  /diff <file1> <file2>    Compare two API sets");
+            Console.WriteLine("  /winappsdk               Set API scope to WinAppSDK");
+            Console.WriteLine("  /windows                 Set API scope to Windows platform");
+            Console.WriteLine("  /win32                   Set API scope to Win32 metadata");
+            Console.WriteLine("  /webview2                Set API scope to WebView2");
+            Console.WriteLine("  /dotnet                  Set API scope to .NET runtime");
+            Console.WriteLine("  /dotnetwindows           Set API scope to .NET Windows Desktop");
             Console.WriteLine("  /help, /?                Show this help");
             Console.WriteLine();
         }
@@ -850,6 +878,34 @@ namespace Tempo
             if (CommandLine.NormalizedCommandArgs.Length == 0)
             {
                 return;
+            }
+
+            // If an API scope was specified on the command line, set it
+            if (CommandLine.ApiScope != null)
+            {
+                _initialScopeSet = true;
+
+                switch (CommandLine.ApiScope)
+                {
+                    case ApiScopeNames.WinAppSdk:
+                        IsWinAppScope = true;
+                        break;
+                    case ApiScopeNames.Windows:
+                        IsWinPlatformScope = true;
+                        break;
+                    case ApiScopeNames.Win32:
+                        IsWin32Scope = true;
+                        break;
+                    case ApiScopeNames.WebView2:
+                        IsWebView2Scope = true;
+                        break;
+                    case ApiScopeNames.DotNet:
+                        IsDotNetScope = true;
+                        break;
+                    case ApiScopeNames.DotNetWindows:
+                        IsDotNetWindowsScope = true;
+                        break;
+                }
             }
 
             // If asked, wait for a debugger to be attached

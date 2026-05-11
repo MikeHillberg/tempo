@@ -69,8 +69,8 @@ namespace Tempo
                 return;
             }
 
-            DotNetCorePath = Path.Combine(dotNetCorePath, version);
-            DotNetTypeSet.DotNetCoreVersion = version;
+            DotNetCorePath = version;
+            DotNetTypeSet.DotNetCoreVersion = Path.GetFileName(version);
             DebugLog.Append($"Found {DotNetCorePath}");
 
             var dotNetWindowsPath = Path.Combine(dotNetPath, @"shared\Microsoft.WindowsDesktop.App");
@@ -85,7 +85,7 @@ namespace Tempo
             {
                 DebugLog.Append($"Couldn't find version in {dotNetWindowsPath}");
             }
-            DotNetWindowsPath = Path.Combine(dotNetWindowsPath, version);
+            DotNetWindowsPath = version;
             DebugLog.Append($"Found {DotNetWindowsPath}");
 
             return;
@@ -94,60 +94,7 @@ namespace Tempo
         /// <summary>
         /// Search subdirectories that are 3-part versions for the highest
         /// </summary>
-        static string FindHighestVersionDirectory(string path)
-        {
-            var subdirs = Directory.GetDirectories(path);
-            if (subdirs == null || subdirs.Length == 0)
-            {
-                return null;
-            }
-
-            DebugLog.Append($"Directories in {path}: {string.Join(", ", subdirs)}");
-
-            string highest = null;
-            var highestVersion = (0, 0, 0);
-            foreach (var dir in subdirs)
-            {
-                var dirLeaf = Path.GetFileName(dir);
-
-                // dirLeave should be in format "1.2.3"
-                var parts = dirLeaf.Split('.');
-                if (parts == null || parts.Length != 3)
-                {
-                    return null;
-                }
-
-                if (!Int32.TryParse(parts[0], out int part1)
-                    || !Int32.TryParse(parts[1], out int part2)
-                    || !Int32.TryParse(parts[2], out int part3))
-                {
-                    return null;
-                }
-
-                var version = (part1, part2, part3);
-                var newHigh = false;
-                if (highest == null)
-                {
-                    newHigh = true;
-                }
-                else
-                {
-                    int comparisson = highestVersion.CompareTo(version);
-                    if (comparisson < 0)
-                    {
-                        newHigh = true;
-                    }
-                }
-
-                if (newHigh)
-                {
-                    highest = dirLeaf;
-                    highestVersion = version;
-                }
-            }
-
-            return highest;
-        }
+        static string FindHighestVersionDirectory(string path) => Helpers.FindHighestVersionDirectory(path);
 
         public override bool IsSelected
         {

@@ -12,35 +12,25 @@ namespace Tempo
     internal class PSLauncher
     {
         /// <summary>
-        /// Create a ProcessStartInfo configured to launch pwsh with the Tempo drive.
+        /// Configure environment variables and create a ProcessStartInfo for launching PowerShell.
         /// </summary>
-        static internal ProcessStartInfo CreatePwshStartInfo(
-            string typeSetName,
-            bool useWinRTProjections,
-            IEnumerable<string> filenames)
+        static (ProcessStartInfo startInfo, string pipeName) PreparePSLaunch(
+            string filesEnv, string typeSetName, string useWinRTProjections)
         {
-            var psexe = "pwsh.exe";
-            var startInfo = new ProcessStartInfo(psexe);
-
-            startInfo.WorkingDirectory = Package.Current.InstalledLocation.Path;
-            startInfo.Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:\Types";
-
             var pipeName = $"TempoPipe_{Guid.NewGuid()}";
-            startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey] = pipeName;
-            startInfo.Environment["Tempo_TypeSetName"] = typeSetName;
-            startInfo.Environment[TempoPSProvider.TempoPSProvider.UseWinRTProjectionsKey]
-                = useWinRTProjections ? "1" : "0";
+            Environment.SetEnvironmentVariable(TempoPSProvider.TempoPSProvider.PipeNameKey, pipeName);
+            Environment.SetEnvironmentVariable("Tempo_TypeSetName", typeSetName);
+            Environment.SetEnvironmentVariable(TempoPSProvider.TempoPSProvider.UseWinRTProjectionsKey, useWinRTProjections);
+            Environment.SetEnvironmentVariable(TempoPSProvider.TempoPSProvider.FilenamesKey, filesEnv);
 
-            var builder = new StringBuilder();
-            foreach (var filename in filenames)
+            var startInfo = new ProcessStartInfo("pwsh.exe")
             {
-                builder.Append($"{filename};");
-            }
-            startInfo.Environment[TempoPSProvider.TempoPSProvider.FilenamesKey] = builder.ToString();
+                WorkingDirectory = Package.Current.InstalledLocation.Path,
+                Arguments = $@"-ExecutionPolicy Bypass -noexit -command "". .\MapTempoDrive.ps1""; cd Tempo:\Types",
+                UseShellExecute = true
+            };
 
-            startInfo.UseShellExecute = false;
-
-            return startInfo;
+            return (startInfo, pipeName);
         }
 
         /// <summary>
@@ -81,16 +71,15 @@ namespace Tempo
                 }
             }
 
-            var startInfo = CreatePwshStartInfo(
+            var filesEnv = string.Join(";", filenameList) + ";";
+            var (startInfo, pipeName) = PreparePSLaunch(
+                filesEnv,
                 Manager.CurrentTypeSet.Name,
-                !App.Instance.UsingCppProjections,
-                filenameList);
+                App.Instance.UsingCppProjections ? "0" : "1");
 
             DebugLog.Append(startInfo.WorkingDirectory);
             DebugLog.Append(startInfo.Arguments);
 
-            // Start a thread that will wait and listen for the PS process to call back
-            var pipeName = startInfo.Environment[TempoPSProvider.TempoPSProvider.PipeNameKey];
             _ = Task.Run(() => PSOutTempoServerThread(pipeName));
 
             try
@@ -112,19 +101,36 @@ namespace Tempo
         /// <summary>
         /// Launch PowerShell directly without UI (for /ps mode).
         /// Opens in a new console window.
+        /// If filenames are provided, they are loaded as Custom API scope.
+        /// Otherwise, the specified apiScope is used (or Windows if null).
         /// </summary>
-        static internal void LaunchPSFromConsole(IEnumerable<string> filenames)
+        static internal void LaunchPSFromConsole(IEnumerable<string> filenames = null, string apiScope = null)
         {
-            // Expand any directories to their contained files
-            filenames = Helpers.ExpandDirectories(filenames);
+            string filesEnv;
+            string typeSetName;
 
-            var startInfo = CreatePwshStartInfo(
-                "Custom",
-                useWinRTProjections: true,
-                filenames);
+            if (filenames != null && filenames.Any())
+            {
+                // Custom scope from filenames
+                filenames = Helpers.ExpandDirectories(filenames);
+                filesEnv = string.Join(";", filenames) + ";";
+                typeSetName = "Custom";
+            }
+            else
+            {
+                // No filenames: pass the scope via environment variable
+                filesEnv = "";
+                typeSetName = apiScope ?? ApiScopeNames.Windows;
+            }
 
-            // Need UseShellExecute so the new process gets its own console window
-            startInfo.UseShellExecute = true;
+            var (startInfo, _) = PreparePSLaunch(filesEnv, typeSetName, "1");
+
+            // Pass the API scope and channel settings so the PS provider knows what to load
+            Environment.SetEnvironmentVariable(TempoPSProvider.TempoPSProvider.ScopeKey, apiScope ?? "");
+            Environment.SetEnvironmentVariable(TempoPSProvider.TempoPSProvider.WinAppSdkChannelKey,
+                App.Instance.WinAppSDKChannel.ToString());
+            Environment.SetEnvironmentVariable(TempoPSProvider.TempoPSProvider.WebView2ChannelKey,
+                App.Instance.WebView2Channel.ToString());
 
             try
             {

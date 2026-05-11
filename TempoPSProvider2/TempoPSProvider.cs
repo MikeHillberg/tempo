@@ -38,6 +38,9 @@ namespace TempoPSProvider
         public static string PipeNameKey = "TempoPipeName";
         public static string FilenamesKey = "TempoFilenames";
         public static string UseWinRTProjectionsKey = "Tempo_UseWinRTProjections";
+        public static string ScopeKey = "Tempo_ApiScope";
+        public static string WinAppSdkChannelKey = "Tempo_WinAppSdkChannel";
+        public static string WebView2ChannelKey = "Tempo_WebView2Channel";
 
         protected override string[] ExpandPath(string path)
         {
@@ -227,17 +230,9 @@ namespace TempoPSProvider
                     useWinRTProjections = false;
                 }
 
-                // Check if Tempo passed a filename list
+                // Check if Tempo passed a filename list (Custom scope)
                 var filenameList = Environment.GetEnvironmentVariable(FilenamesKey);
-                if (string.IsNullOrEmpty(filenameList))
-                {
-                    // No list, just load the System32 WinMDs
-                    DesktopManager2.LoadWindowsTypes(useWinRTProjections);
-
-                    // Bugbug: cleaner out value, side effects
-                    Manager.CurrentTypeSet = Manager.WindowsTypeSet;
-                }
-                else
+                if (!string.IsNullOrEmpty(filenameList))
                 {
                     // Load the specified files
                     var filenames = filenameList.Split(';');
@@ -249,6 +244,12 @@ namespace TempoPSProvider
                          select filename).ToArray());
 
                     Manager.CurrentTypeSet = typeSet;
+                }
+                else
+                {
+                    // Load based on the requested API scope
+                    var scope = Environment.GetEnvironmentVariable(ScopeKey) ?? "";
+                    LoadScope(scope, useWinRTProjections);
                 }
 
                 var types = GetPublicTypes();
@@ -286,6 +287,100 @@ namespace TempoPSProvider
                 return null;
             }
         }
+
+        /// <summary>
+        /// Load types based on the requested API scope name.
+        /// </summary>
+        void LoadScope(string scope, bool useWinRTProjections)
+        {
+            TypeSetLoader loader = null;
+
+            switch (scope.ToLower())
+            {
+                case ApiScopeNames.WinAppSdk:
+                    var winAppChannel = WinAppSDKChannel.Stable;
+                    var winAppChannelStr = Environment.GetEnvironmentVariable(WinAppSdkChannelKey);
+                    if (!string.IsNullOrEmpty(winAppChannelStr)
+                        && Enum.TryParse<WinAppSDKChannel>(winAppChannelStr, out var parsedWinApp))
+                    {
+                        winAppChannel = parsedWinApp;
+                    }
+                    loader = new WinAppTypeSetLoader(winAppChannel, useWinRTProjections);
+                    break;
+
+                case ApiScopeNames.WebView2:
+                    var wv2Channel = WebView2Channel.Stable;
+                    var wv2ChannelStr = Environment.GetEnvironmentVariable(WebView2ChannelKey);
+                    if (!string.IsNullOrEmpty(wv2ChannelStr)
+                        && Enum.TryParse<WebView2Channel>(wv2ChannelStr, out var parsedWv2))
+                    {
+                        wv2Channel = parsedWv2;
+                    }
+                    loader = new WebView2TypeSetLoader(wv2Channel, useWinRTProjections);
+                    break;
+
+                case ApiScopeNames.Win32:
+                    loader = new Win32TypeSetLoader(useWinRTProjections);
+                    break;
+
+                case ApiScopeNames.DotNet:
+                    {
+                        var dotNetCorePath = FindHighestVersionDir(
+                            Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"),
+                                @"dotnet\shared\Microsoft.NETCore.App"));
+                        if (dotNetCorePath != null)
+                        {
+                            var files = Directory.GetFiles(dotNetCorePath);
+                            if (files != null && files.Length > 0)
+                            {
+                                loader = new DotNetAppTypeSetLoader(files);
+                            }
+                        }
+                    }
+                    break;
+
+                case ApiScopeNames.DotNetWindows:
+                    {
+                        var dotNetWinPath = FindHighestVersionDir(
+                            Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"),
+                                @"dotnet\shared\Microsoft.WindowsDesktop.App"));
+                        if (dotNetWinPath != null)
+                        {
+                            var files = Directory.GetFiles(dotNetWinPath);
+                            if (files != null && files.Length > 0)
+                            {
+                                loader = new DotNetWindowsTypeSetLoader(files);
+                            }
+                        }
+                    }
+                    break;
+
+                default:
+                    // Default: load Windows platform types
+                    Manager.CurrentTypeSet = DesktopManager2.LoadWindowsTypes(useWinRTProjections);
+                    return;
+            }
+
+            if (loader != null)
+            {
+                var typeSet = loader.Load();
+                if (typeSet != null)
+                {
+                    Manager.CurrentTypeSet = typeSet;
+                    return;
+                }
+            }
+
+            // Fallback to Windows types if the requested scope failed to load
+            Console.WriteLine($"Warning: Failed to load '{scope}' scope. Falling back to Windows.");
+            Manager.CurrentTypeSet = DesktopManager2.LoadWindowsTypes(useWinRTProjections);
+        }
+
+        /// <summary>
+        /// Find the subdirectory with the highest version number (e.g. "8.0.5") under the given path.
+        /// Returns the full path, or null if not found.
+        /// </summary>
+        static string FindHighestVersionDir(string basePath) => Helpers.FindHighestVersionDirectory(basePath);
 
         void PrintException(Exception e)
         {

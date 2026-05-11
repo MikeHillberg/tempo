@@ -72,10 +72,6 @@ This searches for methods whose name begins with "Try" and return void:
 ^Try IsMethod:True ReturnType:void
 ```
 
-Note that the search term needs to be before the AQS,
-for example `button Namespace:controls` rather than `Namespace:controls button`.
-You can though have only AQS, for example `Namespace:controls IsType:True`.
-
 You can combine terms with AND, OR, and NOT, or equivalently "&&", "||", and "!".
 You can also wrap in parens.
 Properties and values are case-insensitive.
@@ -86,6 +82,13 @@ For example these are equivalent:
 ```
 IsType:True && Namespace:(controls || devices)
 IsType:True AND Namespace:(controls OR devices)
+```
+
+Numeric properties can be compared with <, >, <=, >=, and =.
+For example:
+
+```
+Members.Count:<=2
 ```
 
 To see all properties available, look at a type or member and click on
@@ -101,10 +104,6 @@ You can launch Tempo with simply:
 ```
 Tempo
 ```
-
-(Note that there's a PowerShell bug where the command doesn't return to
-the command line until the app is closed.
-You can work around this by using `start tempo` syntax.)
 
 You can provide a metadata file on the command line.
 This will load the file as the "Custom API Scope".
@@ -126,11 +125,36 @@ tempo /diff Component_V1.dll Component_V2.dll
 tempo /diff dir1 dir2
 ```
 
+You can specify an API scope to open:
+
+```
+tempo /winappsdk
+tempo /windows
+tempo /win32
+tempo /webview2
+tempo /dotnet
+tempo /dotnetwindows
+```
+
+You can launch PowerShell with the Tempo: drive (no UI).
+Without filenames, it uses the current or specified API scope.
+With filenames, it loads them as Custom API scope.
+
+```
+tempo /ps
+tempo /ps /winappsdk
+tempo /ps Component1.dll Component2.winmd
+```
+
 You can also protocol launch:
 
 ```
 tempo:Button
 tempo:Button?scope=windows
 tempo:Button?scope=winappsdk
+tempo:Button?scope=win32
+tempo:Button?scope=webview2
+tempo:Button?scope=dotnet
+tempo:Button?scope=dotnetwindows
 tempo:?scope=Windows
 ```

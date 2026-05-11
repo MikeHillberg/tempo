@@ -388,10 +388,17 @@
 
 
                 <!-- How to row -->
-                <TextBlock Grid.Row="4" Grid.Column="0"
-                           Style="{StaticResource SubtitleTextBlockStyle}"
+                <StackPanel Grid.Row="4" Grid.Column="0" >
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}"
                            HorizontalAlignment="Left"
                            Margin="0">How to</TextBlock>
+                    
+                    <HyperlinkButton Click="ShowHelp" HorizontalAlignment="Left" Margin="0">
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock>Full help</TextBlock>
+                        </StackPanel>
+                    </HyperlinkButton>
+                </StackPanel>
 
 
                 <StackPanel Grid.Row="4" Grid.Column="1"
@@ -419,6 +426,7 @@
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo</TextBlock>
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo MyComponent.dll</TextBlock>
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo /diff ComponentV1.nupkg ComponentV2.nupkg</TextBlock>
+                        <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; tempo /ps /winappsdk</TextBlock>
                         <TextBlock TextWrapping="Wrap" IsTextSelectionEnabled="True">&gt; start "tempo:Button"</TextBlock>
                     </StackPanel>
 

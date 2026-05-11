@@ -24,6 +24,11 @@ namespace Tempo
         public bool NeedHelp => HasCommandLineFlag("?") || HasCommandLineFlag("help");
 
         /// <summary>
+        /// True if /ps was specified on the command line.
+        /// </summary>
+        public bool HasPS => HasCommandLineFlag("ps");
+
+        /// <summary>
         /// Filenames following the /ps flag, or null if /ps was not specified.
         /// </summary>
         public List<string>? PSFilenames => GetCommandLineFilenames("ps");
@@ -37,6 +42,12 @@ namespace Tempo
         /// True if /singleinstance was specified on the command line
         /// </summary>
         public bool ShouldAllowSingleInstance => HasCommandLineFlag("singleinstance");
+
+
+        /// <summary>
+        /// The API scope specified on the command line, or null if none was specified.
+        /// </summary>
+        public string? ApiScope { get; private set; }
 
         /// <summary>
         /// True if a valid /diff was parsed (both baseline and custom file were provided)
@@ -93,8 +104,32 @@ namespace Tempo
             }
             NormalizedCommandArgs = result;
 
+            // Parse API scope flag
+            ParseApiScope();
+
             // Parse /diff and custom filenames
             ParseDiffAndCustomFilenames();
+        }
+
+        private static readonly string[] ApiScopeFlags = new[]
+        {
+            $"/{ApiScopeNames.WinAppSdk}", $"/{ApiScopeNames.Windows}", $"/{ApiScopeNames.Win32}",
+            $"/{ApiScopeNames.WebView2}", $"/{ApiScopeNames.DotNet}", $"/{ApiScopeNames.DotNetWindows}"
+        };
+
+        /// <summary>
+        /// Parse the normalized args for an API scope flag.
+        /// </summary>
+        private void ParseApiScope()
+        {
+            foreach (var arg in NormalizedCommandArgs)
+            {
+                if (ApiScopeFlags.Contains(arg))
+                {
+                    ApiScope = arg[1..]; // strip leading '/'
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -123,7 +158,8 @@ namespace Tempo
                 }
 
                 // Skip known flags that are handled elsewhere
-                if (arg == "/waitfordebugger" || arg == "/singleinstance" || arg == "/ps")
+                if (arg == "/waitfordebugger" || arg == "/singleinstance" || arg == "/ps"
+                    || ApiScopeFlags.Contains(arg))
                 {
                     continue;
                 }

@@ -628,27 +628,6 @@ namespace Tempo.Tests
             }
             Assert.IsTrue(_winAppSdkTypes.ReturnedByCalculated, "ReturnedBy should be calculated by now");
 
-            // Set up a semaphore to wait for all ReferencedBy calculations to complete
-            var semaphore = new ManualResetEventSlim(false);
-            _winAppSdkTypes.AllReferencedByCalculationsCompleted += (s, e) =>
-            {
-                semaphore.Set();
-            };
-
-            // Trigger ReferencedByAsync on all types (this starts async calculations)
-            foreach (var type in _winAppSdkTypes.Types)
-            {
-                _ = type.ReferencedByAsync;
-            }
-
-            // If nothing was pending (already calculated or no types), we're done
-            if (_winAppSdkTypes.PendingReferencedByCount > 0)
-            {
-                var completed = semaphore.Wait(timeout);
-                Assert.IsTrue(completed,
-                    $"Timed out waiting for ReferencedBy calculations. Pending: {_winAppSdkTypes.PendingReferencedByCount}");
-            }
-
             // Now validate: check ReturnedByAsync counts for known types
             var totalWithReturnedBy = _winAppSdkTypes.Types
                 .Count(t => t.ReturnedByAsync != null && t.ReturnedByAsync.Count > 0);
@@ -667,11 +646,35 @@ namespace Tempo.Tests
             Assert.AreEqual(70, frameworkElement.ReturnedByAsync.Count,
                 $"FrameworkElement ReturnedBy count should be 70, got {frameworkElement.ReturnedByAsync.Count}");
 
-            // Validate ReferencedByAsync
-            var totalWithReferencedBy = _winAppSdkTypes.Types
-                .Count(t => t.ReferencedByAsync != null && t.ReferencedByAsync.Count > 0);
-            Assert.AreEqual(1, totalWithReferencedBy,
-                $"Expected 1 type with ReferencedBy > 0, got {totalWithReferencedBy}");
+            // Validate ReferencedByAsync on specific types.
+            // Note: each call to ReferencedByAsync increments a reference index, and only
+            // the most recent calculation stores its result. So we test one type at a time.
+            ValidateReferencedBy("Microsoft.UI.Xaml.DependencyProperty", minCount: 100);
+            ValidateReferencedBy("Microsoft.UI.Xaml.UIElement", minCount: 50);
+            ValidateReferencedBy("Microsoft.UI.Xaml.FrameworkElement", minCount: 10);
+        }
+
+        void ValidateReferencedBy(string fullName, int minCount)
+        {
+            var type = _winAppSdkTypes.Types.First(t => t.FullName == fullName);
+
+            // Access ReferencedByAsync to trigger calculation
+            _ = type.ReferencedByAsync;
+
+            // Wait for this specific calculation to complete
+            var semaphore = new ManualResetEventSlim(false);
+            _winAppSdkTypes.AllReferencedByCalculationsCompleted += (s, e) => semaphore.Set();
+
+            if (_winAppSdkTypes.PendingReferencedByCount > 0)
+            {
+                var completed = semaphore.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(completed, $"Timed out waiting for ReferencedBy on {fullName}");
+            }
+
+            Assert.IsNotNull(type.ReferencedByAsync,
+                $"{fullName} should have ReferencedByAsync calculated");
+            Assert.IsTrue(type.ReferencedByAsync.Count > minCount,
+                $"{fullName} ReferencedBy should be > {minCount}, got {type.ReferencedByAsync.Count}");
         }
 
         [TestMethod]
