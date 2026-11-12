@@ -113,6 +113,10 @@ namespace Tempo
                     versionRange: null,
                     out dependencyFilenames);
             }
+            catch (NuGetAccessException)
+            {
+                throw;
+            }
             catch(Exception ex)
             {
                 DebugLog.Append($"Couldn't download {_packageName}");

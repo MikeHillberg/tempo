@@ -634,6 +634,11 @@ namespace Tempo
                     SafeDelete(nupkgFilename);
                 }
 
+                if (NuGetAccessException.IsAccessFailure(e))
+                {
+                    throw new NuGetAccessException(e);
+                }
+
                 throw;
             }
         }
@@ -931,7 +936,11 @@ namespace Tempo
                     task, 
                     prereleaseTag,
                     versionRange);
-                downloadTask.Wait();
+                downloadTask.GetAwaiter().GetResult();
+            }
+            catch (NuGetAccessException)
+            {
+                throw;
             }
             catch(Exception ex)
             {
@@ -964,7 +973,7 @@ namespace Tempo
                 {
                     // Download the dependency package (synchronously)
                     downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(dep.id, task, prereleaseTag: null, dep.versionRange);
-                    downloadTask.Wait();
+                    downloadTask.GetAwaiter().GetResult();
                     packageLocationAndVersion = downloadTask.Result;
                     Debug.Assert(packageLocationAndVersion != null);
 
