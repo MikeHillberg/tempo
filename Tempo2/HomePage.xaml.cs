@@ -75,6 +75,32 @@ namespace Tempo
         }
 
 
+        void SaveNuGetSource_Click(object sender, RoutedEventArgs e)
+        {
+            if (!DesktopManager2.TryGetNuGetFeedUri(_nugetSourceUri.Text, out _))
+            {
+                _nugetSourceStatus.Severity = InfoBarSeverity.Error;
+                _nugetSourceStatus.Message = "Enter an absolute HTTP or HTTPS NuGet v3 service index URI without credentials or a fragment, or leave it empty to use nuget.org.";
+                _nugetSourceStatus.IsOpen = true;
+                return;
+            }
+
+            try
+            {
+                App.Instance.SaveNuGetSourceSetting(_nugetSourceUri.Text);
+                _nugetSourceStatus.Severity = InfoBarSeverity.Success;
+                _nugetSourceStatus.Message = "NuGet package source saved.";
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Append(ex, "Couldn't save the NuGet package source");
+                _nugetSourceStatus.Severity = InfoBarSeverity.Error;
+                _nugetSourceStatus.Message = "Couldn't save the NuGet package source. Please try again.";
+            }
+
+            _nugetSourceStatus.IsOpen = true;
+        }
+
         /// <summary>
         /// Show teaching tips for this page, if appropriate. (Wait to Loaded to invoke)
         /// </summary>

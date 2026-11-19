@@ -155,15 +155,16 @@ namespace Tempo
                 return;
             }
 
-            var message = "Tempo couldn't access nuget.org to download API packages.\n\n"
-                + "Access may be blocked by your network, firewall, or proxy, or your internet connection may be unavailable. "
-                + "Check your connection and access to https://api.nuget.org, https://www.nuget.org, and https://globalcdn.nuget.org, then try again.";
+            var message = "Tempo couldn't access the NuGet feed to download API packages.\n\n"
+                + "Access may be blocked by your network or firewall, or your internet connection may be unavailable. "
+                + "Check your connection and feed access, then try again. "
+                + "If nuget.org is blocked, configure an alternate NuGet package source under Settings on the home page.";
             if (!isPreload)
             {
                 message += "\n\nSwitching to Windows Platform APIs.";
             }
 
-            _nugetAccessDialogTask = MyMessageBox.Show(message, "Unable to access nuget.org");
+            _nugetAccessDialogTask = MyMessageBox.Show(message, "Unable to access NuGet feed");
             await _nugetAccessDialogTask;
         }
 

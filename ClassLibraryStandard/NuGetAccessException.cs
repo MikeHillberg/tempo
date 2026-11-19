@@ -10,7 +10,7 @@ namespace Tempo
     public class NuGetAccessException : Exception
     {
         public NuGetAccessException(Exception innerException)
-            : base("Unable to access nuget.org.", innerException)
+            : base("Unable to access the NuGet feed.", innerException)
         {
         }
 

@@ -49,7 +49,7 @@
                     <!-- Illustrations -->
                     <RowDefinition Height="Auto"/>
 
-                    <!-- Theme -->
+                    <!-- Settings -->
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -462,26 +462,49 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Row 6: theme -->
+                <!-- Settings row -->
                 <TextBlock Grid.Row="6" Grid.Column="0"
                            Style="{StaticResource SubtitleTextBlockStyle}"
                            Margin="0,5,0,0"
                            HorizontalAlignment="Left"
-                           >Theme</TextBlock>
+                           >Settings</TextBlock>
 
-                <StackPanel Grid.Row="6" Grid.Column="1" >
-                    <TextBlock Margin="0,10">The default theme is whatever you've set in the Settings app. Use Ctrl+Shift+T to toggle themes</TextBlock>
-                    <local:UniformStackPanel Orientation="Horizontal" Margin="0,5">
-                        <RadioButton IsChecked="{x:Bind local:App.Instance.IsSystemTheme, Mode=TwoWay}"
-                                 Content="Default"
-                                     GroupName="ThemeRadioButtons"/>
-                        <RadioButton IsChecked="{x:Bind local:App.Instance.IsLightTheme, Mode=TwoWay}"
-                                 Content="Light"
-                                     GroupName="ThemeRadioButtons"/>
-                        <RadioButton IsChecked="{x:Bind local:App.Instance.IsDarkTheme, Mode=TwoWay}"
-                                 Content="Dark"
-                                     GroupName="ThemeRadioButtons"/>
-                    </local:UniformStackPanel>
+                <StackPanel Grid.Row="6" Grid.Column="1" Spacing="20">
+                    <Expander Header="Theme"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="12" MaxWidth="700">
+                            <TextBlock TextWrapping="Wrap">The default theme is whatever you've set in the Settings app. Use Ctrl+Shift+T to toggle themes</TextBlock>
+                            <local:UniformStackPanel Orientation="Horizontal" Margin="0,5">
+                                <RadioButton IsChecked="{x:Bind local:App.Instance.IsSystemTheme, Mode=TwoWay}"
+                                             Content="Default"
+                                             GroupName="ThemeRadioButtons"/>
+                                <RadioButton IsChecked="{x:Bind local:App.Instance.IsLightTheme, Mode=TwoWay}"
+                                             Content="Light"
+                                             GroupName="ThemeRadioButtons"/>
+                                <RadioButton IsChecked="{x:Bind local:App.Instance.IsDarkTheme, Mode=TwoWay}"
+                                             Content="Dark"
+                                             GroupName="ThemeRadioButtons"/>
+                            </local:UniformStackPanel>
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="NuGet package source"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="12" MaxWidth="700">
+                            <TextBlock TextWrapping="Wrap"
+                                       Text="Use an alternate NuGet v3 feed if nuget.org is unavailable. Leave blank to use nuget.org."/>
+                            <TextBox x:Name="_nugetSourceUri"
+                                     Header="Feed URI"
+                                     PlaceholderText="https://proxy.example/nuget/v3/index.json"
+                                     Text="{x:Bind local:App.Instance.NuGetSourceUri, Mode=OneWay}"/>
+                            <Button Content="Save" Click="SaveNuGetSource_Click"/>
+                            <InfoBar x:Name="_nugetSourceStatus" IsOpen="False" IsClosable="False"/>
+                            <TextBlock TextWrapping="Wrap"
+                                       Text="Changes apply to new package requests. Restart Tempo to rerun background preloading with the new setting."/>
+                        </StackPanel>
+                    </Expander>
                 </StackPanel>
 
 

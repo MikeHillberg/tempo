@@ -75,6 +75,9 @@ namespace Tempo
             // Figure out light/dark mode
             LoadThemeSetting();
 
+            // Load the NuGet package source
+            LoadNuGetSourceSetting();
+
             // Listen for unhandled exceptions on the UI thread and internally
             UnhandledException += App_UnhandledException;
             UnhandledExceptionManager.UnhandledException += UnhandledExceptionManager_UnhandledException;
@@ -2723,6 +2726,47 @@ namespace Tempo
                 IsSystemTheme = true;
             }
         }
+
+        #region NuGet package source settings
+
+        const string _nuGetSourceSettingName = nameof(NuGetSourceUri);
+
+        public string NuGetSourceUri { get; private set; } = "";
+
+        void LoadNuGetSourceSetting()
+        {
+            var settings = ApplicationData.Current.LocalSettings.Values;
+            if (settings.TryGetValue(_nuGetSourceSettingName, out var value))
+            {
+                NuGetSourceUri = value as string ?? "";
+            }
+
+            if (DesktopManager2.TryGetNuGetFeedUri(NuGetSourceUri, out var feedUri))
+            {
+                DesktopManager2.NuGetFeedUri = feedUri;
+            }
+            else
+            {
+                DebugLog.Append("Invalid saved NuGet source URI. Using nuget.org until the setting is corrected.");
+                DesktopManager2.NuGetFeedUri = new Uri(DesktopManager2.DefaultNuGetFeedUrl);
+            }
+        }
+
+        internal void SaveNuGetSourceSetting(string sourceUri)
+        {
+            if (!DesktopManager2.TryGetNuGetFeedUri(sourceUri, out var feedUri))
+            {
+                throw new ArgumentException("Enter an absolute HTTP or HTTPS NuGet v3 service index URI without credentials or a fragment.", nameof(sourceUri));
+            }
+
+            var value = sourceUri?.Trim() ?? "";
+            ApplicationData.Current.LocalSettings.Values[_nuGetSourceSettingName] = value;
+            NuGetSourceUri = value;
+            DesktopManager2.NuGetFeedUri = feedUri;
+            RaisePropertyChange(nameof(NuGetSourceUri));
+        }
+
+        #endregion
     }
 }
 
