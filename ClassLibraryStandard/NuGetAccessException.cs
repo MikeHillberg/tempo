@@ -9,6 +9,9 @@ namespace Tempo
 {
     public class NuGetAccessException : Exception
     {
+        // netstandard2.0 doesn't define this HttpStatusCode member.
+        const HttpStatusCode UnavailableForLegalReasons = (HttpStatusCode)451;
+
         public NuGetAccessException(Exception innerException)
             : base("Unable to access the NuGet feed.", innerException)
         {
@@ -36,9 +39,12 @@ namespace Tempo
 
                 if (webException.Response is HttpWebResponse response)
                 {
-                    var statusCode = (int)response.StatusCode;
-                    return statusCode == 401 || statusCode == 403 || statusCode == 407
-                        || statusCode == 451 || statusCode >= 500;
+                    var statusCode = response.StatusCode;
+                    return statusCode == HttpStatusCode.Unauthorized
+                        || statusCode == HttpStatusCode.Forbidden
+                        || statusCode == HttpStatusCode.ProxyAuthenticationRequired
+                        || statusCode == UnavailableForLegalReasons
+                        || statusCode >= HttpStatusCode.InternalServerError;
                 }
 
                 return true;
