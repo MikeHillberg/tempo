@@ -109,7 +109,7 @@ namespace Tempo
                 }
                 catch (NuGetAccessException ex)
                 {
-                    DebugLog.Append(ex, $"Unable to access nuget.org while preloading {loader.Name}");
+                    DebugLog.Append(ex, $"Unable to access the NuGet feed while preloading {loader.Name}");
                     if (!nugetAccessErrorReported)
                     {
                         nugetAccessErrorReported = true;
@@ -398,7 +398,7 @@ namespace Tempo
                 }
                 catch (NuGetAccessException ex)
                 {
-                    DebugLog.Append(ex, $"Unable to access nuget.org while loading {Name}");
+                    DebugLog.Append(ex, $"Unable to access the NuGet feed while loading {Name}");
                     nugetAccessError = ex;
                     _isCanceled = true;
                 }
