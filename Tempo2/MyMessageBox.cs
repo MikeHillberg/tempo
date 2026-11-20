@@ -24,7 +24,7 @@ namespace Tempo
                 {
                     Children =
                     {
-                        new TextBlock() { Text = message }
+                        new TextBlock() { Text = message, TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap }
                     }
                 },
                 Title = title

@@ -28,6 +28,18 @@ namespace Tempo
         // Location where it's OK to write files (package cache)
         static public string PackagesCachePath = null;
 
+        public const string DefaultNuGetFeedUrl = "https://api.nuget.org/v3/index.json";
+        public static Uri NuGetFeedUri { get; set; } = new Uri(DefaultNuGetFeedUrl);
+
+        public static bool TryGetNuGetFeedUri(string proxyUri, out Uri feedUri)
+        {
+            var value = string.IsNullOrWhiteSpace(proxyUri) ? DefaultNuGetFeedUrl : proxyUri.Trim();
+            return Uri.TryCreate(value, UriKind.Absolute, out feedUri)
+                && (feedUri.Scheme == Uri.UriSchemeHttps || feedUri.Scheme == Uri.UriSchemeHttp)
+                && string.IsNullOrEmpty(feedUri.UserInfo)
+                && string.IsNullOrEmpty(feedUri.Fragment);
+        }
+
         // Bugbug: need to set this internally because UWP app gets confused by the type at build time
         //public static Dispatcher Dispatcher { get; set; }
 
@@ -530,7 +542,7 @@ namespace Tempo
 
                 // Get package metadata, filtering out unlisted versions
                 SourceCacheContext cache = new SourceCacheContext();
-                SourceRepository repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
+                SourceRepository repository = Repository.Factory.GetCoreV3(NuGetFeedUri.AbsoluteUri);
                 
                 PackageMetadataResource metadataResource = await repository.GetResourceAsync<PackageMetadataResource>();
 
@@ -607,18 +619,16 @@ namespace Tempo
                     Directory.CreateDirectory(packagePath);
                 }
 
-                // Downlaod the nupkg
-                var packageUrl = $"https://www.nuget.org/api/v2/package/{packageName}/{highestVersion.OriginalVersion}";
-                var http = (HttpWebRequest)WebRequest.Create(packageUrl);
-                http.UserAgent = "Tempo"; // Server rejects the request if there's no UserAgent string set
-                var response = await http.GetResponseAsync();
-                var stream = response.GetResponseStream();
+                var packageResource = await repository.GetResourceAsync<FindPackageByIdResource>();
 
                 // Write the nupkg to a file
                 using (var fileStream = File.Create(nupkgFilename))
                 {
-                    stream.CopyTo(fileStream);
-                    fileStream.Flush();
+                    if (!await packageResource.CopyNupkgToStreamAsync(
+                        packageName, highestVersion, fileStream, cache, logger, cancellationToken))
+                    {
+                        throw new InvalidDataException($"Couldn't download {packageName} {highestVersion} from the configured NuGet feed.");
+                    }
                 }
 
                 DebugLog.Append($"Downloaded {nupkgFilename}");
@@ -632,6 +642,11 @@ namespace Tempo
                 if (nupkgFilename != null)
                 {
                     SafeDelete(nupkgFilename);
+                }
+
+                if (NuGetAccessException.IsAccessFailure(e))
+                {
+                    throw new NuGetAccessException(e);
                 }
 
                 throw;
@@ -931,7 +946,11 @@ namespace Tempo
                     task, 
                     prereleaseTag,
                     versionRange);
-                downloadTask.Wait();
+                downloadTask.GetAwaiter().GetResult();
+            }
+            catch (NuGetAccessException)
+            {
+                throw;
             }
             catch(Exception ex)
             {
@@ -964,7 +983,7 @@ namespace Tempo
                 {
                     // Download the dependency package (synchronously)
                     downloadTask = DesktopManager2.DownloadLatestPackageFromNugetToDirectory(dep.id, task, prereleaseTag: null, dep.versionRange);
-                    downloadTask.Wait();
+                    downloadTask.GetAwaiter().GetResult();
                     packageLocationAndVersion = downloadTask.Result;
                     Debug.Assert(packageLocationAndVersion != null);
 

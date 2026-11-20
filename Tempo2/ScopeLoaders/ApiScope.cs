@@ -100,9 +100,22 @@ namespace Tempo
             }
 
             // Pass 2 of preload on all the scope loaders
+            bool nugetAccessErrorReported = false;
             foreach (var loader in scopeLoaders)
             {
-                loader.CachedAllNames = loader.Preload2();
+                try
+                {
+                    loader.CachedAllNames = loader.Preload2();
+                }
+                catch (NuGetAccessException ex)
+                {
+                    DebugLog.Append(ex, $"Unable to access the NuGet feed while preloading {loader.Name}");
+                    if (!nugetAccessErrorReported)
+                    {
+                        nugetAccessErrorReported = true;
+                        Manager.PostToUIThread(() => _ = ShowNuGetAccessErrorAsync(isPreload: true));
+                    }
+                }
             }
 
             DebugLog.Append("ApiScopeLoader Preload complete");
@@ -110,6 +123,49 @@ namespace Tempo
             {
                 AreApiScopesPreloading.Value = false;
             });
+        }
+
+        static Task _nugetAccessDialogTask;
+
+        static async Task ShowNuGetAccessErrorAsync(bool isPreload = false)
+        {
+            if (isPreload)
+            {
+                if ((App.Window?.Content as RootFrame)?.Content is not HomePage)
+                {
+                    return;
+                }
+
+                foreach (var loader in ScopeLoaders.ToArray())
+                {
+                    if (loader._contentDialogTask != null)
+                    {
+                        await loader._contentDialogTask;
+                    }
+                }
+
+                if ((App.Window?.Content as RootFrame)?.Content is not HomePage)
+                {
+                    return;
+                }
+            }
+
+            if (_nugetAccessDialogTask != null && !_nugetAccessDialogTask.IsCompleted)
+            {
+                return;
+            }
+
+            var message = "Tempo couldn't access the NuGet feed to download API packages.\n\n"
+                + "Access may be blocked by your network or firewall, or your internet connection may be unavailable. "
+                + "Check your connection and feed access, then try again. "
+                + "If nuget.org is blocked, configure an alternate NuGet package source under Settings on the home page.";
+            if (!isPreload)
+            {
+                message += "\n\nSwitching to Windows Platform APIs.";
+            }
+
+            _nugetAccessDialogTask = MyMessageBox.Show(message, "Unable to access NuGet feed");
+            await _nugetAccessDialogTask;
         }
 
         protected KeyValuePair<string, string>[] Preload1()
@@ -324,6 +380,7 @@ namespace Tempo
 
             // This will be set true if the user cancels the Loading dialog
             _isCanceled = false;
+            NuGetAccessException nugetAccessError = null;
 
             // Fork the load action
             _ = Task.Run(() =>
@@ -338,6 +395,12 @@ namespace Tempo
 
                     // Process the new type set in the base class
                     OnTypeSetLoaded();
+                }
+                catch (NuGetAccessException ex)
+                {
+                    DebugLog.Append(ex, $"Unable to access the NuGet feed while loading {Name}");
+                    nugetAccessError = ex;
+                    _isCanceled = true;
                 }
                 catch (Exception)
                 {
@@ -367,7 +430,29 @@ namespace Tempo
                 DebugLog.Append($"Load was canceled ({Name})");
 
                 // The "loading ..." dialog was canceled by the user
-                OnCanceled();
+                if (nugetAccessError == null)
+                {
+                    OnCanceled();
+                }
+                else
+                {
+                    // Finish the loading dialog before opening another ContentDialog.
+                    _contentDialog?.Hide();
+                    if (_contentDialogTask != null)
+                    {
+                        await _contentDialogTask;
+                    }
+
+                    if (loadCompletedEvent != _loadCompletedEvent)
+                    {
+                        return;
+                    }
+
+                    _ = ShowNuGetAccessErrorAsync();
+
+                    App.Instance.IsWinPlatformScope = true;
+                    App.GoHome();
+                }
             }
             else
             {
